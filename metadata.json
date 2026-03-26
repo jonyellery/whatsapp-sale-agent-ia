@@ -1,0 +1,5 @@
+{
+  "name": "WhatsApp Web Clone",
+  "description": "A simple WhatsApp Web clone using the Baileys API with real-time messaging and QR code authentication.",
+  "requestFramePermissions": []
+}
