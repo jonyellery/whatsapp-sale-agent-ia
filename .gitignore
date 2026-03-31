@@ -3,5 +3,6 @@ dist/
 .env
 *.log
 baileys_store.json
+Baileys/
 auth_info_baileys/
 .DS_Store
