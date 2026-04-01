@@ -48,7 +48,26 @@ import {
   VolumeX,
   Filter,
   Star,
-  MessageCircle
+  MessageCircle,
+  Pencil,
+  Eye,
+  EyeOff,
+  Clock,
+  Lock,
+  Globe,
+  UserPlus,
+  UserMinus,
+  Shield,
+  Link,
+  Megaphone,
+  Hash,
+  Download,
+  Ban,
+  RotateCcw,
+  Plus,
+  MapPin,
+  Contact,
+  BarChart3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -403,9 +422,11 @@ interface Chat {
   lastMessageStatus?: string; // 'sent' | 'delivered' | 'read' | 'played'
   description?: string;
   archived?: boolean;
-  archive?: boolean; // For API responses that use 'archive' instead of 'archived'
+  archive?: boolean;
   pinned?: boolean;
+  pinnedAt?: number;
   muted?: boolean;
+  ephemeralExpiration?: number;
 }
 
 interface ChatDetails {
@@ -523,7 +544,7 @@ const getStubTypeText = (stubType: number, params: string[]): string => {
     case 71: return params.map(p => `${getName(p)} solicitou entrar no grupo`).join(', ');
     case 140: return params.map(p => `${getName(p)} aceitou o convite`).join(', ');
     case 144: return params.map(p => `${getName(p)} solicitou entrar`).join(', ');
-    default: return '[Notificação do grupo]';
+    default: return `[Notificação do grupo (tipo ${stubType})]`;
   }
 };
 
@@ -556,7 +577,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   const normalized: Message = { ...msg, message: msg.message };
   
   // Handle group system messages (stub types)
-  if (msg.messageStubType && !msg.message) {
+  if (msg.messageStubType) {
     normalized._type = 'system';
     normalized._text = getStubTypeText(msg.messageStubType, msg.messageStubParameters || []);
     return normalized;
@@ -979,6 +1000,58 @@ export default function App() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     return localStorage.getItem('wa-notifications') === 'true';
   });
+
+  // New modals state
+  const [muteModal, setMuteModal] = useState<string | null>(null); // chat jid
+  const [ephemeralModal, setEphemeralModal] = useState<string | null>(null); // chat jid
+  const [createGroupModal, setCreateGroupModal] = useState(false);
+  const [groupManageModal, setGroupManageModal] = useState<string | null>(null); // group jid
+  const [statusModal, setStatusModal] = useState(false);
+  const [createChannelModal, setCreateChannelModal] = useState(false);
+  const [channelDetailModal, setChannelDetailModal] = useState<string | null>(null);
+  const [createCommunityModal, setCreateCommunityModal] = useState(false);
+  const [communityManageModal, setCommunityManageModal] = useState<string | null>(null);
+  const [broadcastModal, setBroadcastModal] = useState(false);
+  const [businessProfileModal, setBusinessProfileModal] = useState(false);
+  const [blockConfirmModal, setBlockConfirmModal] = useState<string | null>(null); // jid to block
+  const [messageSearchOpen, setMessageSearchOpen] = useState(false);
+  const [messageSearchQuery, setMessageSearchQuery] = useState('');
+  const [messageSearchResults, setMessageSearchResults] = useState<any[]>([]);
+  const [editMessageModal, setEditMessageModal] = useState<{ id: string; text: string } | null>(null);
+
+  // Status data
+  const [statuses, setStatuses] = useState<any[]>([]);
+  const [statusText, setStatusText] = useState('');
+  const [statusFile, setStatusFile] = useState<File | null>(null);
+
+  // Newsletter/Channel data
+  const [newsletters, setNewsletters] = useState<any[]>([]);
+  const [channelName, setChannelName] = useState('');
+  const [channelDesc, setChannelDesc] = useState('');
+  const [channelMessages, setChannelMessages] = useState<any[]>([]);
+
+  // Community data
+  const [communities, setCommunities] = useState<any[]>([]);
+  const [communityName, setCommunityName] = useState('');
+  const [communityDesc, setCommunityDesc] = useState('');
+
+  // Group management
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupParticipants, setNewGroupParticipants] = useState('');
+  const [groupEditName, setGroupEditName] = useState('');
+  const [groupEditDesc, setGroupEditDesc] = useState('');
+  const [groupAddParticipant, setGroupAddParticipant] = useState('');
+
+  // Broadcast
+  const [broadcastRecipients, setBroadcastRecipients] = useState<string[]>([]);
+  const [broadcastText, setBroadcastText] = useState('');
+  const [broadcastSearch, setBroadcastSearch] = useState('');
+
+  // Business
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [businessDescription, setBusinessDescription] = useState('');
+  const [businessWebsite, setBusinessWebsite] = useState('');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -1026,6 +1099,13 @@ export default function App() {
         const searchInput = document.querySelector('.wa-sidebar input[type="text"]') as HTMLInputElement;
         searchInput?.focus();
       }
+      // Ctrl/Cmd + F: Search messages in chat
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        if (selectedChatRef.current) {
+          e.preventDefault();
+          setMessageSearchOpen(true);
+        }
+      }
       // Ctrl/Cmd + D: Toggle dark mode
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
@@ -1044,6 +1124,20 @@ export default function App() {
         if (emojiPickerOpen) { setEmojiPickerOpen(false); return; }
         if (contextMenu) { setContextMenu(null); return; }
         if (replyTo) { setReplyTo(null); return; }
+        if (editMessageModal) { setEditMessageModal(null); return; }
+        if (messageSearchOpen) { setMessageSearchOpen(false); setMessageSearchQuery(''); return; }
+        if (muteModal) { setMuteModal(null); return; }
+        if (ephemeralModal) { setEphemeralModal(null); return; }
+        if (createGroupModal) { setCreateGroupModal(false); return; }
+        if (groupManageModal) { setGroupManageModal(null); return; }
+        if (statusModal) { setStatusModal(false); return; }
+        if (createChannelModal) { setCreateChannelModal(false); return; }
+        if (createCommunityModal) { setCreateCommunityModal(false); return; }
+        if (broadcastModal) { setBroadcastModal(false); return; }
+        if (businessProfileModal) { setBusinessProfileModal(false); return; }
+        if (blockConfirmModal) { setBlockConfirmModal(null); return; }
+        if (channelDetailModal) { setChannelDetailModal(null); return; }
+        if (communityManageModal) { setCommunityManageModal(null); return; }
       }
       // Ctrl/Cmd + /: Show shortcuts help
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
@@ -1058,7 +1152,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcutsOpen, forwardModal, profileOpen, emojiPickerOpen, contextMenu, replyTo]);
+  }, [shortcutsOpen, forwardModal, profileOpen, emojiPickerOpen, contextMenu, replyTo, editMessageModal, messageSearchOpen, muteModal, ephemeralModal, createGroupModal, groupManageModal, statusModal, createChannelModal, createCommunityModal, broadcastModal, businessProfileModal, blockConfirmModal, channelDetailModal, communityManageModal, selectedChat]);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -1067,7 +1161,8 @@ export default function App() {
 
   // Simple store for contacts (will be populated from server)
   const store = useRef({
-    contacts: {} as Record<string, any>
+    contacts: {} as Record<string, any>,
+    lidMappings: {} as Record<string, string> // @lid JID -> @s.whatsapp.net JID
   });
 
   // Socket connection - created ONCE, never recreated
@@ -1080,6 +1175,13 @@ export default function App() {
       setQr(data.qr);
       if (data.status === 'open') {
         newSocket.emit('get-chats');
+        // Fetch LID → Phone Number mappings
+        fetch('/api/lid-mappings')
+          .then(r => r.json())
+          .then((mappings: Record<string, string>) => {
+            store.current.lidMappings = { ...store.current.lidMappings, ...mappings };
+          })
+          .catch(() => {});
       }
     });
 
@@ -1225,6 +1327,10 @@ export default function App() {
         });
         return updated;
       });
+    });
+
+    newSocket.on('lid-mappings', (mappings: Record<string, string>) => {
+      store.current.lidMappings = { ...store.current.lidMappings, ...mappings };
     });
 
     newSocket.on('typing-update', (data: { jid: string; isTyping: boolean }) => {
@@ -1506,10 +1612,20 @@ export default function App() {
   const getSenderName = (msg: Message): string => {
     if (msg.key.fromMe) return 'Você';
     if (msg.pushName) return msg.pushName;
-    if (msg.participant) {
-      // Try to get name from contacts or use phone number
-      const contact = store.current.contacts[msg.participant];
-      return contact?.notify || contact?.name || getPhoneNumber(msg.participant);
+    const participantJid = msg.participant || msg.key?.participant;
+    if (participantJid) {
+      const contact = store.current.contacts[participantJid];
+      if (contact?.notify || contact?.name) return contact.notify || contact.name;
+      // For @lid JIDs, try LID→PN mapping to find the real contact
+      if (participantJid.endsWith('@lid')) {
+        const mappedPn = store.current.lidMappings[participantJid];
+        if (mappedPn) {
+          const pnContact = store.current.contacts[mappedPn];
+          if (pnContact?.notify || pnContact?.name) return pnContact.notify || pnContact.name;
+          return getPhoneNumber(mappedPn);
+        }
+      }
+      return getPhoneNumber(participantJid) || 'Usuário';
     }
     return 'Usuário';
   };
@@ -1520,6 +1636,12 @@ export default function App() {
     if (chat.displayName) return chat.displayName;
     if (chat.name) return chat.name;
     if (chat.subject) return chat.subject; // For groups
+    
+    // Try contacts store
+    const contact = store.current.contacts[chat.id];
+    if (contact) {
+      return contact.name || contact.notify || getPhoneNumber(chat.id);
+    }
     
     // For contacts, extract phone number
     const jid = chat.id;
@@ -1533,10 +1655,20 @@ export default function App() {
 
   // Get contact name from JID - using contacts from server
   const getContactName = (jid: string): string => {
+    if (!jid) return '';
     // Try to get from store.contacts
     const contact = store.current.contacts[jid];
     if (contact) {
       return contact.name || contact.notify || getPhoneNumber(jid);
+    }
+    // For @lid JIDs, try LID→PN mapping
+    if (jid.endsWith('@lid')) {
+      const mappedPn = store.current.lidMappings[jid];
+      if (mappedPn) {
+        const pnContact = store.current.contacts[mappedPn];
+        if (pnContact) return pnContact.name || pnContact.notify || getPhoneNumber(mappedPn);
+        return getPhoneNumber(mappedPn);
+      }
     }
     // Fallback to phone number
     return getPhoneNumber(jid);
@@ -1735,15 +1867,11 @@ export default function App() {
     if (!forwardModal || forwardSelected.length === 0 || forwarding) return;
     setForwarding(true);
     try {
-      const msg = messages.find(m => m.key.id === forwardModal.messageId);
-      if (!msg) { showToast('Mensagem não encontrada'); return; }
-      
       for (const jid of forwardSelected) {
-        const text = msg._text || '';
-        await fetch('/api/send', {
+        await fetch('/api/forward-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jid, text: `↪️ ${text}` }),
+          body: JSON.stringify({ fromJid: selectedChat, toJid: jid, messageId: forwardModal.messageId }),
         });
       }
       showToast(`Mensagem encaminhada para ${forwardSelected.length} conversa(s)`);
@@ -1788,6 +1916,412 @@ export default function App() {
       });
     } catch {}
     setContextMenu(null);
+  };
+
+  // Edit message
+  const handleEditMessage = async (messageId: string, newText: string) => {
+    if (!selectedChat || !newText.trim()) return;
+    try {
+      await fetch('/api/edit-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid: selectedChat, messageId, newText: newText.trim() })
+      });
+      showToast('Mensagem editada');
+    } catch { showToast('Erro ao editar mensagem'); }
+    setEditMessageModal(null);
+    setContextMenu(null);
+  };
+
+  // Star message
+  const handleStarMessage = async (messageId: string, star: boolean) => {
+    if (!selectedChat) return;
+    try {
+      await fetch('/api/star-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid: selectedChat, messageId, star })
+      });
+      showToast(star ? 'Mensagem estrelada' : 'Estrela removida');
+    } catch { showToast('Erro ao estrelar mensagem'); }
+    setContextMenu(null);
+  };
+
+  // Pin message in chat
+  const handlePinMessage = async (messageId: string, time: number = 604800) => {
+    if (!selectedChat) return;
+    try {
+      await fetch('/api/pin-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid: selectedChat, messageId, type: 'pin', time })
+      });
+      showToast('Mensagem fixada na conversa');
+    } catch { showToast('Erro ao fixar mensagem'); }
+    setContextMenu(null);
+  };
+
+  // Keep message
+  const handleKeepMessage = async (messageId: string) => {
+    if (!selectedChat) return;
+    try {
+      await fetch('/api/keep-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid: selectedChat, messageId, keep: true })
+      });
+      showToast('Mensagem mantida');
+    } catch { showToast('Erro ao manter mensagem'); }
+    setContextMenu(null);
+  };
+
+  // Delete message for me only
+  const handleDeleteForMe = async (messageId: string) => {
+    if (!selectedChat) return;
+    try {
+      await fetch('/api/delete-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid: selectedChat, messageId, forEveryone: false })
+      });
+      setMessages(prev => prev.filter(m => m.key.id !== messageId));
+      showToast('Mensagem apagada para você');
+    } catch { showToast('Erro ao apagar mensagem'); }
+    setContextMenu(null);
+  };
+
+  // Pin/unpin chat
+  const handlePinChat = async (jid: string, pin: boolean) => {
+    try {
+      await fetch('/api/pin-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, pin })
+      });
+      setChats(prev => prev.map(c => c.id === jid ? { ...c, pinnedAt: pin ? Date.now() : undefined } : c));
+      showToast(pin ? 'Conversa fixada' : 'Conversa desafixada');
+    } catch { showToast('Erro ao fixar conversa'); }
+    setContextMenu(null);
+  };
+
+  // Mute chat
+  const handleMuteChat = async (jid: string, duration: string) => {
+    try {
+      await fetch('/api/mute-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, mute: true, duration })
+      });
+      setChats(prev => prev.map(c => c.id === jid ? { ...c, muted: true } : c));
+      showToast('Conversa silenciada');
+    } catch { showToast('Erro ao silenciar'); }
+    setMuteModal(null);
+    setContextMenu(null);
+  };
+
+  // Unmute chat
+  const handleUnmuteChat = async (jid: string) => {
+    try {
+      await fetch('/api/mute-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, mute: false })
+      });
+      setChats(prev => prev.map(c => c.id === jid ? { ...c, muted: false } : c));
+      showToast('Conversa dessilenciada');
+    } catch { showToast('Erro ao dessilenciar'); }
+    setContextMenu(null);
+  };
+
+  // Set ephemeral messages
+  const handleSetEphemeral = async (jid: string, ephemeralExpiration: number) => {
+    try {
+      await fetch('/api/set-ephemeral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, ephemeralExpiration })
+      });
+      const label = ephemeralExpiration === 0 ? 'desativadas' : ephemeralExpiration === 86400 ? '24 horas' : ephemeralExpiration === 604800 ? '7 dias' : '90 dias';
+      showToast(`Mensagens desaparecidas: ${label}`);
+    } catch { showToast('Erro ao configurar mensagens desaparecidas'); }
+    setEphemeralModal(null);
+    setContextMenu(null);
+  };
+
+  // Search messages in chat
+  const handleSearchMessages = async () => {
+    if (!messageSearchQuery.trim()) return;
+    try {
+      const params = new URLSearchParams({ q: messageSearchQuery });
+      if (selectedChat) params.set('jid', selectedChat);
+      const res = await fetch(`/api/search-messages?${params}`);
+      const data = await res.json();
+      setMessageSearchResults(data);
+    } catch { showToast('Erro ao buscar mensagens'); }
+  };
+
+  // Export chat
+  const handleExportChat = (jid?: string) => {
+    const chatId = jid || selectedChat;
+    if (!chatId) return;
+    window.open(`/api/export-chat/${chatId}`, '_blank');
+    setContextMenu(null);
+    showToast('Exportando conversa...');
+  };
+
+  // Block contact
+  const handleBlockContact = async (jid: string, block: boolean) => {
+    try {
+      await fetch('/api/block-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, block })
+      });
+      showToast(block ? 'Contato bloqueado' : 'Contato desbloqueado');
+    } catch { showToast('Erro ao bloquear contato'); }
+    setBlockConfirmModal(null);
+    setContextMenu(null);
+  };
+
+  // Send view-once media
+  const handleSendViewOnce = async (file: File) => {
+    if (!selectedChat) return;
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('jid', selectedChat);
+      formData.append('caption', mediaCaption);
+      formData.append('mediaType', file.type.split('/')[0]);
+      await fetch('/api/send-viewonce', { method: 'POST', body: formData });
+      setMediaPreview(null);
+      setMediaCaption('');
+      showToast('Mídia de visualização única enviada');
+    } catch { showToast('Erro ao enviar view-once'); }
+  };
+
+  // Create group
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim() || !newGroupParticipants.trim()) return;
+    try {
+      const participants = newGroupParticipants.split(',').map(p => p.trim()).filter(Boolean);
+      await fetch('/api/group/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newGroupName, participants })
+      });
+      showToast('Grupo criado com sucesso');
+      setCreateGroupModal(false);
+      setNewGroupName('');
+      setNewGroupParticipants('');
+      // Refresh chats
+      if (socket) socket.emit('get-chats');
+    } catch { showToast('Erro ao criar grupo'); }
+  };
+
+  // Group management handlers
+  const handleUpdateGroupSubject = async (jid: string, subject: string) => {
+    try {
+      await fetch('/api/group/subject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, subject })
+      });
+      showToast('Nome do grupo atualizado');
+      setGroupEditName('');
+    } catch { showToast('Erro ao atualizar nome'); }
+  };
+
+  const handleUpdateGroupDescription = async (jid: string, description: string) => {
+    try {
+      await fetch('/api/group/description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, description })
+      });
+      showToast('Descrição atualizada');
+      setGroupEditDesc('');
+    } catch { showToast('Erro ao atualizar descrição'); }
+  };
+
+  const handleGroupAction = async (jid: string, participant: string, action: string) => {
+    try {
+      await fetch(`/api/group/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid, participants: [participant] })
+      });
+      showToast(`Ação ${action} realizada`);
+      setGroupAddParticipant('');
+    } catch { showToast(`Erro ao ${action}`); }
+  };
+
+  const handleLeaveGroup = async (jid: string) => {
+    try {
+      await fetch('/api/group/leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid })
+      });
+      setChats(prev => prev.filter(c => c.id !== jid));
+      if (selectedChat === jid) setSelectedChat(null);
+      setGroupManageModal(null);
+      showToast('Você saiu do grupo');
+    } catch { showToast('Erro ao sair do grupo'); }
+  };
+
+  const handleGetGroupInviteLink = async (jid: string) => {
+    try {
+      const res = await fetch(`/api/group/invite-link/${jid}`);
+      const data = await res.json();
+      if (data.inviteLink) {
+        navigator.clipboard.writeText(data.inviteLink).catch(() => {});
+        showToast('Link de convite copiado!');
+      }
+    } catch { showToast('Erro ao obter link'); }
+  };
+
+  // Status handlers
+  const handlePostTextStatus = async () => {
+    if (!statusText.trim()) return;
+    try {
+      await fetch('/api/status/text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: statusText })
+      });
+      showToast('Status publicado');
+      setStatusText('');
+      setStatusModal(false);
+    } catch { showToast('Erro ao publicar status'); }
+  };
+
+  const handlePostMediaStatus = async () => {
+    if (!statusFile) return;
+    try {
+      const formData = new FormData();
+      formData.append('file', statusFile);
+      formData.append('mediaType', statusFile.type.split('/')[0]);
+      await fetch('/api/status/media', { method: 'POST', body: formData });
+      showToast('Status publicado');
+      setStatusFile(null);
+      setStatusModal(false);
+    } catch { showToast('Erro ao publicar status'); }
+  };
+
+  const loadStatuses = async () => {
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      setStatuses(data);
+    } catch {}
+  };
+
+  // Newsletter handlers
+  const handleCreateChannel = async () => {
+    if (!channelName.trim()) return;
+    try {
+      await fetch('/api/newsletter/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: channelName, description: channelDesc })
+      });
+      showToast('Canal criado');
+      setCreateChannelModal(false);
+      setChannelName('');
+      setChannelDesc('');
+    } catch { showToast('Erro ao criar canal'); }
+  };
+
+  const handleFollowChannel = async (jid: string) => {
+    try {
+      await fetch('/api/newsletter/follow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid })
+      });
+      showToast('Canal seguido');
+    } catch { showToast('Erro ao seguir canal'); }
+  };
+
+  const handleUnfollowChannel = async (jid: string) => {
+    try {
+      await fetch('/api/newsletter/unfollow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jid })
+      });
+      showToast('Canal deixado de seguir');
+    } catch { showToast('Erro ao deixar de seguir'); }
+  };
+
+  const loadChannelMessages = async (jid: string) => {
+    try {
+      const res = await fetch(`/api/newsletter/${jid}/messages`);
+      const data = await res.json();
+      setChannelMessages(data);
+      setChannelDetailModal(jid);
+    } catch { showToast('Erro ao carregar mensagens do canal'); }
+  };
+
+  // Community handlers
+  const handleCreateCommunity = async () => {
+    if (!communityName.trim()) return;
+    try {
+      await fetch('/api/community/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: communityName, description: communityDesc })
+      });
+      showToast('Comunidade criada');
+      setCreateCommunityModal(false);
+      setCommunityName('');
+      setCommunityDesc('');
+    } catch { showToast('Erro ao criar comunidade'); }
+  };
+
+  const handleLinkGroupToCommunity = async (communityJid: string, groupJid: string) => {
+    try {
+      await fetch('/api/community/link-group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupJid, communityJid })
+      });
+      showToast('Grupo vinculado à comunidade');
+    } catch { showToast('Erro ao vincular grupo'); }
+  };
+
+  // Broadcast handler
+  const handleSendBroadcast = async () => {
+    if (broadcastRecipients.length === 0 || !broadcastText.trim()) return;
+    try {
+      await fetch('/api/send-broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipients: broadcastRecipients, text: broadcastText })
+      });
+      showToast(`Mensagem enviada para ${broadcastRecipients.length} contato(s)`);
+      setBroadcastModal(false);
+      setBroadcastText('');
+      setBroadcastRecipients([]);
+    } catch { showToast('Erro ao enviar broadcast'); }
+  };
+
+  // Business profile handler
+  const handleUpdateBusinessProfile = async () => {
+    try {
+      await fetch('/api/business/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: businessAddress,
+          email: businessEmail,
+          description: businessDescription,
+          websites: businessWebsite ? [businessWebsite] : []
+        })
+      });
+      showToast('Perfil comercial atualizado');
+      setBusinessProfileModal(false);
+    } catch { showToast('Erro ao atualizar perfil'); }
   };
 
   // Filtered chats based on search and filter
@@ -2446,7 +2980,7 @@ export default function App() {
         </button>
         <button 
           className={`wa-nav-rail-item ${navRailSection === 'status' ? 'active' : ''}`}
-          onClick={() => setNavRailSection('status')}
+          onClick={() => { setNavRailSection('status'); loadStatuses(); }}
           title="Status"
         >
           <CircleDot size={24} />
@@ -2506,10 +3040,12 @@ export default function App() {
       <div className="wa-sidebar">
         <div className="wa-header">
           <div className="wa-header-title">
-            <h2>WhatsApp</h2>
+            <h2>
+              {navRailSection === 'status' ? 'Status' : navRailSection === 'channels' ? 'Canais' : navRailSection === 'communities' ? 'Comunidades' : navRailSection === 'archived' ? 'Arquivadas' : navRailSection === 'starred' ? 'Estreladas' : 'WhatsApp'}
+            </h2>
           </div>
           <div className="flex gap-5" style={{ color: 'var(--wa-text-secondary)' }}>
-            <motion.button whileTap={{ scale: 0.9 }} title="Nova conversa">
+            <motion.button whileTap={{ scale: 0.9 }} title="Nova conversa" onClick={() => setCreateGroupModal(true)}>
               <MessageSquarePlus size={24} />
             </motion.button>
             <div style={{ position: 'relative' }}>
@@ -2520,6 +3056,21 @@ export default function App() {
                 <>
                   <div className="wa-context-menu-overlay" onClick={() => setSidebarMenuOpen(false)} />
                   <div className="wa-context-menu" style={{ right: 0, left: 'auto', top: '100%', marginTop: 4 }}>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setCreateGroupModal(true); }}>
+                      <Users size={18} /> Novo grupo
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setCreateChannelModal(true); }}>
+                      <Tv size={18} /> Novo canal
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setCreateCommunityModal(true); }}>
+                      <Users size={18} /> Nova comunidade
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setBroadcastModal(true); }}>
+                      <Megaphone size={18} /> Broadcast
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setBusinessProfileModal(true); }}>
+                      <Contact size={18} /> Perfil comercial
+                    </div>
                     <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); refreshChats(); }}>
                       <MessageSquare size={18} /> Atualizar conversas
                     </div>
@@ -2542,7 +3093,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Filter chips */}
+        {/* Filter chips - only show for chats section */}
+        {navRailSection === 'chats' && (
         <div className="wa-filters">
           {([
             { key: 'all' as const, label: 'Todos' },
@@ -2562,6 +3114,7 @@ export default function App() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Search */}
         <div className="p-2" style={{ background: 'var(--wa-sidebar-bg)' }}>
@@ -2569,7 +3122,7 @@ export default function App() {
             <Search className="mr-3" size={18} style={{ color: 'var(--wa-text-secondary)' }} />
             <input 
               type="text" 
-              placeholder="Pesquisar ou começar uma nova conversa" 
+              placeholder={navRailSection === 'chats' ? 'Pesquisar ou começar uma nova conversa' : navRailSection === 'status' ? 'Pesquisar status...' : navRailSection === 'channels' ? 'Pesquisar canais...' : 'Pesquisar...'}
               className="bg-transparent border-none outline-none text-sm w-full"
               style={{ color: 'var(--wa-text-primary)' }}
               value={searchQuery}
@@ -2582,6 +3135,79 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* Conditional content based on nav rail section */}
+        {navRailSection === 'status' ? (
+          <div className="wa-chat-list">
+            <div style={{ padding: 16 }}>
+              <button className="wa-context-menu-item" style={{ width: '100%', justifyContent: 'center', padding: 12, background: 'var(--wa-teal-dark)', color: 'white', borderRadius: 8, marginBottom: 16 }} onClick={() => setStatusModal(true)}>
+                <Plus size={18} /> Novo status
+              </button>
+              {statuses.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--wa-text-secondary)', padding: 24, fontSize: 14 }}>
+                  Nenhum status disponível
+                </div>
+              ) : (
+                statuses.map((s: any) => (
+                  <div key={s.jid || s.id} className="wa-chat-item" style={{ padding: 12 }}>
+                    <div className="wa-chat-item-avatar-placeholder"><User size={28} style={{ color: 'var(--wa-text-secondary)' }} /></div>
+                    <div className="wa-chat-item-content">
+                      <h3 className="wa-chat-item-name">{s.pushName || s.status?.toString().slice(0, 30) || 'Contato'}</h3>
+                      <p className="wa-chat-item-message">{s.setAt ? new Date(s.setAt).toLocaleString('pt-BR') : ''}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : navRailSection === 'channels' ? (
+          <div className="wa-chat-list">
+            <div style={{ padding: 16 }}>
+              <button className="wa-context-menu-item" style={{ width: '100%', justifyContent: 'center', padding: 12, background: 'var(--wa-teal-dark)', color: 'white', borderRadius: 8, marginBottom: 16 }} onClick={() => setCreateChannelModal(true)}>
+                <Plus size={18} /> Criar canal
+              </button>
+              {newsletters.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--wa-text-secondary)', padding: 24, fontSize: 14 }}>
+                  Nenhum canal encontrado. Crie ou siga um canal.
+                </div>
+              ) : (
+                newsletters.map((n: any) => (
+                  <div key={n.id} className="wa-chat-item" style={{ padding: 12 }} onClick={() => loadChannelMessages(n.id)}>
+                    <div className="wa-chat-item-avatar-placeholder"><Tv size={28} style={{ color: 'var(--wa-text-secondary)' }} /></div>
+                    <div className="wa-chat-item-content">
+                      <h3 className="wa-chat-item-name">{n.name}</h3>
+                      <p className="wa-chat-item-message">{n.description || 'Canal'}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : navRailSection === 'communities' ? (
+          <div className="wa-chat-list">
+            <div style={{ padding: 16 }}>
+              <button className="wa-context-menu-item" style={{ width: '100%', justifyContent: 'center', padding: 12, background: 'var(--wa-teal-dark)', color: 'white', borderRadius: 8, marginBottom: 16 }} onClick={() => setCreateCommunityModal(true)}>
+                <Plus size={18} /> Criar comunidade
+              </button>
+              {communities.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--wa-text-secondary)', padding: 24, fontSize: 14 }}>
+                  Nenhuma comunidade encontrada.
+                </div>
+              ) : (
+                communities.map((c: any) => (
+                  <div key={c.id} className="wa-chat-item" style={{ padding: 12 }} onClick={() => setCommunityManageModal(c.id)}>
+                    <div className="wa-chat-item-avatar-placeholder"><Users size={28} style={{ color: 'var(--wa-text-secondary)' }} /></div>
+                    <div className="wa-chat-item-content">
+                      <h3 className="wa-chat-item-name">{c.name || c.subject}</h3>
+                      <p className="wa-chat-item-message">{c.description || 'Comunidade'}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : (
+        <>
 
         {/* Chat List */}
         <div className="wa-chat-list">
@@ -2609,7 +3235,7 @@ export default function App() {
                     {getChatDisplayName(chat)}
                   </h3>
                   <div className="wa-chat-item-top-right">
-                    {chat.pinned && <Pin size={14} className="wa-chat-item-pin" />}
+                    {chat.pinnedAt && <Pin size={14} className="wa-chat-item-pin" />}
                     {chat.muted && <VolumeX size={14} className="wa-chat-item-muted-icon" />}
                     <span className={`wa-chat-item-time ${chat.unreadCount && chat.unreadCount > 0 ? 'unread' : ''}`}>
                       {formatChatTime(chat.lastMessageTime)}
@@ -2658,6 +3284,8 @@ export default function App() {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
 
       {/* Main Chat Area */}
@@ -2695,7 +3323,7 @@ export default function App() {
               </div>
               <div className="wa-header-right">
                 <Phone size={20} className="cursor-pointer" />
-                <Search size={20} className="cursor-pointer" />
+                <Search size={20} className="cursor-pointer" onClick={() => setMessageSearchOpen(true)} title="Buscar mensagens" />
                 <MoreHorizontal 
                   size={20} 
                   className="cursor-pointer"
@@ -3081,7 +3709,7 @@ export default function App() {
       {contextMenu && (
         <>
           <div className="wa-context-menu-overlay" onClick={() => setContextMenu(null)} />
-          <div className="wa-context-menu" style={{ left: Math.min(contextMenu.x, window.innerWidth - 220), top: Math.min(contextMenu.y, window.innerHeight - 300) }}>
+          <div className="wa-context-menu" style={{ left: Math.min(contextMenu.x, window.innerWidth - 220), top: Math.min(contextMenu.y, window.innerHeight - 450) }}>
             {contextMenu.messageId ? (
               <>
                 <div className="wa-context-menu-item" onClick={() => {
@@ -3089,6 +3717,17 @@ export default function App() {
                   if (msg) handleReply(msg);
                 }}>
                   <Reply size={18} /> Responder
+                </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  const msg = messages.find(m => m.key.id === contextMenu.messageId);
+                  if (msg?.key.fromMe && msg._type === 'text') {
+                    setEditMessageModal({ id: msg.key.id, text: msg._text || '' });
+                  } else {
+                    showToast('Só é possível editar mensagens de texto enviadas por você');
+                  }
+                  setContextMenu(null);
+                }}>
+                  <Pencil size={18} /> Editar
                 </div>
                 <div className="wa-context-menu-item" onClick={() => {
                   const msg = messages.find(m => m.key.id === contextMenu.messageId);
@@ -3112,8 +3751,28 @@ export default function App() {
                 }}>
                   <span style={{ fontSize: 18 }}>❤️</span> Curtir
                 </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  handleStarMessage(contextMenu.messageId!, true);
+                }}>
+                  <Star size={18} /> Estrelar
+                </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  handlePinMessage(contextMenu.messageId!);
+                }}>
+                  <Pin size={18} /> Fixar na conversa
+                </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  handleKeepMessage(contextMenu.messageId!);
+                }}>
+                  <Lock size={18} /> Manter mensagem
+                </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  handleDeleteForMe(contextMenu.messageId!);
+                }}>
+                  <Trash2 size={18} /> Apagar para mim
+                </div>
                 <div className="wa-context-menu-item danger" onClick={() => handleDeleteMessage(contextMenu.messageId!)}>
-                  <Trash2 size={18} /> Deletar
+                  <Trash2 size={18} /> Apagar para todos
                 </div>
               </>
             ) : contextMenu.chatId ? (
@@ -3124,11 +3783,58 @@ export default function App() {
                 }}>
                   <Archive size={18} /> {chats.find(c => c.id === contextMenu.chatId)?.archived ? 'Desarquivar' : 'Arquivar'}
                 </div>
-                <div className="wa-context-menu-item" onClick={() => { setContextMenu(null); showToast('Chat silenciado'); }}>
-                  <span style={{ fontSize: 18 }}>🔇</span> Silenciar
+                <div className="wa-context-menu-item" onClick={() => {
+                  const chat = chats.find(c => c.id === contextMenu.chatId);
+                  if (chat?.muted) {
+                    handleUnmuteChat(contextMenu.chatId!);
+                  } else {
+                    setMuteModal(contextMenu.chatId!);
+                    setContextMenu(null);
+                  }
+                }}>
+                  {chats.find(c => c.id === contextMenu.chatId)?.muted ? <Bell size={18} /> : <VolumeX size={18} />}
+                  {chats.find(c => c.id === contextMenu.chatId)?.muted ? 'Dessilenciar' : 'Silenciar'}
                 </div>
-                <div className="wa-context-menu-item" onClick={() => { setContextMenu(null); showToast('Chat fixado'); }}>
-                  <span style={{ fontSize: 18 }}>📌</span> Fixar conversa
+                <div className="wa-context-menu-item" onClick={() => {
+                  const chat = chats.find(c => c.id === contextMenu.chatId);
+                  handlePinChat(contextMenu.chatId!, !chat?.pinnedAt);
+                }}>
+                  <Pin size={18} /> {chats.find(c => c.id === contextMenu.chatId)?.pinnedAt ? 'Desafixar' : 'Fixar conversa'}
+                </div>
+                {contextMenu.chatId?.endsWith('@g.us') && (
+                  <>
+                    <div className="wa-context-menu-item" onClick={() => {
+                      setEphemeralModal(contextMenu.chatId!);
+                      setContextMenu(null);
+                    }}>
+                      <Clock size={18} /> Mensagens desaparecidas
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => {
+                      setGroupManageModal(contextMenu.chatId!);
+                      const chat = chats.find(c => c.id === contextMenu.chatId);
+                      setGroupEditName(chat?.name || chat?.displayName || '');
+                      setGroupEditDesc('');
+                      setContextMenu(null);
+                    }}>
+                      <Users size={18} /> Gerenciar grupo
+                    </div>
+                  </>
+                )}
+                {!contextMenu.chatId?.endsWith('@g.us') && (
+                  <div className="wa-context-menu-item" onClick={() => {
+                    const chat = chats.find(c => c.id === contextMenu.chatId);
+                    if (chat) {
+                      setBlockConfirmModal(contextMenu.chatId!);
+                      setContextMenu(null);
+                    }
+                  }}>
+                    <Ban size={18} /> Bloquear contato
+                  </div>
+                )}
+                <div className="wa-context-menu-item" onClick={() => {
+                  handleExportChat(contextMenu.chatId);
+                }}>
+                  <Download size={18} /> Exportar conversa
                 </div>
                 <div className="wa-context-menu-item danger" onClick={() => {
                   if (contextMenu.chatId) {
@@ -3355,6 +4061,410 @@ export default function App() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mute Duration Modal */}
+      {muteModal && (
+        <div className="wa-modal-overlay" onClick={() => setMuteModal(null)}>
+          <div className="wa-modal" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Silenciar notificações</h3>
+              <button className="wa-modal-close" onClick={() => setMuteModal(null)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <p style={{ marginBottom: 16, color: 'var(--wa-text-secondary)', fontSize: 14 }}>
+                As notificações desta conversa serão silenciadas.
+              </p>
+              {[{ label: '8 horas', value: '8h' }, { label: '1 semana', value: '1w' }, { label: 'Sempre', value: 'always' }].map(opt => (
+                <button key={opt.value} className="wa-context-menu-item" style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+                  onClick={() => handleMuteChat(muteModal, opt.value)}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ephemeral Messages Modal */}
+      {ephemeralModal && (
+        <div className="wa-modal-overlay" onClick={() => setEphemeralModal(null)}>
+          <div className="wa-modal" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Mensagens desaparecidas</h3>
+              <button className="wa-modal-close" onClick={() => setEphemeralModal(null)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <p style={{ marginBottom: 16, color: 'var(--wa-text-secondary)', fontSize: 14 }}>
+                Novas mensagens nesta conversa desaparecerão após o tempo selecionado.
+              </p>
+              {[{ label: 'Desativar', value: 0 }, { label: '24 horas', value: 86400 }, { label: '7 dias', value: 604800 }, { label: '90 dias', value: 7776000 }].map(opt => (
+                <button key={opt.value} className="wa-context-menu-item" style={{ width: '100%', justifyContent: 'center', padding: 12 }}
+                  onClick={() => handleSetEphemeral(ephemeralModal, opt.value)}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Group Modal */}
+      {createGroupModal && (
+        <div className="wa-modal-overlay" onClick={() => setCreateGroupModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Criar grupo</h3>
+              <button className="wa-modal-close" onClick={() => setCreateGroupModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Nome do grupo</label>
+                <input type="text" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}
+                  placeholder="Nome do grupo" style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} autoFocus />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Participantes (números separados por vírgula)</label>
+                <textarea value={newGroupParticipants} onChange={e => setNewGroupParticipants(e.target.value)}
+                  placeholder="5511999999999, 5511888888888" rows={3}
+                  style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+              </div>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setCreateGroupModal(false)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleCreateGroup} disabled={!newGroupName.trim() || !newGroupParticipants.trim()}>Criar grupo</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Group Management Modal */}
+      {groupManageModal && (
+        <div className="wa-modal-overlay" onClick={() => setGroupManageModal(null)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Gerenciar grupo</h3>
+              <button className="wa-modal-close" onClick={() => setGroupManageModal(null)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16, maxHeight: 400, overflowY: 'auto' }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Nome do grupo</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" value={groupEditName} onChange={e => setGroupEditName(e.target.value)}
+                    style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} />
+                  <button className="wa-modal-btn wa-modal-btn-primary" style={{ padding: '8px 12px' }}
+                    onClick={() => handleUpdateGroupSubject(groupManageModal, groupEditName)}>Salvar</button>
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Descrição</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" value={groupEditDesc} onChange={e => setGroupEditDesc(e.target.value)}
+                    style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} />
+                  <button className="wa-modal-btn wa-modal-btn-primary" style={{ padding: '8px 12px' }}
+                    onClick={() => handleUpdateGroupDescription(groupManageModal, groupEditDesc)}>Salvar</button>
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Adicionar participante</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" value={groupAddParticipant} onChange={e => setGroupAddParticipant(e.target.value)}
+                    placeholder="5511999999999@s.whatsapp.net" style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} />
+                  <button className="wa-modal-btn wa-modal-btn-primary" style={{ padding: '8px 12px' }}
+                    onClick={() => handleGroupAction(groupManageModal, groupAddParticipant, 'add')}>Adicionar</button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <button className="wa-modal-btn wa-modal-btn-secondary" style={{ flex: 1 }}
+                  onClick={() => handleGroupAction(groupManageModal, groupAddParticipant, 'promote')}>
+                  <Shield size={14} /> Promover
+                </button>
+                <button className="wa-modal-btn wa-modal-btn-secondary" style={{ flex: 1 }}
+                  onClick={() => handleGroupAction(groupManageModal, groupAddParticipant, 'demote')}>
+                  <UserMinus size={14} /> Rebaixar
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <button className="wa-modal-btn wa-modal-btn-secondary" style={{ flex: 1 }}
+                  onClick={() => handleGetGroupInviteLink(groupManageModal)}>
+                  <Link size={14} /> Copiar link de convite
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="wa-modal-btn wa-modal-btn-secondary" style={{ flex: 1 }}
+                  onClick={() => fetch('/api/group/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jid: groupManageModal, setting: 'announcement' }) }).then(() => showToast('Configurado: só admins enviam'))}>
+                  <Lock size={14} /> Só admins enviam
+                </button>
+                <button className="wa-modal-btn wa-modal-btn-secondary" style={{ flex: 1 }}
+                  onClick={() => fetch('/api/group/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jid: groupManageModal, setting: 'not_announcement' }) }).then(() => showToast('Configurado: todos enviam'))}>
+                  <Globe size={14} /> Todos enviam
+                </button>
+              </div>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-danger" onClick={() => handleLeaveGroup(groupManageModal)}>Sair do grupo</button>
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setGroupManageModal(null)}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Modal */}
+      {statusModal && (
+        <div className="wa-modal-overlay" onClick={() => setStatusModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Publicar status</h3>
+              <button className="wa-modal-close" onClick={() => setStatusModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Texto do status</label>
+                <textarea value={statusText} onChange={e => setStatusText(e.target.value)} placeholder="O que você está pensando?"
+                  rows={3} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Ou envie uma foto/vídeo</label>
+                <input type="file" accept="image/*,video/*" onChange={e => setStatusFile(e.target.files?.[0] || null)} />
+              </div>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setStatusModal(false)}>Cancelar</button>
+              {statusFile ? (
+                <button className="wa-modal-btn wa-modal-btn-primary" onClick={handlePostMediaStatus}>Publicar mídia</button>
+              ) : (
+                <button className="wa-modal-btn wa-modal-btn-primary" onClick={handlePostTextStatus} disabled={!statusText.trim()}>Publicar texto</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Channel Modal */}
+      {createChannelModal && (
+        <div className="wa-modal-overlay" onClick={() => setCreateChannelModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Criar canal</h3>
+              <button className="wa-modal-close" onClick={() => setCreateChannelModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Nome do canal</label>
+                <input type="text" value={channelName} onChange={e => setChannelName(e.target.value)} placeholder="Nome do canal"
+                  style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} autoFocus />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Descrição</label>
+                <textarea value={channelDesc} onChange={e => setChannelDesc(e.target.value)} placeholder="Descrição do canal"
+                  rows={3} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+              </div>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setCreateChannelModal(false)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleCreateChannel} disabled={!channelName.trim()}>Criar canal</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Community Modal */}
+      {createCommunityModal && (
+        <div className="wa-modal-overlay" onClick={() => setCreateCommunityModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Criar comunidade</h3>
+              <button className="wa-modal-close" onClick={() => setCreateCommunityModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Nome da comunidade</label>
+                <input type="text" value={communityName} onChange={e => setCommunityName(e.target.value)} placeholder="Nome da comunidade"
+                  style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} autoFocus />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>Descrição</label>
+                <textarea value={communityDesc} onChange={e => setCommunityDesc(e.target.value)} placeholder="Descrição da comunidade"
+                  rows={3} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+              </div>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setCreateCommunityModal(false)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleCreateCommunity} disabled={!communityName.trim()}>Criar comunidade</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast Modal */}
+      {broadcastModal && (
+        <div className="wa-modal-overlay" onClick={() => setBroadcastModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Enviar broadcast</h3>
+              <button className="wa-modal-close" onClick={() => setBroadcastModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-search">
+              <input type="text" placeholder="Pesquisar contato..." value={broadcastSearch} onChange={e => setBroadcastSearch(e.target.value)} autoFocus />
+            </div>
+            <div className="wa-modal-body">
+              {chats.filter(c => !c.id.endsWith('@g.us') && (!broadcastSearch.trim() || getChatDisplayName(c).toLowerCase().includes(broadcastSearch.toLowerCase()))).map(chat => (
+                <div key={chat.id} className={`wa-forward-item ${broadcastRecipients.includes(chat.id) ? 'selected' : ''}`}
+                  onClick={() => setBroadcastRecipients(prev => prev.includes(chat.id) ? prev.filter(id => id !== chat.id) : [...prev, chat.id])}>
+                  {chat.avatar ? <img src={chat.avatar} alt="" className="wa-chat-item-avatar" /> : <div className="wa-chat-item-avatar-placeholder"><User size={28} style={{ color: 'var(--wa-text-secondary)' }} /></div>}
+                  <div className="wa-chat-item-content"><h3 className="wa-chat-item-name">{getChatDisplayName(chat)}</h3></div>
+                  {broadcastRecipients.includes(chat.id) && <Check size={20} style={{ color: 'var(--wa-teal-dark)' }} />}
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '0 16px 16px' }}>
+              <textarea value={broadcastText} onChange={e => setBroadcastText(e.target.value)} placeholder="Mensagem para todos os selecionados..."
+                rows={3} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setBroadcastModal(false)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleSendBroadcast} disabled={broadcastRecipients.length === 0 || !broadcastText.trim()}>
+                Enviar{broadcastRecipients.length > 0 ? ` (${broadcastRecipients.length})` : ''}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Business Profile Modal */}
+      {businessProfileModal && (
+        <div className="wa-modal-overlay" onClick={() => setBusinessProfileModal(false)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Perfil comercial</h3>
+              <button className="wa-modal-close" onClick={() => setBusinessProfileModal(false)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              {[
+                { label: 'Endereço', value: businessAddress, set: setBusinessAddress, placeholder: 'Rua Example, 123' },
+                { label: 'E-mail', value: businessEmail, set: setBusinessEmail, placeholder: 'contato@exemplo.com' },
+                { label: 'Descrição', value: businessDescription, set: setBusinessDescription, placeholder: 'Sobre seu negócio' },
+                { label: 'Website', value: businessWebsite, set: setBusinessWebsite, placeholder: 'https://exemplo.com' },
+              ].map(field => (
+                <div key={field.label} style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: 'var(--wa-text-secondary)' }}>{field.label}</label>
+                  <input type="text" value={field.value} onChange={e => field.set(e.target.value)} placeholder={field.placeholder}
+                    style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} />
+                </div>
+              ))}
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setBusinessProfileModal(false)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleUpdateBusinessProfile}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Confirm Modal */}
+      {blockConfirmModal && (
+        <div className="wa-modal-overlay" onClick={() => setBlockConfirmModal(null)}>
+          <div className="wa-modal" style={{ maxWidth: 360 }} onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Bloquear contato</h3>
+              <button className="wa-modal-close" onClick={() => setBlockConfirmModal(null)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <p style={{ color: 'var(--wa-text-secondary)', fontSize: 14 }}>
+                Este contato não poderá mais enviar mensagens ou fazer ligações para você. Também não verá seu status.
+              </p>
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setBlockConfirmModal(null)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-danger" onClick={() => handleBlockContact(blockConfirmModal, true)}>Bloquear</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Message Modal */}
+      {editMessageModal && (
+        <div className="wa-modal-overlay" onClick={() => setEditMessageModal(null)}>
+          <div className="wa-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Editar mensagem</h3>
+              <button className="wa-modal-close" onClick={() => setEditMessageModal(null)}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ padding: 16 }}>
+              <textarea value={editMessageModal.text} onChange={e => setEditMessageModal(prev => prev ? { ...prev, text: e.target.value } : null)}
+                rows={4} autoFocus style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)', resize: 'vertical' }} />
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setEditMessageModal(null)}>Cancelar</button>
+              <button className="wa-modal-btn wa-modal-btn-primary" onClick={() => handleEditMessage(editMessageModal.id, editMessageModal.text)}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Search Modal */}
+      {messageSearchOpen && (
+        <div className="wa-modal-overlay" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Buscar mensagens</h3>
+              <button className="wa-modal-close" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}><X size={20} /></button>
+            </div>
+            <div style={{ padding: '8px 16px' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="text" value={messageSearchQuery} onChange={e => setMessageSearchQuery(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearchMessages()} placeholder="Digite para buscar..."
+                  style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} autoFocus />
+                <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleSearchMessages}>Buscar</button>
+              </div>
+            </div>
+            <div className="wa-modal-body" style={{ maxHeight: 400 }}>
+              {messageSearchResults.length === 0 ? (
+                <div style={{ padding: 24, textAlign: 'center', color: 'var(--wa-text-secondary)', fontSize: 14 }}>
+                  {messageSearchQuery ? 'Nenhum resultado encontrado' : 'Digite algo para buscar'}
+                </div>
+              ) : (
+                messageSearchResults.map((msg: any) => {
+                  const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '[mídia]';
+                  const time = msg.messageTimestamp ? new Date(msg.messageTimestamp * 1000).toLocaleString('pt-BR') : '';
+                  return (
+                    <div key={msg.key?.id} className="wa-context-menu-item" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 12 }}
+                      onClick={() => { setSelectedChat(msg.chatJid || msg.key?.remoteJid); setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}>
+                      <div style={{ fontSize: 12, color: 'var(--wa-text-secondary)', marginBottom: 4 }}>{time}</div>
+                      <div style={{ fontSize: 14 }}>{text}</div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Channel Detail Modal */}
+      {channelDetailModal && (
+        <div className="wa-modal-overlay" onClick={() => { setChannelDetailModal(null); setChannelMessages([]); }}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Mensagens do canal</h3>
+              <button className="wa-modal-close" onClick={() => { setChannelDetailModal(null); setChannelMessages([]); }}><X size={20} /></button>
+            </div>
+            <div className="wa-modal-body" style={{ maxHeight: 400 }}>
+              {channelMessages.length === 0 ? (
+                <div style={{ padding: 24, textAlign: 'center', color: 'var(--wa-text-secondary)' }}>Nenhuma mensagem encontrada</div>
+              ) : (
+                channelMessages.map((msg: any, i: number) => {
+                  const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || '[mídia]';
+                  return (
+                    <div key={i} style={{ padding: 12, borderBottom: '1px solid var(--wa-border)' }}>
+                      <div style={{ fontSize: 14 }}>{text}</div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

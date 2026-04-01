@@ -11,7 +11,9 @@ import makeWASocket, {
     WAMessageKey,
     Contact,
     proto,
-    GroupMetadata
+    GroupMetadata,
+    getUrlInfo,
+    Browsers
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import pino from "pino";
@@ -44,6 +46,31 @@ const getPhoneNumber = (jid: string): string => {
     return base.split(':')[0];
 };
 
+// Resolve a JID (including @lid) to the best display name available
+// Uses LID→PN mapping to find the real contact when available
+const resolveContactName = (jid: string, contactsStore: { [key: string]: any }): string => {
+    if (!jid) return '';
+    
+    // Direct lookup
+    const direct = contactsStore[jid];
+    if (direct?.notify || direct?.name) return direct.notify || direct.name;
+    
+    // For @lid JIDs, try to resolve via LID→PN mapping
+    if (jid.endsWith('@lid')) {
+        const lidUser = jid.split('@')[0];
+        const pnUser = lidToPhoneMap.get(lidUser);
+        if (pnUser) {
+            const pnJid = `${pnUser}@s.whatsapp.net`;
+            const pnContact = contactsStore[pnJid];
+            if (pnContact?.notify || pnContact?.name) return pnContact.notify || pnContact.name;
+            // Return formatted phone number
+            return pnUser;
+        }
+    }
+    
+    return getPhoneNumber(jid);
+};
+
 // File upload configuration
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -53,8 +80,52 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 64 * 1024 * 1024 } });
 
+// Load existing LID ↔ Phone Number mappings from auth_info_baileys/
+const authDir = path.join(__dirname, "auth_info_baileys");
+if (fs.existsSync(authDir)) {
+    const files = fs.readdirSync(authDir);
+    for (const file of files) {
+        if (file.startsWith('lid-mapping-') && file.endsWith('_reverse.json')) {
+            // Reverse mapping: lid-mapping-{lidUser}_reverse.json → contains PN user
+            const lidUser = file.replace('lid-mapping-', '').replace('_reverse.json', '');
+            try {
+                const pnUser = JSON.parse(readFileSync(path.join(authDir, file), 'utf-8'));
+                if (pnUser && lidUser) {
+                    lidToPhoneMap.set(lidUser, pnUser);
+                    phoneToLidMap.set(pnUser, lidUser);
+                }
+            } catch {}
+        }
+    }
+    console.log(`[LID] Loaded ${lidToPhoneMap.size} LID↔PN mappings from auth store`);
+}
+
+// Rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 100; // max 100 requests per minute per IP
+
+const rateLimit = (req: any, res: any, next: any) => {
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+    const now = Date.now();
+    let entry = rateLimitMap.get(ip);
+    if (!entry || now > entry.resetTime) {
+        entry = { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
+        rateLimitMap.set(ip, entry);
+    }
+    entry.count++;
+    if (entry.count > RATE_LIMIT_MAX) {
+        return res.status(429).json({ error: 'Too many requests. Try again later.' });
+    }
+    next();
+};
+
 // Presence tracking
 const presenceMap = new Map<string, string>();
+
+// LID → Phone Number mapping store (resolve @lid JIDs to real phone numbers)
+const lidToPhoneMap = new Map<string, string>(); // lidUser -> pnUser
+const phoneToLidMap = new Map<string, string>(); // pnUser -> lidUser
 
 // Enhanced store implementation for Baileys v7 with contacts and groups
 class SimpleStore {
@@ -194,14 +265,18 @@ class SimpleStore {
                 const pushName = msg.pushName || msg.key?.pushName;
                 if (pushName && jid) {
                     const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
-                    if (contactJid && !contactJid.includes('@g.us') && !contactJid.includes('@lid')) {
-                        if (!this.contacts[contactJid]) {
+                    if (contactJid && !contactJid.includes('@g.us')) {
+                        const existingContact = this.contacts[contactJid];
+                        if (!existingContact) {
                             this.contacts[contactJid] = {
                                 id: contactJid,
                                 name: pushName,
                                 notify: pushName,
                                 imgUrl: null
                             };
+                        } else if (!existingContact.name && !existingContact.notify) {
+                            existingContact.name = pushName;
+                            existingContact.notify = pushName;
                         }
                     }
                 }
@@ -237,6 +312,17 @@ class SimpleStore {
                         }
                     }
                 }
+            }
+        });
+
+        // LID ↔ Phone Number mapping events
+        eventEmitter.on("lid-mapping.update", (mapping: any) => {
+            if (mapping?.pn && mapping?.lid) {
+                const lidUser = mapping.lid.split('@')[0];
+                const pnUser = mapping.pn.split('@')[0];
+                lidToPhoneMap.set(lidUser, pnUser);
+                phoneToLidMap.set(pnUser, lidUser);
+                console.log(`[STORE] LID mapping: ${lidUser} -> ${pnUser}`);
             }
         });
     }
@@ -386,6 +472,9 @@ async function startServer() {
 
     const PORT = 3000;
 
+    // Apply rate limiting to all API routes
+    app.use("/api", rateLimit);
+
     // Baileys Logic
     const { state, saveCreds } = await useMultiFileAuthState("auth_info_baileys");
     const { version, isLatest } = await fetchLatestBaileysVersion();
@@ -396,17 +485,21 @@ async function startServer() {
 
     // Helper function to get chat with avatar (defined at function scope so it can be used by API endpoints)
     const getChatWithAvatarFromStore = async (chat: any): Promise<any> => {
-        let displayName = chat.name || chat.subject || getPhoneNumber(chat.id);
+        let displayName = chat.name || chat.subject || resolveContactName(chat.id, store.contacts);
         let avatar = null;
         
         // Check for archived status - Baileys uses 'archive' field in updates, but 'archived' in history
         // Ensure we handle both cases
         const isArchived = chat.archive === true || chat.archived === true;
         
-        // Try to get name from contacts
+        // Try to get name from contacts (including LID resolution)
         const contact = store.contacts[chat.id];
         if (contact) {
             displayName = contact.notify || contact.name || displayName;
+        }
+        // If still showing a LID number, try to resolve it
+        if (chat.id.endsWith('@s.whatsapp.net')) {
+            displayName = resolveContactName(chat.id, store.contacts) || displayName;
         }
         
         // For groups, try to get from group metadata
@@ -472,8 +565,10 @@ async function startServer() {
                 
                 // For groups, try to get the sender's name from the message
                 if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
-                    // Get sender name from pushName or participant
-                    const senderName = lastMsg.pushName || (lastMsg.key?.participant ? getPhoneNumber(lastMsg.key.participant) : null) || 'Membro';
+                    // Get sender name from pushName, contacts store, LID mapping, or phone number
+                    const participantJid = lastMsg.key?.participant;
+                    const resolvedName = participantJid ? resolveContactName(participantJid, store.contacts) : null;
+                    const senderName = lastMsg.pushName || resolvedName || 'Membro';
                     lastMessageSender = senderName;
                 }
                 
@@ -573,6 +668,9 @@ async function startServer() {
             displayName,
             avatar,
             archived: isArchived,
+            pinnedAt: chat.pinnedAt,
+            muted: chat.muted,
+            ephemeralExpiration: chat.ephemeralExpiration,
             lastMessage: lastMessageText,
             lastMessageSender: lastMessageSender,
             lastMessageTime: lastMessageTime,
@@ -583,6 +681,13 @@ async function startServer() {
     // Helper to sort chats by most recent message (defined at function scope for API endpoints)
     const sortChatsByRecent = (chats: any[]): any[] => {
         return chats.sort((a, b) => {
+            // Pinned chats always come first
+            const aPinned = a.pinnedAt || 0;
+            const bPinned = b.pinnedAt || 0;
+            if (aPinned && !bPinned) return -1;
+            if (!aPinned && bPinned) return 1;
+            if (aPinned && bPinned) return bPinned - aPinned;
+
             // Get timestamp from chat or from last message in store
             const aTime = a.conversationTimestamp || a.lastMessageRecvTimestamp || 0;
             const bTime = b.conversationTimestamp || b.lastMessageRecvTimestamp || 0;
@@ -941,6 +1046,23 @@ async function startServer() {
             io.emit("chats-list", allWithAvatars);
         });
 
+        // Listen for LID ↔ Phone Number mappings and emit to frontend
+        sock.ev.on("lid-mapping.update", (mapping: any) => {
+            if (mapping?.pn && mapping?.lid) {
+                const lidUser = mapping.lid.split('@')[0];
+                const pnUser = mapping.pn.split('@')[0];
+                lidToPhoneMap.set(lidUser, pnUser);
+                phoneToLidMap.set(pnUser, lidUser);
+                console.log(`[SOCKET] LID mapping updated: ${lidUser} -> ${pnUser}`);
+                // Send all mappings to frontend
+                const allMappings: Record<string, string> = {};
+                lidToPhoneMap.forEach((pn, lid) => {
+                    allMappings[`${lid}@lid`] = `${pn}@s.whatsapp.net`;
+                });
+                io.emit("lid-mappings", allMappings);
+            }
+        });
+
         sock.ev.on("messages.upsert", async (m: any) => {
             // Process ALL message types: "notify" (new incoming), "append" (history/sent from other devices)
             console.log(`[SOCKET] messages.upsert: type=${m.type}, count=${m.messages?.length || 0}`);
@@ -974,24 +1096,30 @@ async function startServer() {
                 const pushName = msg.pushName || msg.key?.pushName;
                 if (pushName && jid) {
                     const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
-                    if (contactJid && !contactJid.includes('@g.us') && !contactJid.includes('@lid')) {
-                        if (!store.contacts[contactJid]) {
+                    if (contactJid && !contactJid.includes('@g.us')) {
+                        const existingContact = store.contacts[contactJid];
+                        if (!existingContact) {
                             store.contacts[contactJid] = {
                                 id: contactJid,
                                 name: pushName,
                                 notify: pushName,
                                 imgUrl: null
                             };
+                        } else if (!existingContact.name && !existingContact.notify) {
+                            existingContact.name = pushName;
+                            existingContact.notify = pushName;
                         }
-                        // Ensure chat entry exists for this contact (only if missing)
-                        const existingChat = store.chats.get(contactJid);
-                        if (!existingChat) {
-                            store.chats.set(contactJid, {
-                                id: contactJid,
-                                name: pushName,
-                                unreadCount: 0,
-                                conversationTimestamp: msg.messageTimestamp || Math.floor(Date.now() / 1000)
-                            });
+                        // Ensure chat entry exists for this contact (only for regular contacts, not LIDs)
+                        if (!contactJid.includes('@lid')) {
+                            const existingChat = store.chats.get(contactJid);
+                            if (!existingChat) {
+                                store.chats.set(contactJid, {
+                                    id: contactJid,
+                                    name: pushName,
+                                    unreadCount: 0,
+                                    conversationTimestamp: msg.messageTimestamp || Math.floor(Date.now() / 1000)
+                                });
+                            }
                         }
                     }
                 }
@@ -1160,6 +1288,19 @@ async function startServer() {
                 syncType: history.syncType
             });
             
+            // Process LID ↔ Phone Number mappings from history sync
+            if (history.lidPnMappings && history.lidPnMappings.length > 0) {
+                for (const mapping of history.lidPnMappings) {
+                    if (mapping?.pn && mapping?.lid) {
+                        const lidUser = mapping.lid.split('@')[0];
+                        const pnUser = mapping.pn.split('@')[0];
+                        lidToPhoneMap.set(lidUser, pnUser);
+                        phoneToLidMap.set(pnUser, lidUser);
+                    }
+                }
+                console.log(`[SOCKET] Processed ${history.lidPnMappings.length} LID mappings from history`);
+            }
+            
             // Track archived chats being loaded
             let archivedCount = 0;
             
@@ -1222,13 +1363,19 @@ async function startServer() {
                     // Extract pushName from message and store as contact
                     if (msg.pushName && jid) {
                         const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
-                        if (contactJid && !contactJid.includes('@g.us') && !contactJid.includes('@lid')) {
-                            store.contacts[contactJid] = {
-                                id: contactJid,
-                                name: msg.pushName,
-                                notify: msg.pushName,
-                                imgUrl: null
-                            };
+                        if (contactJid && !contactJid.includes('@g.us')) {
+                            const existingContact = store.contacts[contactJid];
+                            if (!existingContact) {
+                                store.contacts[contactJid] = {
+                                    id: contactJid,
+                                    name: msg.pushName,
+                                    notify: msg.pushName,
+                                    imgUrl: null
+                                };
+                            } else if (!existingContact.name && !existingContact.notify) {
+                                existingContact.name = msg.pushName;
+                                existingContact.notify = msg.pushName;
+                            }
                         }
                     }
                     
@@ -1302,6 +1449,15 @@ async function startServer() {
     // API Routes
     app.get("/api/status", (req, res) => {
         res.json({ status: connectionStatus, qr: qrCode });
+    });
+
+    // LID → Phone Number mappings for resolving @lid JIDs
+    app.get("/api/lid-mappings", (_req, res) => {
+        const mappings: Record<string, string> = {};
+        lidToPhoneMap.forEach((pnUser, lidUser) => {
+            mappings[`${lidUser}@lid`] = `${pnUser}@s.whatsapp.net`;
+        });
+        res.json(mappings);
     });
 
     // Load archived chats from server
@@ -2196,11 +2352,1457 @@ async function startServer() {
             const msgs = store.messages[jid]?.all() || [];
             const msg = msgs.find((m: any) => m.key?.id === messageId);
             if (!msg) return res.status(404).json({ error: "Message not found" });
-            await sock.sendMessage(jid, { delete: msg.key });
+
+            if (forEveryone) {
+                // Delete for everyone
+                await sock.sendMessage(jid, { delete: msg.key });
+            } else {
+                // Delete for me only - clear chat history up to this message
+                await sock.chatModify({ clear: { messages: [{ id: msg.key.id, fromMe: msg.key.fromMe, timestamp: msg.messageTimestamp }] } }, jid);
+                // Remove from local store
+                const chatMsgs = store.messages[jid]?.all() || [];
+                const idx = chatMsgs.findIndex((m: any) => m.key?.id === messageId);
+                if (idx !== -1) chatMsgs.splice(idx, 1);
+            }
+            res.json({ success: true, forEveryone });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Edit a message
+    app.post("/api/edit-message", express.json(), async (req, res) => {
+        const { jid, messageId, newText } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !messageId || !newText) return res.status(400).json({ error: "Missing required fields: jid, messageId, newText" });
+        try {
+            const msgs = store.messages[jid]?.all() || [];
+            const msg = msgs.find((m: any) => m.key?.id === messageId);
+            if (!msg) return res.status(404).json({ error: "Message not found" });
+
+            const sentMsg = await sock.sendMessage(jid, { text: newText }, { edit: msg.key });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Forward a message
+    app.post("/api/forward-message", express.json(), async (req, res) => {
+        const { fromJid, toJid, messageId } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!fromJid || !toJid || !messageId) return res.status(400).json({ error: "Missing required fields: fromJid, toJid, messageId" });
+        try {
+            const msgs = store.messages[fromJid]?.all() || [];
+            const msg = msgs.find((m: any) => m.key?.id === messageId);
+            if (!msg) return res.status(404).json({ error: "Message not found" });
+
+            const sentMsg = await sock.sendMessage(toJid, { forward: msg });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Pin/unpin a chat
+    app.post("/api/pin-chat", express.json(), async (req, res) => {
+        const { jid, pin } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || pin === undefined) return res.status(400).json({ error: "Missing required fields: jid, pin" });
+        try {
+            await sock.chatModify({ pin: pin ? true : false }, jid);
+            // Update local store
+            const chat = store.chats.get(jid);
+            if (chat) {
+                chat.pinnedAt = pin ? Date.now() : undefined;
+                store.chats.set(jid, chat);
+            }
+            res.json({ success: true, pinned: pin });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Mute/unmute a chat
+    app.post("/api/mute-chat", express.json(), async (req, res) => {
+        const { jid, mute, duration } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || mute === undefined) return res.status(400).json({ error: "Missing required fields: jid, mute" });
+        try {
+            // duration: '8h', '1w', 'always' or null to unmute
+            if (mute) {
+                let muteUntil = 0;
+                const now = Math.floor(Date.now() / 1000);
+                switch (duration) {
+                    case '8h': muteUntil = now + 8 * 60 * 60; break;
+                    case '1w': muteUntil = now + 7 * 24 * 60 * 60; break;
+                    case 'always': muteUntil = now + 365 * 24 * 60 * 60; break;
+                    default: muteUntil = now + 8 * 60 * 60;
+                }
+                await sock.chatModify({ mute: muteUntil }, jid);
+            } else {
+                await sock.chatModify({ mute: null }, jid);
+            }
+            // Update local store
+            const chat = store.chats.get(jid);
+            if (chat) {
+                chat.muted = mute;
+                store.chats.set(jid, chat);
+            }
+            res.json({ success: true, muted: mute, duration });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Set ephemeral/disappearing messages
+    app.post("/api/set-ephemeral", express.json(), async (req, res) => {
+        const { jid, ephemeralExpiration } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || ephemeralExpiration === undefined) return res.status(400).json({ error: "Missing required fields: jid, ephemeralExpiration" });
+        try {
+            // ephemeralExpiration: 0 (off), 86400 (24h), 604800 (7d), 7776000 (90d)
+            if (jid.endsWith('@g.us')) {
+                await sock.groupToggleEphemeral(jid, ephemeralExpiration);
+            } else {
+                await sock.chatModify({ ephemeralExpiration }, jid);
+            }
+            res.json({ success: true, ephemeralExpiration });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Star/unstar a message
+    app.post("/api/star-message", express.json(), async (req, res) => {
+        const { jid, messageId, star } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !messageId || star === undefined) return res.status(400).json({ error: "Missing required fields: jid, messageId, star" });
+        try {
+            const msgs = store.messages[jid]?.all() || [];
+            const msg = msgs.find((m: any) => m.key?.id === messageId);
+            if (!msg) return res.status(404).json({ error: "Message not found" });
+
+            // Use native Baileys star method
+            await sock.star(jid, [{ id: msg.key.id, fromMe: msg.key.fromMe }], star);
+
+            // Update local store
+            msg.starred = star;
+            res.json({ success: true, starred: star });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get starred messages
+    app.get("/api/starred-messages", (req, res) => {
+        const allStarred: any[] = [];
+        for (const [jid, msgObj] of Object.entries(store.messages)) {
+            for (const msg of msgObj.all()) {
+                if (msg.starred) {
+                    allStarred.push({ ...msg, chatJid: jid });
+                }
+            }
+        }
+        allStarred.sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0));
+        res.json(allStarred);
+    });
+
+    // Block a contact
+    app.post("/api/block-contact", express.json(), async (req, res) => {
+        const { jid, block } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || block === undefined) return res.status(400).json({ error: "Missing required fields: jid, block" });
+        try {
+            await sock.updateBlockStatus(jid, block ? 'block' : 'unblock');
+            res.json({ success: true, blocked: block });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get blocked contacts
+    app.get("/api/blocked-contacts", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        try {
+            const blocked = await sock.fetchBlocklist();
+            res.json(blocked || []);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Search messages
+    app.get("/api/search-messages", (req, res) => {
+        const query = (req.query.q as string || '').toLowerCase();
+        const jid = req.query.jid as string;
+        if (!query) return res.status(400).json({ error: "Missing search query 'q'" });
+
+        const results: any[] = [];
+        const searchIn = jid ? { [jid]: store.messages[jid] } : store.messages;
+
+        for (const [chatJid, msgObj] of Object.entries(searchIn)) {
+            if (!msgObj) continue;
+            for (const msg of msgObj.all()) {
+                const text = msg.message?.conversation
+                    || msg.message?.extendedTextMessage?.text
+                    || msg.message?.imageMessage?.caption
+                    || msg.message?.videoMessage?.caption
+                    || '';
+                if (text.toLowerCase().includes(query)) {
+                    results.push({ ...msg, chatJid });
+                }
+            }
+        }
+        results.sort((a, b) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0));
+        res.json(results.slice(0, 50));
+    });
+
+    // Get unread chats
+    app.get("/api/unread-chats", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const unreadChats = store.chats.all().filter((c: any) =>
+            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
+            && c.unreadCount > 0
+            && c.archived !== true
+        );
+        const sorted = sortChatsByRecent(unreadChats);
+        const withAvatars = await Promise.all(sorted.map(getChatWithAvatarFromStore));
+        res.json(withAvatars);
+    });
+
+    // Logout / disconnect session
+    app.post("/api/logout", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        try {
+            await sock.logout();
+            sock = null;
+            connectionStatus = "close";
+            qrCode = null;
+            io.emit("connection-update", { status: "close", loggedOut: true });
+            res.json({ success: true, message: "Session logged out" });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== GROUP MANAGEMENT ====================
+
+    // Create a group
+    app.post("/api/group/create", express.json(), async (req, res) => {
+        const { name, participants } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!name || !participants || !Array.isArray(participants)) {
+            return res.status(400).json({ error: "Missing required fields: name, participants[]" });
+        }
+        try {
+            const group = await sock.groupCreate(name, participants);
+            // Store group metadata
+            try {
+                const meta = await sock.groupMetadata(group.id);
+                store.groupMetadata[group.id] = meta;
+                store.chats.set(group.id, {
+                    id: group.id,
+                    name: meta.subject,
+                    unreadCount: 0,
+                    conversationTimestamp: Math.floor(Date.now() / 1000)
+                });
+            } catch (e) {}
+            res.json(group);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update group subject/name
+    app.post("/api/group/subject", express.json(), async (req, res) => {
+        const { jid, subject } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !subject) return res.status(400).json({ error: "Missing required fields: jid, subject" });
+        try {
+            await sock.groupUpdateSubject(jid, subject);
+            // Update local store
+            const chat = store.chats.get(jid);
+            if (chat) {
+                chat.name = subject;
+                store.chats.set(jid, chat);
+            }
+            if (store.groupMetadata[jid]) {
+                store.groupMetadata[jid].subject = subject;
+            }
+            res.json({ success: true, subject });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update group description
+    app.post("/api/group/description", express.json(), async (req, res) => {
+        const { jid, description } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.groupUpdateDescription(jid, description || '');
+            if (store.groupMetadata[jid]) {
+                store.groupMetadata[jid].desc = description;
+            }
+            res.json({ success: true, description });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update group picture
+    app.post("/api/group/picture", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        const file = req.file;
+        if (!jid || !file) return res.status(400).json({ error: "Missing required fields: jid, file" });
+        try {
+            const buffer = readFileSync(file.path);
+            await sock.updateProfilePicture(jid, buffer);
+            try { unlinkSync(file.path); } catch {}
             res.json({ success: true });
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
         }
+    });
+
+    // Add participants to group
+    app.post("/api/group/add", express.json(), async (req, res) => {
+        const { jid, participants } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !participants || !Array.isArray(participants)) {
+            return res.status(400).json({ error: "Missing required fields: jid, participants[]" });
+        }
+        try {
+            const result = await sock.groupParticipantsUpdate(jid, participants, 'add');
+            // Refresh group metadata
+            try {
+                const meta = await sock.groupMetadata(jid);
+                store.groupMetadata[jid] = meta;
+            } catch (e) {}
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Remove participants from group
+    app.post("/api/group/remove", express.json(), async (req, res) => {
+        const { jid, participants } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !participants || !Array.isArray(participants)) {
+            return res.status(400).json({ error: "Missing required fields: jid, participants[]" });
+        }
+        try {
+            const result = await sock.groupParticipantsUpdate(jid, participants, 'remove');
+            try {
+                const meta = await sock.groupMetadata(jid);
+                store.groupMetadata[jid] = meta;
+            } catch (e) {}
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Promote participants to admin
+    app.post("/api/group/promote", express.json(), async (req, res) => {
+        const { jid, participants } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !participants || !Array.isArray(participants)) {
+            return res.status(400).json({ error: "Missing required fields: jid, participants[]" });
+        }
+        try {
+            const result = await sock.groupParticipantsUpdate(jid, participants, 'promote');
+            try {
+                const meta = await sock.groupMetadata(jid);
+                store.groupMetadata[jid] = meta;
+            } catch (e) {}
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Demote admin
+    app.post("/api/group/demote", express.json(), async (req, res) => {
+        const { jid, participants } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !participants || !Array.isArray(participants)) {
+            return res.status(400).json({ error: "Missing required fields: jid, participants[]" });
+        }
+        try {
+            const result = await sock.groupParticipantsUpdate(jid, participants, 'demote');
+            try {
+                const meta = await sock.groupMetadata(jid);
+                store.groupMetadata[jid] = meta;
+            } catch (e) {}
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Leave a group
+    app.post("/api/group/leave", express.json(), async (req, res) => {
+        const { jid } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.groupLeave(jid);
+            // Remove from local store
+            store.chats.set(jid, { ...store.chats.get(jid), archived: true });
+            delete store.groupMetadata[jid];
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get group invite link
+    app.get("/api/group/invite-link/:jid", async (req, res) => {
+        const { jid } = req.params;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        try {
+            const code = await sock.groupInviteCode(jid);
+            res.json({ inviteLink: `https://chat.whatsapp.com/${code}`, code });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Revoke group invite link
+    app.post("/api/group/revoke-invite", express.json(), async (req, res) => {
+        const { jid } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            const code = await sock.groupRevokeInvite(jid);
+            res.json({ success: true, newCode: code, inviteLink: `https://chat.whatsapp.com/${code}` });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update group settings (who can send messages / edit info)
+    app.post("/api/group/settings", express.json(), async (req, res) => {
+        const { jid, setting, value } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !setting) return res.status(400).json({ error: "Missing required fields: jid, setting (announcement/locked/restrict)" });
+        try {
+            // setting: 'announcement' (only admins send), 'locked' (only admins edit info), 'restrict' (general restriction)
+            await sock.groupSettingUpdate(jid, setting);
+            res.json({ success: true, setting, value });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== MESSAGE TYPES ====================
+
+    // Send location
+    app.post("/api/send-location", express.json(), async (req, res) => {
+        const { jid, latitude, longitude, name, address } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || latitude === undefined || longitude === undefined) {
+            return res.status(400).json({ error: "Missing required fields: jid, latitude, longitude" });
+        }
+        try {
+            const sentMsg = await sock.sendMessage(jid, {
+                location: {
+                    degreesLatitude: latitude,
+                    degreesLongitude: longitude,
+                    name: name || '',
+                    address: address || ''
+                }
+            });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send contact
+    app.post("/api/send-contact", express.json(), async (req, res) => {
+        const { jid, fullName, phoneNumber } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !fullName || !phoneNumber) {
+            return res.status(400).json({ error: "Missing required fields: jid, fullName, phoneNumber" });
+        }
+        try {
+            const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${fullName}\nTEL;type=CELL;type=VOICE;waid=${phoneNumber}:${phoneNumber}\nEND:VCARD`;
+            const sentMsg = await sock.sendMessage(jid, {
+                contacts: {
+                    displayName: fullName,
+                    contacts: [{ vcard }]
+                }
+            });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send poll
+    app.post("/api/send-poll", express.json(), async (req, res) => {
+        const { jid, name, options, selectableCount } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !name || !options || !Array.isArray(options)) {
+            return res.status(400).json({ error: "Missing required fields: jid, name, options[]" });
+        }
+        try {
+            const sentMsg = await sock.sendMessage(jid, {
+                poll: {
+                    name,
+                    values: options,
+                    selectableCount: selectableCount || 1
+                }
+            });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send sticker
+    app.post("/api/send-sticker", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        const file = req.file;
+        if (!jid || !file) return res.status(400).json({ error: "Missing required fields: jid, file" });
+        try {
+            const buffer = readFileSync(file.path);
+            const sentMsg = await sock.sendMessage(jid, {
+                sticker: buffer,
+                mimetype: file.mimetype
+            });
+            try { unlinkSync(file.path); } catch {}
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send view-once media (image or video)
+    app.post("/api/send-viewonce", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, caption, mediaType } = req.body;
+        const file = req.file;
+        if (!jid || !file) return res.status(400).json({ error: "Missing required fields: jid, file" });
+        try {
+            const buffer = readFileSync(file.path);
+            const mime = file.mimetype;
+            const type = mediaType || mime.split('/')[0];
+            let msgContent: any;
+            if (type === 'video') {
+                msgContent = { video: buffer, mimetype: mime, caption: caption || '', viewOnce: true };
+            } else {
+                msgContent = { image: buffer, mimetype: mime, caption: caption || '', viewOnce: true };
+            }
+            const sentMsg = await sock.sendMessage(jid, msgContent);
+            try { unlinkSync(file.path); } catch {}
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send with link preview
+    app.post("/api/send-with-preview", express.json(), async (req, res) => {
+        const { jid, text, replyTo } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !text) return res.status(400).json({ error: "Missing required fields: jid, text" });
+        try {
+            // Generate link preview
+            const urlInfo = await getUrlInfo(text, { thumbnailWidth: 300, fetchOpts: { timeout: 5000 } });
+            const opts: any = {};
+            if (replyTo) {
+                const msgs = store.messages[jid]?.all() || [];
+                const quotedMsg = msgs.find((m: any) => m.key?.id === replyTo);
+                if (quotedMsg) opts.quoted = quotedMsg;
+            }
+            const sentMsg = await sock.sendMessage(jid, { text }, opts);
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Pin a message in chat
+    app.post("/api/pin-message", express.json(), async (req, res) => {
+        const { jid, messageId, type, time } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !messageId) return res.status(400).json({ error: "Missing required fields: jid, messageId" });
+        try {
+            const msgs = store.messages[jid]?.all() || [];
+            const msg = msgs.find((m: any) => m.key?.id === messageId);
+            if (!msg) return res.status(404).json({ error: "Message not found" });
+            // type: 'pin' or 'unpin', time: 86400 (24h), 604800 (7d), 2592000 (30d)
+            const pinType = type === 'unpin' 
+                ? proto.PinInChat.Type.UNPIN 
+                : proto.PinInChat.Type.PIN_IN_CHAT;
+            const sentMsg = await sock.sendMessage(jid, {
+                pin: msg.key,
+                type: pinType,
+                time: time || 604800
+            });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Keep message (prevent disappearing)
+    app.post("/api/keep-message", express.json(), async (req, res) => {
+        const { jid, messageId, keep } = req.body;
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid || !messageId) return res.status(400).json({ error: "Missing required fields: jid, messageId" });
+        try {
+            const msgs = store.messages[jid]?.all() || [];
+            const msg = msgs.find((m: any) => m.key?.id === messageId);
+            if (!msg) return res.status(404).json({ error: "Message not found" });
+            await sock.chatModify({
+                keep: {
+                    type: keep ? 1 : 0, // 1=keep, 0=unkeep
+                    key: msg.key,
+                    timestampMs: Date.now().toString()
+                }
+            }, jid);
+            res.json({ success: true, kept: keep });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== STATUS / STORIES ====================
+
+    // Post a text status
+    app.post("/api/status/text", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { text, backgroundColor, font, statusJidList } = req.body;
+        if (!text) return res.status(400).json({ error: "Missing required field: text" });
+        try {
+            const sentMsg = await sock.sendMessage('status@broadcast', { text }, {
+                backgroundColor: backgroundColor || '#25D366',
+                font: font || 0,
+                statusJidList: statusJidList || undefined
+            });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Post an image/video status
+    app.post("/api/status/media", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { caption, mediaType, statusJidList } = req.body;
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: "No file uploaded" });
+        try {
+            const buffer = readFileSync(file.path);
+            const mime = file.mimetype;
+            const type = mediaType || mime.split('/')[0];
+            let msgContent: any;
+            if (type === 'video') {
+                msgContent = { video: buffer, mimetype: mime, caption: caption || '' };
+            } else {
+                msgContent = { image: buffer, mimetype: mime, caption: caption || '' };
+            }
+            const sentMsg = await sock.sendMessage('status@broadcast', msgContent, {
+                statusJidList: statusJidList || undefined
+            });
+            try { unlinkSync(file.path); } catch {}
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get contacts' statuses
+    app.get("/api/status", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        try {
+            // Get all contacts with @s.whatsapp.net
+            const jids = Object.keys(store.contacts)
+                .filter(j => j.endsWith('@s.whatsapp.net'))
+                .slice(0, 50);
+            if (jids.length === 0) return res.json([]);
+            const statuses = await sock.fetchStatus(...jids);
+            res.json(statuses || []);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get specific contact's status
+    app.get("/api/status/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const status = await sock.fetchStatus(jid);
+            res.json(status);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // React to a status
+    app.post("/api/status/react", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, messageId, emoji } = req.body;
+        if (!jid || !messageId) return res.status(400).json({ error: "Missing required fields: jid, messageId" });
+        try {
+            await sock.sendMessage(jid, {
+                react: {
+                    key: { remoteJid: jid, id: messageId, fromMe: false },
+                    text: emoji || ''
+                }
+            });
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update status privacy
+    app.post("/api/status/privacy", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { value } = req.body; // 'all', 'contacts', 'contact_blacklist', 'none'
+        if (!value) return res.status(400).json({ error: "Missing required field: value" });
+        try {
+            await sock.updateStatusPrivacy(value);
+            res.json({ success: true, value });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update profile status text
+    app.post("/api/profile/status", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { status } = req.body;
+        if (status === undefined) return res.status(400).json({ error: "Missing required field: status" });
+        try {
+            await sock.updateProfileStatus(status);
+            res.json({ success: true, status });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== NEWSLETTERS / CHANNELS ====================
+
+    // Create a newsletter/channel
+    app.post("/api/newsletter/create", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { name, description } = req.body;
+        if (!name) return res.status(400).json({ error: "Missing required field: name" });
+        try {
+            const newsletter = await sock.newsletterCreate(name, description);
+            res.json(newsletter);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Follow a newsletter
+    app.post("/api/newsletter/follow", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.newsletterFollow(jid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Unfollow a newsletter
+    app.post("/api/newsletter/unfollow", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.newsletterUnfollow(jid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Mute/unmute newsletter
+    app.post("/api/newsletter/mute", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, mute } = req.body;
+        if (!jid || mute === undefined) return res.status(400).json({ error: "Missing required fields: jid, mute" });
+        try {
+            if (mute) {
+                await sock.newsletterMute(jid);
+            } else {
+                await sock.newsletterUnmute(jid);
+            }
+            res.json({ success: true, muted: mute });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get newsletter metadata
+    app.get("/api/newsletter/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const metadata = await sock.newsletterMetadata('jid', jid);
+            res.json(metadata);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get newsletter by invite code
+    app.get("/api/newsletter/invite/:code", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { code } = req.params;
+        try {
+            const metadata = await sock.newsletterMetadata('invite', code);
+            res.json(metadata);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get newsletter messages
+    app.get("/api/newsletter/:jid/messages", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        const count = parseInt(req.query.count as string) || 20;
+        try {
+            const messages = await sock.newsletterFetchMessages(jid, count, 0, 0);
+            res.json(messages || []);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Send message to newsletter
+    app.post("/api/newsletter/send", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, text } = req.body;
+        if (!jid || !text) return res.status(400).json({ error: "Missing required fields: jid, text" });
+        try {
+            const sentMsg = await sock.sendMessage(jid, { text });
+            res.json(sentMsg);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // React to newsletter message
+    app.post("/api/newsletter/react", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, serverId, reaction } = req.body;
+        if (!jid || !serverId) return res.status(400).json({ error: "Missing required fields: jid, serverId" });
+        try {
+            await sock.newsletterReactMessage(jid, serverId, reaction || '');
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update newsletter name
+    app.post("/api/newsletter/name", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, name } = req.body;
+        if (!jid || !name) return res.status(400).json({ error: "Missing required fields: jid, name" });
+        try {
+            await sock.newsletterUpdateName(jid, name);
+            res.json({ success: true, name });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update newsletter description
+    app.post("/api/newsletter/description", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, description } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.newsletterUpdateDescription(jid, description || '');
+            res.json({ success: true, description });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update newsletter picture
+    app.post("/api/newsletter/picture", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        const file = req.file;
+        if (!jid || !file) return res.status(400).json({ error: "Missing required fields: jid, file" });
+        try {
+            const buffer = readFileSync(file.path);
+            await sock.newsletterUpdatePicture(jid, buffer);
+            try { unlinkSync(file.path); } catch {}
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Remove newsletter picture
+    app.delete("/api/newsletter/picture/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            await sock.newsletterRemovePicture(jid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get newsletter subscribers count
+    app.get("/api/newsletter/:jid/subscribers", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const count = await sock.newsletterSubscribers(jid);
+            res.json({ subscribers: count });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get newsletter admin count
+    app.get("/api/newsletter/:jid/admin-count", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const count = await sock.newsletterAdminCount(jid);
+            res.json({ adminCount: count });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Delete newsletter
+    app.delete("/api/newsletter/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            await sock.newsletterDelete(jid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== COMMUNITIES ====================
+
+    // Create a community
+    app.post("/api/community/create", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { subject, description } = req.body;
+        if (!subject) return res.status(400).json({ error: "Missing required field: subject" });
+        try {
+            const community = await sock.communityCreate(subject, description || '');
+            // Fetch and store metadata
+            try {
+                const meta = await sock.communityMetadata(community.id);
+                store.chats.set(community.id, {
+                    id: community.id,
+                    name: meta.subject,
+                    unreadCount: 0,
+                    conversationTimestamp: Math.floor(Date.now() / 1000)
+                });
+                store.groupMetadata[community.id] = meta;
+            } catch (e) {}
+            res.json(community);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get community metadata
+    app.get("/api/community/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const meta = await sock.communityMetadata(jid);
+            res.json(meta);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Link a group to a community
+    app.post("/api/community/link-group", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { groupJid, communityJid } = req.body;
+        if (!groupJid || !communityJid) return res.status(400).json({ error: "Missing required fields: groupJid, communityJid" });
+        try {
+            await sock.communityLinkGroup(groupJid, communityJid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Unlink a group from a community
+    app.post("/api/community/unlink-group", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { groupJid, communityJid } = req.body;
+        if (!groupJid || !communityJid) return res.status(400).json({ error: "Missing required fields: groupJid, communityJid" });
+        try {
+            await sock.communityUnlinkGroup(groupJid, communityJid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Fetch linked groups of a community
+    app.get("/api/community/:jid/groups", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const groups = await sock.communityFetchLinkedGroups(jid);
+            res.json(groups || []);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Leave a community
+    app.post("/api/community/leave", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.communityLeave(jid);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update community subject
+    app.post("/api/community/subject", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, subject } = req.body;
+        if (!jid || !subject) return res.status(400).json({ error: "Missing required fields: jid, subject" });
+        try {
+            await sock.communityUpdateSubject(jid, subject);
+            res.json({ success: true, subject });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update community description
+    app.post("/api/community/description", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, description } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            await sock.communityUpdateDescription(jid, description);
+            res.json({ success: true, description });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get community invite link
+    app.get("/api/community/invite-link/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const code = await sock.communityInviteCode(jid);
+            res.json({ inviteLink: `https://chat.whatsapp.com/${code}`, code });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Revoke community invite
+    app.post("/api/community/revoke-invite", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.body;
+        if (!jid) return res.status(400).json({ error: "Missing required field: jid" });
+        try {
+            const code = await sock.communityRevokeInvite(jid);
+            res.json({ success: true, newCode: code });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Accept community invite
+    app.post("/api/community/accept-invite", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { code } = req.body;
+        if (!code) return res.status(400).json({ error: "Missing required field: code" });
+        try {
+            const result = await sock.communityAcceptInvite(code);
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Community participant actions (approve/reject join requests)
+    app.post("/api/community/participants", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, participants, action } = req.body;
+        if (!jid || !participants || !action) return res.status(400).json({ error: "Missing required fields: jid, participants[], action (approve/reject)" });
+        try {
+            const result = await sock.communityRequestParticipantsUpdate(jid, participants, action);
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Community settings (announcement/locked)
+    app.post("/api/community/settings", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, setting } = req.body; // 'announcement', 'not_announcement', 'locked', 'unlocked'
+        if (!jid || !setting) return res.status(400).json({ error: "Missing required fields: jid, setting" });
+        try {
+            await sock.communitySettingUpdate(jid, setting);
+            res.json({ success: true, setting });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== BROADCAST LISTS ====================
+
+    // Send broadcast message (to multiple contacts at once)
+    app.post("/api/send-broadcast", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { recipients, text } = req.body;
+        if (!recipients || !Array.isArray(recipients) || !text) {
+            return res.status(400).json({ error: "Missing required fields: recipients[], text" });
+        }
+        try {
+            const results: any[] = [];
+            for (const jid of recipients) {
+                try {
+                    const sentMsg = await sock.sendMessage(jid, { text }, { broadcast: true });
+                    results.push({ jid, success: true, messageId: sentMsg?.key?.id });
+                } catch (e) {
+                    results.push({ jid, success: false, error: (e as Error).message });
+                }
+            }
+            res.json({ results });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== WHATSAPP BUSINESS ====================
+
+    // Update business profile
+    app.post("/api/business/profile", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { address, websites, email, description, hours } = req.body;
+        try {
+            await sock.updateBussinesProfile({ address, websites, email, description, hours });
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get business profile
+    app.get("/api/business/profile/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        try {
+            const profile = await sock.getBusinessProfile(jid);
+            res.json(profile);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get catalog
+    app.get("/api/business/catalog/:jid", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid } = req.params;
+        const limit = parseInt(req.query.limit as string) || 20;
+        try {
+            const catalog = await sock.getCatalog({ jid, limit });
+            res.json(catalog);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get collections
+    app.get("/api/business/collections", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        try {
+            const collections = await sock.getCollections();
+            res.json(collections);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Create product
+    app.post("/api/business/product", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { name, description, price, currency, images, url } = req.body;
+        if (!name || !price) return res.status(400).json({ error: "Missing required fields: name, price" });
+        try {
+            const product = await sock.productCreate({
+                name,
+                description: description || '',
+                price,
+                currency: currency || 'BRL',
+                images: images || [],
+                url: url || ''
+            } as any);
+            res.json(product);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update product
+    app.put("/api/business/product/:id", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { id } = req.params;
+        try {
+            const product = await sock.productUpdate(id, req.body);
+            res.json(product);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Delete product(s)
+    app.delete("/api/business/product", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { productIds } = req.body;
+        if (!productIds || !Array.isArray(productIds)) return res.status(400).json({ error: "Missing required field: productIds[]" });
+        try {
+            await sock.productDelete(productIds);
+            res.json({ success: true, deleted: productIds.length });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Get order details
+    app.get("/api/business/order/:orderId", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { orderId } = req.params;
+        const token = req.query.token as string;
+        if (!token) return res.status(400).json({ error: "Missing query param: token" });
+        try {
+            const order = await sock.getOrderDetails(orderId, token);
+            res.json(order);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Update cover photo
+    app.post("/api/business/cover", upload.single("file"), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: "No file uploaded" });
+        try {
+            const buffer = readFileSync(file.path);
+            const result = await sock.updateCoverPhoto(buffer);
+            try { unlinkSync(file.path); } catch {}
+            res.json(result);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== LABELS ====================
+
+    // Add label
+    app.post("/api/labels", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, labels } = req.body;
+        if (!jid || !labels) return res.status(400).json({ error: "Missing required fields: jid, labels" });
+        try {
+            await sock.addLabel(jid, labels);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Add label to chat
+    app.post("/api/labels/chat", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, labelId } = req.body;
+        if (!jid || !labelId) return res.status(400).json({ error: "Missing required fields: jid, labelId" });
+        try {
+            await sock.addChatLabel(jid, labelId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Remove label from chat
+    app.delete("/api/labels/chat", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, labelId } = req.body;
+        if (!jid || !labelId) return res.status(400).json({ error: "Missing required fields: jid, labelId" });
+        try {
+            await sock.removeChatLabel(jid, labelId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Add label to message
+    app.post("/api/labels/message", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, messageId, labelId } = req.body;
+        if (!jid || !messageId || !labelId) return res.status(400).json({ error: "Missing required fields: jid, messageId, labelId" });
+        try {
+            await sock.addMessageLabel(jid, messageId, labelId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Remove label from message
+    app.delete("/api/labels/message", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { jid, messageId, labelId } = req.body;
+        if (!jid || !messageId || !labelId) return res.status(400).json({ error: "Missing required fields: jid, messageId, labelId" });
+        try {
+            await sock.removeMessageLabel(jid, messageId, labelId);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== QUICK REPLIES ====================
+
+    // Add/edit quick reply
+    app.post("/api/quick-reply", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const quickReply = req.body;
+        if (!quickReply) return res.status(400).json({ error: "Missing request body" });
+        try {
+            await sock.addOrEditQuickReply(quickReply);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Remove quick reply
+    app.delete("/api/quick-reply", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { timestamp } = req.body;
+        if (!timestamp) return res.status(400).json({ error: "Missing required field: timestamp" });
+        try {
+            await sock.removeQuickReply(timestamp);
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== LINKED DEVICES ====================
+
+    // Request pairing code for companion device
+    app.post("/api/pairing-code", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { phoneNumber } = req.body;
+        if (!phoneNumber) return res.status(400).json({ error: "Missing required field: phoneNumber" });
+        try {
+            const code = await sock.requestPairingCode(phoneNumber);
+            res.json({ pairingCode: code });
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // Check if number is on WhatsApp
+    app.post("/api/on-whatsapp", express.json(), async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const { numbers } = req.body;
+        if (!numbers || !Array.isArray(numbers)) return res.status(400).json({ error: "Missing required field: numbers[]" });
+        try {
+            const results = await sock.onWhatsApp(...numbers);
+            res.json(results || []);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== LINK PREVIEW ====================
+
+    // Get link preview info
+    app.get("/api/link-preview", async (req, res) => {
+        if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        const url = req.query.url as string;
+        if (!url) return res.status(400).json({ error: "Missing query param: url" });
+        try {
+            const info = await getUrlInfo(url, { thumbnailWidth: 300, fetchOpts: { timeout: 5000 } });
+            res.json(info);
+        } catch (err) {
+            res.status(500).json({ error: (err as Error).message });
+        }
+    });
+
+    // ==================== EXPORT CHAT ====================
+
+    // Export chat messages as text
+    app.get("/api/export-chat/:jid", (req, res) => {
+        const { jid } = req.params;
+        const limit = parseInt(req.query.limit as string) || 500;
+        const msgs = store.messages[jid]?.all() || [];
+        const sorted = [...msgs]
+            .sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0))
+            .slice(-limit);
+
+        const contact = store.contacts[jid];
+        const chatName = contact?.name || contact?.notify || getPhoneNumber(jid);
+
+        let output = `${chatName}\n`;
+        output += `${'='.repeat(40)}\n\n`;
+
+        for (const msg of sorted) {
+            const ts = msg.messageTimestamp
+                ? new Date((msg.messageTimestamp as number) * 1000).toLocaleString('pt-BR')
+                : '?';
+            const sender = msg.key.fromMe ? 'Você' : (msg.pushName || getPhoneNumber(msg.key.participant || jid));
+            const text = msg.message?.conversation
+                || msg.message?.extendedTextMessage?.text
+                || msg.message?.imageMessage?.caption
+                || msg.message?.videoMessage?.caption
+                || '[mídia]';
+            output += `[${ts}] ${sender}: ${text}\n`;
+        }
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="chat-${getPhoneNumber(jid)}.txt"`);
+        res.send(output);
     });
 
     // Vite middleware for development
@@ -2234,6 +3836,15 @@ async function startServer() {
         
         // Send current presence states
         socket.emit("presence-bulk", Object.fromEntries(presenceMap));
+        
+        // Send current LID mappings
+        if (lidToPhoneMap.size > 0) {
+            const allMappings: Record<string, string> = {};
+            lidToPhoneMap.forEach((pn, lid) => {
+                allMappings[`${lid}@lid`] = `${pn}@s.whatsapp.net`;
+            });
+            socket.emit("lid-mappings", allMappings);
+        }
         
         socket.on("get-chats", async () => {
             // Try to get chats with avatar info - sort by most recent first - FILTER archived
