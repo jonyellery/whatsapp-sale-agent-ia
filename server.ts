@@ -26,6 +26,17 @@ const __dirname = path.dirname(__filename);
 
 const logger = pino({ level: "silent" });
 
+// Normalize JID by removing device suffix for individual contacts
+// e.g., "551199999:5@s.whatsapp.net" -> "551199999@s.whatsapp.net"
+// Groups (@g.us) and LIDs (@lid) are not affected
+const normalizeJid = (jid: string): string => {
+    if (!jid) return jid;
+    if (jid.endsWith('@s.whatsapp.net') && jid.includes(':')) {
+        return jid.replace(/:\d+@/, '@');
+    }
+    return jid;
+};
+
 // File upload configuration
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -76,7 +87,7 @@ class SimpleStore {
     }
     
     // Helper to merge chat data - preserves local data while updating from API
-    private mergeChatData(existing: any, updates: any): any {
+    mergeChatData(existing: any, updates: any): any {
         if (!existing) return updates;
         
         // Create a new object with existing data
@@ -157,10 +168,11 @@ class SimpleStore {
         eventEmitter.on("messages.upsert", (m: { messages: any[], type: string }) => {
             console.log(`[STORE] messages.upsert fired: type=${m.type}, count=${m.messages?.length || 0}`);
             for (const msg of m.messages) {
-                const jid = msg.key.remoteJid!;
+                const jid = normalizeJid(msg.key.remoteJid!);
                 console.log(`[STORE] msg from=${msg.key.fromMe ? 'ME' : jid}, ts=${msg.messageTimestamp}, type=${Object.keys(msg.message || {}).join(',') || 'none'}`);
                 if (!this.messages[jid]) {
-                    this.messages[jid] = { all: () => [] };
+                    const arr: any[] = [];
+                    this.messages[jid] = { all: () => arr };
                 }
                 const msgs = this.messages[jid].all();
                 // Avoid duplicates
@@ -240,12 +252,22 @@ class SimpleStore {
             return null;
         }
     }
+
+    clearMessagesAndMetadata() {
+        const msgCount = Object.keys(this.messages).length;
+        const metaCount = Object.keys(this.groupMetadata).length;
+        this.messages = {};
+        this.groupMetadata = {};
+        console.log(`[STORE] Daily cleanup: cleared ${msgCount} message JIDs and ${metaCount} group metadata entries`);
+    }
 }
 
 const store = new SimpleStore();
 
 // Persist store to file - including metadata like archived status
 const storePath = path.join(__dirname, "baileys_store.json");
+let lastStoreCleanup = Date.now();
+
 const saveStore = () => {
     const chatsToSave = store.chats.all();
     console.log(`[STORE] Saving ${chatsToSave.length} chats to file...`);
@@ -260,34 +282,29 @@ const saveStore = () => {
             Object.entries(store.messages).map(([k, v]) => [k, v.all()])
         ),
         contacts: store.contacts,
-        groupMetadata: store.groupMetadata
+        groupMetadata: store.groupMetadata,
+        lastStoreCleanup
     };
     fs.writeFileSync(storePath, JSON.stringify(data, null, 2));
 };
 
-// Load store from file if exists - including archived metadata
+// Load store from file if exists
 if (fs.existsSync(storePath)) {
     try {
         const data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
-        
+
         if (data.chats && Array.isArray(data.chats)) {
             for (const chat of data.chats) {
                 if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
-                    console.log(`[STORE] Loading chat ${chat.id}: archived=${chat.archived}, name=${chat.name || chat.subject}`);
                     store.chats.set(chat.id, chat);
                 }
             }
             console.log("[STORE] Loaded chats from store file:", data.chats.length);
-            
-            // Log archived count after loading
-            const archivedCount = data.chats.filter((c: any) => c.archived === true).length;
-            console.log("[STORE] Archived chats loaded:", archivedCount);
         }
-        
+
         if (data.messages) {
             for (const [jid, msgs] of Object.entries(data.messages)) {
                 store.messages[jid] = { all: () => msgs as any[] };
-                // Also create a basic chat entry for this JID if not already present
                 if (!store.chats.get(jid)) {
                     store.chats.set(jid, {
                         id: jid,
@@ -298,12 +315,10 @@ if (fs.existsSync(storePath)) {
             }
             console.log("[STORE] Loaded messages from store file, JIDs:", Object.keys(data.messages).length);
         }
-        
-        // Load contacts
+
         if (data.contacts) {
             for (const [jid, contact] of Object.entries(data.contacts)) {
                 store.contacts[jid] = contact;
-                // Ensure chat entry exists for individual contacts
                 if (jid.endsWith('@s.whatsapp.net') && !store.chats.get(jid)) {
                     const c = contact as any;
                     store.chats.set(jid, {
@@ -315,15 +330,19 @@ if (fs.existsSync(storePath)) {
             }
             console.log("[STORE] Loaded contacts from store file:", Object.keys(store.contacts).length);
         }
-        
-        // Load group metadata
+
         if (data.groupMetadata) {
             for (const [jid, meta] of Object.entries(data.groupMetadata)) {
                 store.groupMetadata[jid] = meta;
             }
             console.log("[STORE] Loaded group metadata from store file:", Object.keys(store.groupMetadata).length);
         }
-        
+
+        if (data.lastStoreCleanup) {
+            lastStoreCleanup = data.lastStoreCleanup;
+            console.log("[STORE] Last cleanup:", new Date(lastStoreCleanup).toISOString());
+        }
+
     } catch (e) {
         console.log("[STORE] Failed to load store:", e);
     }
@@ -331,6 +350,23 @@ if (fs.existsSync(storePath)) {
 
 // Save store every 10 seconds
 setInterval(saveStore, 10_000);
+
+// Daily cleanup: clear messages and group metadata if 24h have passed
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+const dailyCleanupCheck = () => {
+    if (Date.now() - lastStoreCleanup >= TWENTY_FOUR_HOURS) {
+        console.log("[STORE] 24h elapsed since last cleanup, clearing messages and metadata...");
+        store.clearMessagesAndMetadata();
+        lastStoreCleanup = Date.now();
+        // Save AFTER clearing - this preserves chats and contacts in the file, without messages
+        saveStore();
+    }
+};
+
+// Check on startup and every hour
+dailyCleanupCheck();
+setInterval(dailyCleanupCheck, 60 * 60 * 1000);
 
 async function startServer() {
     const app = express();
@@ -396,7 +432,17 @@ async function startServer() {
         let lastMessageText = '';
         let lastMessageSender = displayName; // Default to chat display name
         let lastMessageTime = chat.conversationTimestamp || chat.lastMessageRecvTimestamp || 0;
-        const chatMessages = store.messages[chat.id]?.all() || [];
+        let chatMessages = store.messages[chat.id]?.all() || [];
+        
+        // For individual contacts, also check device-specific JID variants
+        if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+            const baseJid = chat.id.replace('@s.whatsapp.net', '');
+            for (const key of Object.keys(store.messages)) {
+                if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                    chatMessages = chatMessages.concat(store.messages[key]?.all() || []);
+                }
+            }
+        }
         
         // Debug log
         if (chat.id.includes('@s.whatsapp.net')) {
@@ -405,44 +451,47 @@ async function startServer() {
         
         if (chatMessages.length > 0) {
             // Sort by timestamp descending to get the most recent
-            const sortedMessages = [...chatMessages].sort((a: any, b: any) => 
-                (b.messageTimestamp || 0) - (a.messageTimestamp || 0)
-            );
+            // Filter out reactions - they should not appear as last message preview (matches WhatsApp Web behavior)
+            const sortedMessages = [...chatMessages]
+                .filter((m: any) => !m.message?.reactionMessage)
+                .sort((a: any, b: any) => 
+                    (b.messageTimestamp || 0) - (a.messageTimestamp || 0)
+                );
             const lastMsg = sortedMessages[0];
             
-            // Use the actual timestamp from the last message
-            lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
-            
-            // For groups, try to get the sender's name from the message
-            if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
-                // Get sender name from pushName or participant
-                const senderName = lastMsg.pushName || lastMsg.key?.participant?.split('@')[0] || 'Membro';
-                lastMessageSender = senderName;
-            }
-            
-            // Extract message text based on type
-            if (lastMsg.message?.conversation) {
-                lastMessageText = lastMsg.message.conversation;
-            } else if (lastMsg.message?.extendedTextMessage?.text) {
-                lastMessageText = lastMsg.message.extendedTextMessage.text;
-            } else if (lastMsg.message?.imageMessage?.caption) {
-                lastMessageText = lastMsg.message.imageMessage.caption;
-            } else if (lastMsg.message?.imageMessage) {
-                lastMessageText = '[Imagem]';
-            } else if (lastMsg.message?.videoMessage?.caption) {
-                lastMessageText = lastMsg.message.videoMessage.caption;
-            } else if (lastMsg.message?.videoMessage) {
-                lastMessageText = '[Vídeo]';
-            } else if (lastMsg.message?.audioMessage) {
-                lastMessageText = lastMsg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
-            } else if (lastMsg.message?.stickerMessage) {
-                lastMessageText = 'Sticker';
-            } else if (lastMsg.message?.documentMessage) {
-                lastMessageText = `📄 ${lastMsg.message.documentMessage.fileName || 'Documento'}`;
-            } else if (lastMsg.message?.reactionMessage) {
-                lastMessageText = lastMsg.message.reactionMessage.text || '👍';
-            } else {
-                lastMessageText = '[Mensagem]';
+            if (lastMsg) {
+                // Use the actual timestamp from the last message
+                lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
+                
+                // For groups, try to get the sender's name from the message
+                if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
+                    // Get sender name from pushName or participant
+                    const senderName = lastMsg.pushName || lastMsg.key?.participant?.split('@')[0] || 'Membro';
+                    lastMessageSender = senderName;
+                }
+                
+                // Extract message text based on type
+                if (lastMsg.message?.conversation) {
+                    lastMessageText = lastMsg.message.conversation;
+                } else if (lastMsg.message?.extendedTextMessage?.text) {
+                    lastMessageText = lastMsg.message.extendedTextMessage.text;
+                } else if (lastMsg.message?.imageMessage?.caption) {
+                    lastMessageText = lastMsg.message.imageMessage.caption;
+                } else if (lastMsg.message?.imageMessage) {
+                    lastMessageText = '[Imagem]';
+                } else if (lastMsg.message?.videoMessage?.caption) {
+                    lastMessageText = lastMsg.message.videoMessage.caption;
+                } else if (lastMsg.message?.videoMessage) {
+                    lastMessageText = '[Vídeo]';
+                } else if (lastMsg.message?.audioMessage) {
+                    lastMessageText = lastMsg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
+                } else if (lastMsg.message?.stickerMessage) {
+                    lastMessageText = 'Sticker';
+                } else if (lastMsg.message?.documentMessage) {
+                    lastMessageText = `📄 ${lastMsg.message.documentMessage.fileName || 'Documento'}`;
+                } else {
+                    lastMessageText = '[Mensagem]';
+                }
             }
         }
         
@@ -541,49 +590,66 @@ async function startServer() {
             } else if (connection === "open") {
                 console.log("opened connection");
                 console.log("User JID:", sock.user?.id);
+                console.log("receivedPendingNotifications:", receivedPendingNotifications);
                 connectionStatus = "open";
                 qrCode = null;
                 io.emit("connection-update", { status: "open" });
                 
-                // Wait longer for full history sync (Baileys loads chats progressively)
+                // Emit current chats and wait for WhatsApp to send more via events
                 setTimeout(async () => {
-                    console.log("Checking for chats after initial sync...");
+                    console.log("[SYNC] Checking for chats after connection...");
                     
-                    // Check if there are any chats
                     let chats = store.chats.all().filter((c: any) => 
-                        c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                        (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
                     );
                     
-                    console.log("Chats found after wait:", chats.length);
+                    console.log("Chats found:", chats.length);
                     
-                    if (chats.length === 0) {
-                        console.log("No chats, trying alternative sync method...");
-                        
-                        // Try to fetch chats using pagination (newer Baileys API)
-                        try {
-                            // This may help trigger the sync
-                            if (sock.user) {
-                                console.log("Trying to trigger sync via chat query...");
+                    // Recalculate timestamps from messages before emitting
+                    for (const chat of chats) {
+                        const chatMessages = store.messages[chat.id]?.all() || [];
+                        if (chatMessages.length > 0) {
+                            const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
+                            if (latestMsgTs > 0 && (!chat.conversationTimestamp || latestMsgTs > chat.conversationTimestamp)) {
+                                chat.conversationTimestamp = latestMsgTs;
+                                store.chats.set(chat.id, chat);
                             }
-                        } catch (e) {
-                            console.log("Error in alternative sync:", e);
                         }
-                        
-                        // Wait more
-                        await new Promise(resolve => setTimeout(resolve, 5000));
-                        
-                        chats = store.chats.all().filter((c: any) => 
-                            c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
-                        );
-                        console.log("Chats after second wait:", chats.length);
                     }
                     
                     // Send whatever chats we have - use the outer function that checks contacts and groups
-                    // Sort by most recent first
+                    // Sort by most recent first - ALREADY FILTERED archived above
                     const chatsSorted = sortChatsByRecent(chats);
                     const chatsWithAvatars = await Promise.all(chatsSorted.map(getChatWithAvatar));
                     console.log("Emitting chats:", chatsWithAvatars.length);
                     io.emit("chats-list", chatsWithAvatars);
+                    
+                    // Delayed re-emit after history sync has had time to complete
+                    // This catches updates from messaging-history.set that arrive after the initial emit
+                    setTimeout(async () => {
+                        console.log("[DELAYED-SYNC] Re-emitting chats-list after history sync settle...");
+                        let allChats = store.chats.all().filter((c: any) => 
+                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                        );
+                        // Recalculate timestamps one more time
+                        for (const chat of allChats) {
+                            const chatMessages = store.messages[chat.id]?.all() || [];
+                            if (chatMessages.length > 0) {
+                                const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
+                                if (latestMsgTs > 0 && (!chat.conversationTimestamp || latestMsgTs > chat.conversationTimestamp)) {
+                                    chat.conversationTimestamp = latestMsgTs;
+                                    store.chats.set(chat.id, chat);
+                                }
+                            }
+                        }
+                        allChats = store.chats.all().filter((c: any) => 
+                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                        );
+                        allChats = sortChatsByRecent(allChats);
+                        const refreshedWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
+                        console.log(`[DELAYED-SYNC] Re-emitting ${refreshedWithAvatars.length} chats with fresh timestamps`);
+                        io.emit("chats-list", refreshedWithAvatars);
+                    }, 15000);
                     
                     // Safety sync: after another delay, ensure all contacts have chat entries
                     // This catches contacts that arrived via contacts.upsert after the initial emit
@@ -607,11 +673,11 @@ async function startServer() {
                         // Re-emit the full chat list if any were created
                         if (createdCount > 0) {
                             let allChats = store.chats.all().filter((c: any) => 
-                                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
                             );
                             allChats = sortChatsByRecent(allChats);
                             const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-                            console.log(`[SAFETY] Re-emitting ${allWithAvatars.length} chats (${allWithAvatars.filter((c: any) => c.id.endsWith('@s.whatsapp.net')).length} individual)`);
+                            console.log(`[SAFETY] Re-emitting ${allWithAvatars.length} active chats`);
                             io.emit("chats-list", allWithAvatars);
                         }
 
@@ -638,9 +704,9 @@ async function startServer() {
                         }
                         console.log(`[GROUPS] Updated metadata for ${groupsUpdated}/${groupChats.length} groups`);
                         
-                        // Re-emit chats with updated group names
+                        // Re-emit chats with updated group names - FILTER archived
                         let refreshedChats = store.chats.all().filter((c: any) => 
-                            c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
                         );
                         refreshedChats = sortChatsByRecent(refreshedChats);
                         const refreshedWithAvatars = await Promise.all(refreshedChats.map(getChatWithAvatarFromStore));
@@ -677,21 +743,23 @@ async function startServer() {
 
         sock.ev.on("chats.upsert", async (chats: any[]) => {
             console.log("[SOCKET] chats.upsert event received:", chats.length, "chats");
-            // Ensure each chat exists before updating
+            // Ensure each chat exists before updating - USE MERGE to preserve archived status
             for (const chat of chats) {
                 if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
-                    console.log(`[SOCKET] Upsert chat ${chat.id}: archived=${chat.archived}, name=${chat.name || chat.subject}`);
-                    store.chats.set(chat.id, chat);
+                    console.log(`[SOCKET] Upsert chat ${chat.id}: archived=${chat.archived}, archive=${chat.archive}, name=${chat.name || chat.subject}`);
+                    const existing = store.chats.get(chat.id);
+                    const merged = store.mergeChatData(existing, chat);
+                    store.chats.set(chat.id, merged);
                 }
             }
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
                 allChats.map(getChatWithAvatar)
             );
-            console.log(`[SOCKET] Emitting chats-list after upsert: ${allWithAvatars.length} chats`);
+            console.log(`[SOCKET] Emitting chats-list after upsert: ${allWithAvatars.length} chats (archived filtered)`);
             io.emit("chats-list", allWithAvatars);
         });
         
@@ -723,23 +791,31 @@ async function startServer() {
                     
                     // Update the store
                     store.chats.set(update.id, mergedChat);
+                } else {
+                    // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
+                    const contactInfo = store.contacts[update.id];
+                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || update.id.split('@')[0];
+                    store.chats.set(update.id, {
+                        id: update.id,
+                        name: chatName,
+                        archived: update.archived || update.archive || false,
+                        unreadCount: update.unreadCount || 0,
+                        ...update
+                    });
+                    console.log(`[SOCKET] Created chat from update ${update.id}: ${chatName}`);
                 }
             }
             
-            // Get all chats and emit to frontend
+            // Get all chats and emit to frontend - FILTER OUT archived
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
-            
-            // Log archived status of all chats
-            const archivedChats = allChats.filter((c: any) => c.archived === true);
-            console.log(`[SOCKET] Total archived chats after update: ${archivedChats.length}`);
             
             const allWithAvatars = await Promise.all(
                 allChats.map(getChatWithAvatar)
             );
-            console.log(`[SOCKET] Emitting chats-list after update: ${allWithAvatars.length} chats, ${allWithAvatars.filter((c: any) => c.archived).length} archived`);
+            console.log(`[SOCKET] Emitting chats-list after update: ${allWithAvatars.length} active chats`);
             io.emit("chats-list", allWithAvatars);
         });
 
@@ -765,10 +841,11 @@ async function startServer() {
                         });
                         console.log(`[SOCKET] Created chat from contact ${contact.id}: ${contact.name || contact.notify}`);
                     } else {
-                        // Update existing chat with contact name
+                        // Update existing chat with contact name - PRESERVE archived status
                         const updatedChat = {
                             ...existingChat,
                             name: contact.name || contact.notify || existingChat.name
+                            // Do NOT touch archived - preserve existing value
                         };
                         store.chats.set(contact.id, updatedChat);
                     }
@@ -779,7 +856,7 @@ async function startServer() {
             io.emit("contacts-update", Object.values(store.contacts));
             
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
@@ -787,49 +864,80 @@ async function startServer() {
                 allChats.map(getChatWithAvatar)
             );
             
-            console.log(`[SOCKET] Emitting chats-list from contacts.upsert: ${allWithAvatars.length} chats (${allWithAvatars.filter((c: any) => c.id.endsWith('@s.whatsapp.net')).length} individual, ${allWithAvatars.filter((c: any) => c.id.endsWith('@g.us')).length} groups)`);
+            console.log(`[SOCKET] Emitting chats-list from contacts.upsert: ${allWithAvatars.length} active chats`);
             
             io.emit("chats-list", allWithAvatars);
         });
 
         sock.ev.on("messages.upsert", async (m: any) => {
-            if (m.type === "notify") {
-                for (const msg of m.messages) {
-                    const jid = msg.key.remoteJid;
-                    // Ensure chat exists for this message
-                    ensureChatExists(jid);
-                    
-                    // Extract pushName from message and store as contact
-                    // pushName can be at msg.pushName or msg.key.pushName
-                    const pushName = msg.pushName || msg.key?.pushName;
-                    if (pushName && jid) {
-                        // For group messages, use participant JID; for direct messages, use the chat JID
-                        const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
-                        if (contactJid && !contactJid.includes('@g.us') && !contactJid.includes('@lid')) {
+            // Process ALL message types: "notify" (new incoming), "append" (history/sent from other devices)
+            console.log(`[SOCKET] messages.upsert: type=${m.type}, count=${m.messages?.length || 0}`);
+            for (const msg of m.messages) {
+                const jid = normalizeJid(msg.key.remoteJid);
+                if (!jid) continue;
+                
+                // Ensure chat exists for this message (won't overwrite archived)
+                ensureChatExists(jid);
+                
+                // Store the message - use persistent array to avoid losing messages
+                if (!store.messages[jid]) {
+                    const arr: any[] = [];
+                    store.messages[jid] = { all: () => arr };
+                }
+                const msgs = store.messages[jid].all();
+                if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
+                    msgs.push(msg);
+                }
+                
+                // Update chat timestamp
+                const chat = store.chats.get(jid);
+                if (chat && msg.messageTimestamp) {
+                    if (!chat.conversationTimestamp || msg.messageTimestamp > chat.conversationTimestamp) {
+                        chat.conversationTimestamp = msg.messageTimestamp;
+                        store.chats.set(jid, chat);
+                    }
+                }
+                
+                // Extract pushName from message and store as contact
+                const pushName = msg.pushName || msg.key?.pushName;
+                if (pushName && jid) {
+                    const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
+                    if (contactJid && !contactJid.includes('@g.us') && !contactJid.includes('@lid')) {
+                        if (!store.contacts[contactJid]) {
                             store.contacts[contactJid] = {
                                 id: contactJid,
                                 name: pushName,
                                 notify: pushName,
                                 imgUrl: null
                             };
-                            // Also ensure chat entry exists for this contact
-                            const existingChat = store.chats.get(contactJid);
-                            if (!existingChat) {
-                                store.chats.set(contactJid, {
-                                    id: contactJid,
-                                    name: pushName,
-                                    unreadCount: 0,
-                                    conversationTimestamp: msg.messageTimestamp || Math.floor(Date.now() / 1000)
-                                });
-                            }
+                        }
+                        // Ensure chat entry exists for this contact (only if missing)
+                        const existingChat = store.chats.get(contactJid);
+                        if (!existingChat) {
+                            store.chats.set(contactJid, {
+                                id: contactJid,
+                                name: pushName,
+                                unreadCount: 0,
+                                conversationTimestamp: msg.messageTimestamp || Math.floor(Date.now() / 1000)
+                            });
                         }
                     }
-                    
-                    // Emit ALL new messages (including fromMe) for real-time sync
-                    // Frontend handles deduplication
-                    io.emit("new-message", msg);
                 }
+                
+                // Emit ALL new messages (including fromMe) for real-time sync
+                // Frontend handles deduplication
+                io.emit("new-message", msg);
             }
+            
+            // Update chat list after processing messages
+            let allChats = store.chats.all().filter((c: any) => 
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+            );
+            allChats = sortChatsByRecent(allChats);
+            const allWithAvatars = await Promise.all(
+                allChats.map(getChatWithAvatar)
+            );
+            io.emit("chats-list", allWithAvatars);
         });
 
         // Sincronização em tempo real: mensagens editadas ou excluídas
@@ -838,7 +946,7 @@ async function startServer() {
             
             for (const update of updates) {
                 const { key, update: msgUpdate } = update;
-                const jid = key.remoteJid;
+                const jid = normalizeJid(key.remoteJid);
                 
                 // Ensure chat exists
                 ensureChatExists(jid);
@@ -870,9 +978,9 @@ async function startServer() {
 
             }
             
-            // Update chat list with recent messages
+            // Update chat list with recent messages - FILTER archived
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
@@ -932,7 +1040,7 @@ async function startServer() {
             
             for (const reactionData of reactions) {
                 const { key, reaction } = reactionData;
-                const jid = key.remoteJid;
+                const jid = normalizeJid(key.remoteJid);
                 
                 // Ensure chat exists
                 ensureChatExists(jid);
@@ -951,9 +1059,10 @@ async function startServer() {
                     pushName: reaction?.pushName || key?.pushName
                 };
                 
-                // Store the reaction in messages
+                // Store the reaction in messages - use persistent array
                 if (!store.messages[jid]) {
-                    store.messages[jid] = { all: () => [] };
+                    const arr: any[] = [];
+                    store.messages[jid] = { all: () => arr };
                 }
                 const msgs = store.messages[jid].all();
                 msgs.push(reactionMsg);
@@ -1036,7 +1145,7 @@ async function startServer() {
             // Process messages from history - STORE MESSAGES AND CREATE CHATS FROM MESSAGE JIDs!
             if (history.messages && history.messages.length > 0) {
                 for (const msg of history.messages) {
-                    const jid = msg.key?.remoteJid;
+                    const jid = msg.key?.remoteJid ? normalizeJid(msg.key.remoteJid) : null;
                     
                     // Extract pushName from message and store as contact
                     if (msg.pushName && jid) {
@@ -1052,9 +1161,10 @@ async function startServer() {
                     }
                     
                     if (jid) {
-                        // Store the actual message
+                        // Store the actual message - use persistent array to avoid losing messages
                         if (!store.messages[jid]) {
-                            store.messages[jid] = { all: () => [] };
+                            const arr: any[] = [];
+                            store.messages[jid] = { all: () => arr };
                         }
                         const msgs = store.messages[jid].all();
                         // Avoid duplicates
@@ -1082,19 +1192,35 @@ async function startServer() {
                 console.log(`[SOCKET] Stored ${history.messages.length} messages from history`);
             }
             
-            // Get all chats with avatars - use the function that checks contacts and groups
+            // Recalculate conversationTimestamp for ALL chats from their latest messages
+            // This ensures timestamps are always correct even if WhatsApp sends stale data
+            for (const chat of store.chats.all()) {
+                const chatMessages = store.messages[chat.id]?.all() || [];
+                if (chatMessages.length > 0) {
+                    const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
+                    if (latestMsgTs > 0 && (!chat.conversationTimestamp || latestMsgTs > chat.conversationTimestamp)) {
+                        chat.conversationTimestamp = latestMsgTs;
+                        store.chats.set(chat.id, chat);
+                    }
+                }
+            }
+            
+            // Get all ACTIVE chats with avatars - FILTER archived
             // Sort by most recent first
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
-            // Final count of archived chats
-            const finalArchivedCount = allChats.filter((c: any) => c.archived === true).length;
-            console.log(`[SOCKET] Final chat count after history sync: ${allChats.length} total, ${finalArchivedCount} archived`);
+            // Log counts for debugging
+            const totalChats = store.chats.all().filter((c: any) => 
+                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+            );
+            const totalArchivedCount = totalChats.filter((c: any) => c.archived === true).length;
+            console.log(`[SOCKET] After history sync: ${totalChats.length} total, ${totalArchivedCount} archived, ${allChats.length} active to emit`);
             
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-            console.log(`[SOCKET] Emitting chats-list from history sync: ${chatsWithAvatars.length} chats`);
+            console.log(`[SOCKET] Emitting chats-list from history sync: ${chatsWithAvatars.length} active chats`);
             io.emit("chats-list", chatsWithAvatars);
         });
     };
@@ -1200,6 +1326,14 @@ async function startServer() {
                 store.chats.set(jid, { ...chat, archived: archive });
             }
             
+            // Re-emit active chats list (archived chat will disappear from active list)
+            let activeChats = store.chats.all().filter((c: any) => 
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+            );
+            activeChats = sortChatsByRecent(activeChats);
+            const activeWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
+            io.emit("chats-list", activeWithAvatars);
+            
             res.json({ success: true, archived: archive });
         } catch (e) {
             console.log("Error archiving chat:", e);
@@ -1216,29 +1350,28 @@ async function startServer() {
         try {
             console.log("[API] Force refreshing chats from WhatsApp server...");
             
-            // Get current chats
-            const currentChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+            // Get current ACTIVE chats - FILTER archived
+            const activeChats = store.chats.all().filter((c: any) => 
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             
-            console.log("[API] Current chats in store:", currentChats.length);
+            console.log("[API] Active chats in store:", activeChats.length);
             
-            // Log archived status before refresh
-            const archivedBefore = currentChats.filter((c: any) => c.archived === true);
-            console.log("[API] Archived chats before refresh:", archivedBefore.length);
+            // Log total and archived counts for debugging
+            const allChats = store.chats.all().filter((c: any) => 
+                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+            );
+            const archivedCount = allChats.filter((c: any) => c.archived === true).length;
+            console.log(`[API] Total: ${allChats.length}, Archived: ${archivedCount}, Active: ${activeChats.length}`);
             
-            // Emit current chats - use the function that checks contacts and groups
-            const chatsWithAvatars = await Promise.all(currentChats.map(getChatWithAvatarFromStore));
-            
-            // Log archived status after processing
-            const archivedAfter = chatsWithAvatars.filter((c: any) => c.archived === true);
-            console.log("[API] Archived chats after processing:", archivedAfter.length);
+            // Emit only active chats
+            const chatsWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
             
             io.emit("chats-list", chatsWithAvatars);
             
             res.json({ 
                 count: chatsWithAvatars.length, 
-                archivedCount: archivedAfter.length,
+                archivedCount: archivedCount,
                 chats: chatsWithAvatars,
                 message: "Chats list refreshed from server" 
             });
@@ -1281,16 +1414,19 @@ async function startServer() {
                 }
             }
             
-            // After potential sync, emit updated chats
+            // After potential sync, emit updated ACTIVE chats - FILTER archived
             let allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
-            const archivedCount = chatsWithAvatars.filter((c: any) => c.archived === true).length;
-            console.log(`[API] Sync complete: ${chatsWithAvatars.length} chats, ${archivedCount} archived`);
+            const totalChats = store.chats.all().filter((c: any) => 
+                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+            );
+            const archivedCount = totalChats.filter((c: any) => c.archived === true).length;
+            console.log(`[API] Sync complete: ${totalChats.length} total, ${archivedCount} archived, ${chatsWithAvatars.length} active`);
             
             io.emit("chats-list", chatsWithAvatars);
             
@@ -1352,15 +1488,14 @@ async function startServer() {
             // Wait for sync
             await new Promise(resolve => setTimeout(resolve, 5000));
             
-            // Also try to fetch using chat database query if available
+            // Try to resync app state to trigger chat updates
             try {
-                // This can help trigger additional chat sync
-                if (typeof sock.fetchChats === 'function') {
-                    const chatsOnDevice = await sock.fetchChats(50); // Fetch recent chats
-                    console.log("Chats fetched from device:", chatsOnDevice?.length || 0);
+                if (typeof sock.resyncAppState === 'function') {
+                    await sock.resyncAppState(['regular_high', 'regular_low', 'regular'], false);
+                    console.log("App state resync triggered");
                 }
             } catch (e) {
-                console.log("Error fetching chats from device:", e);
+                console.log("Error resyncing app state:", e);
             }
             
             // Also try to send a message to ourselves to trigger full sync
@@ -1378,13 +1513,13 @@ async function startServer() {
             await new Promise(resolve => setTimeout(resolve, 5000));
             
             const chats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             
             // Get avatars - use the function that checks contacts and groups
             const chatsWithAvatars = await Promise.all(chats.map(getChatWithAvatarFromStore));
             
-            console.log("Total chats after fetch:", chatsWithAvatars.length);
+            console.log("Active chats after fetch:", chatsWithAvatars.length);
             
             io.emit("chats-list", chatsWithAvatars);
             res.json({ count: chatsWithAvatars.length, chats: chatsWithAvatars });
@@ -1417,7 +1552,7 @@ async function startServer() {
             await new Promise(resolve => setTimeout(resolve, 5000));
             
             const chats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             
             // Get avatars - use the function that checks contacts and groups
@@ -1430,9 +1565,9 @@ async function startServer() {
     });
 
     app.get("/api/chats", (req, res) => {
-        // Return chats from store with contact info
+        // Return ACTIVE chats from store with contact info - FILTER archived
         const chats = store.chats.all().filter((c: any) => 
-            c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
         ).map((chat: any) => {
             const contact = store.getContact(chat.id);
             let name = chat.name || chat.subject;
@@ -1553,25 +1688,46 @@ async function startServer() {
         const limit = parseInt(req.query.limit as string) || 50;
         const before = req.query.before as string;
         
-        let messages = store.messages[jid]?.all() || [];
+        // Collect messages from the requested JID and all device variants
+        let allMsgs: any[] = [];
+        const seen = new Set<string>();
         
-        // Sort by timestamp descending (newest first)
-        messages = messages.sort((a: any, b: any) => 
-            (b.messageTimestamp || 0) - (a.messageTimestamp || 0)
-        );
+        // Check the exact JID first
+        for (const msg of (store.messages[jid]?.all() || [])) {
+            if (msg.key?.id && !seen.has(msg.key.id)) {
+                seen.add(msg.key.id);
+                allMsgs.push(msg);
+            }
+        }
+        
+        // For individual contacts, also check device-specific JID variants
+        if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+            const baseJid = jid.replace('@s.whatsapp.net', '');
+            for (const key of Object.keys(store.messages)) {
+                if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                    for (const msg of (store.messages[key]?.all() || [])) {
+                        if (msg.key?.id && !seen.has(msg.key.id)) {
+                            seen.add(msg.key.id);
+                            allMsgs.push(msg);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Sort by timestamp ascending (oldest first)
+        allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
         
         // Apply pagination
         if (before) {
             const beforeTime = parseInt(before);
-            messages = messages.filter((m: any) => 
-                (m.messageTimestamp || 0) < beforeTime
-            );
+            allMsgs = allMsgs.filter((m: any) => (m.messageTimestamp || 0) < beforeTime);
         }
         
         // Limit results
-        messages = messages.slice(0, limit);
+        allMsgs = allMsgs.slice(0, limit);
         
-        res.json(messages);
+        res.json(allMsgs);
     });
 
     // Load more messages (older)
@@ -1602,10 +1758,14 @@ async function startServer() {
                 for (const msg of history) {
                     if (!msg || !msg.key) continue; // Skip invalid messages
                     
-                    if (!store.messages[jid]) {
-                        store.messages[jid] = { all: () => [] };
+                    // Normalize JID to prevent device suffix mismatch
+                    const msgJid = normalizeJid(msg.key.remoteJid);
+                    
+                    if (!store.messages[msgJid]) {
+                        const arr: any[] = [];
+                        store.messages[msgJid] = { all: () => arr };
                     }
-                    const msgs = store.messages[jid].all();
+                    const msgs = store.messages[msgJid].all();
                     // Avoid duplicates
                     if (msg.key.id && !msgs.find((m: any) => m.key?.id === msg.key.id)) {
                         msgs.push(msg);
@@ -1613,14 +1773,39 @@ async function startServer() {
                 }
             }
             
-            // Get messages before the timestamp
-            let messages = store.messages[jid]?.all() || [];
-            messages = messages
+            // Get messages before the timestamp - check all device JID variants
+            let allMsgs: any[] = [];
+            const seen = new Set<string>();
+            
+            // Check the exact JID
+            for (const msg of (store.messages[jid]?.all() || [])) {
+                if (msg.key?.id && !seen.has(msg.key.id)) {
+                    seen.add(msg.key.id);
+                    allMsgs.push(msg);
+                }
+            }
+            
+            // For individual contacts, also check device-specific JID variants
+            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                const baseJid = jid.replace('@s.whatsapp.net', '');
+                for (const key of Object.keys(store.messages)) {
+                    if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                        for (const msg of (store.messages[key]?.all() || [])) {
+                            if (msg.key?.id && !seen.has(msg.key.id)) {
+                                seen.add(msg.key.id);
+                                allMsgs.push(msg);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            allMsgs = allMsgs
                 .filter((m: any) => (m.messageTimestamp || 0) < before)
                 .sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0))
                 .slice(0, limit);
             
-            res.json(messages);
+            res.json(allMsgs);
         } catch (e) {
             console.log("Error loading more messages:", e);
             res.status(500).json({ error: e.message });
@@ -1758,9 +1943,9 @@ async function startServer() {
                 store.chats.set(jid, chat);
             }
             await sock.sendReadReceipt(jid);
-            // Re-emit chats list with updated unread count
+            // Re-emit chats list with updated unread count - FILTER archived
             let allChats = store.chats.all().filter((c: any) =>
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
@@ -1884,9 +2069,26 @@ async function startServer() {
         socket.emit("presence-bulk", Object.fromEntries(presenceMap));
         
         socket.on("get-chats", async () => {
-            // Try to get chats with avatar info - sort by most recent first
+            // Try to get chats with avatar info - sort by most recent first - FILTER archived
             let existingChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+            );
+            
+            // Recalculate timestamps from messages to ensure freshness
+            for (const chat of existingChats) {
+                const chatMessages = store.messages[chat.id]?.all() || [];
+                if (chatMessages.length > 0) {
+                    const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
+                    if (latestMsgTs > 0 && (!chat.conversationTimestamp || latestMsgTs > chat.conversationTimestamp)) {
+                        chat.conversationTimestamp = latestMsgTs;
+                        store.chats.set(chat.id, chat);
+                    }
+                }
+            }
+            
+            // Re-fetch after timestamp updates
+            existingChats = store.chats.all().filter((c: any) => 
+                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
             );
             existingChats = sortChatsByRecent(existingChats);
             
@@ -1909,10 +2111,37 @@ async function startServer() {
         });
 
         socket.on("get-messages", (jid) => {
-            const msgs = (store.messages[jid]?.all() || []).slice().sort((a: any, b: any) =>
-                (a.messageTimestamp || 0) - (b.messageTimestamp || 0)
-            );
-            socket.emit("messages-list", { jid, messages: msgs });
+            // Collect messages from the requested JID and all device variants
+            // For individual contacts, messages may be stored under JIDs with device suffixes
+            // e.g., "551199999:5@s.whatsapp.net" instead of "551199999@s.whatsapp.net"
+            let allMsgs: any[] = [];
+            const seen = new Set<string>();
+            
+            // Check the exact JID first
+            for (const msg of (store.messages[jid]?.all() || [])) {
+                if (msg.key?.id && !seen.has(msg.key.id)) {
+                    seen.add(msg.key.id);
+                    allMsgs.push(msg);
+                }
+            }
+            
+            // For individual contacts, also check device-specific JID variants
+            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                const baseJid = jid.replace('@s.whatsapp.net', '');
+                for (const key of Object.keys(store.messages)) {
+                    if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                        for (const msg of (store.messages[key]?.all() || [])) {
+                            if (msg.key?.id && !seen.has(msg.key.id)) {
+                                seen.add(msg.key.id);
+                                allMsgs.push(msg);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+            socket.emit("messages-list", { jid, messages: allMsgs });
         });
         
         // Get chat details including avatar

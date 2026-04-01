@@ -34,7 +34,21 @@ import {
   Archive,
   Copy,
   Forward,
-  Play
+  Play,
+  Moon,
+  Sun,
+  Bell,
+  Keyboard,
+  Settings,
+  Users,
+  Tv,
+  CircleDot,
+  MessageSquarePlus,
+  Pin,
+  VolumeX,
+  Filter,
+  Star,
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -149,9 +163,12 @@ interface Chat {
   lastMessage?: string;
   lastMessageSender?: string;
   lastMessageTime?: number;
+  lastMessageStatus?: string; // 'sent' | 'delivered' | 'read' | 'played'
   description?: string;
   archived?: boolean;
   archive?: boolean; // For API responses that use 'archive' instead of 'archived'
+  pinned?: boolean;
+  muted?: boolean;
 }
 
 interface ChatDetails {
@@ -252,7 +269,9 @@ export default function App() {
   const [qr, setQr] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'ativas' | 'arquivadas'>('ativas');
+  const [chatFilter, setChatFilter] = useState<'all' | 'unread' | 'favorites' | 'groups'>('all');
+  const [navRailSection, setNavRailSection] = useState<'chats' | 'status' | 'channels' | 'communities' | 'archived' | 'starred'>('chats');
+  const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
   const [chatDetails, setChatDetails] = useState<ChatDetails | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -276,6 +295,29 @@ export default function App() {
   const [receipts, setReceipts] = useState<Record<string, string>>({}); // messageId -> status
   const [emojiCategory, setEmojiCategory] = useState('frequent');
   
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('wa-dark-mode');
+    return saved === 'true';
+  });
+  
+  // Forward message state
+  const [forwardModal, setForwardModal] = useState<{ messageId: string; text: string } | null>(null);
+  const [forwardSearch, setForwardSearch] = useState('');
+  const [forwardSelected, setForwardSelected] = useState<string[]>([]);
+  const [forwarding, setForwarding] = useState(false);
+  
+  // Profile panel state
+  const [profileOpen, setProfileOpen] = useState(false);
+  
+  // Keyboard shortcuts help
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  
+  // Desktop notifications
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    return localStorage.getItem('wa-notifications') === 'true';
+  });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const oldestMessageTimeRef = useRef<number>(Math.floor(Date.now() / 1000));
@@ -288,6 +330,73 @@ export default function App() {
   const recordingIntervalRef = useRef<number | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  // Apply dark mode to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('wa-dark-mode', String(darkMode));
+  }, [darkMode]);
+
+  // Request notification permission
+  useEffect(() => {
+    if (notificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    localStorage.setItem('wa-notifications', String(notificationsEnabled));
+  }, [notificationsEnabled]);
+
+  // Desktop notification for new messages
+  const showDesktopNotification = useCallback((title: string, body: string) => {
+    if (!notificationsEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+    // Don't show if tab is focused
+    if (document.hasFocus()) return;
+    try {
+      new Notification(title, { body, icon: '/favicon.ico', tag: 'wa-message' });
+    } catch {}
+  }, [notificationsEnabled]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K: Focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('.wa-sidebar input[type="text"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+      // Ctrl/Cmd + D: Toggle dark mode
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        setDarkMode(prev => !prev);
+      }
+      // Ctrl/Cmd + E: Open emoji picker (when in chat)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        setEmojiPickerOpen(prev => !prev);
+      }
+      // Escape: Close modals/panels
+      if (e.key === 'Escape') {
+        if (shortcutsOpen) { setShortcutsOpen(false); return; }
+        if (forwardModal) { setForwardModal(null); return; }
+        if (profileOpen) { setProfileOpen(false); return; }
+        if (emojiPickerOpen) { setEmojiPickerOpen(false); return; }
+        if (contextMenu) { setContextMenu(null); return; }
+        if (replyTo) { setReplyTo(null); return; }
+      }
+      // Ctrl/Cmd + /: Show shortcuts help
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        setShortcutsOpen(prev => !prev);
+      }
+      // Ctrl/Cmd + N: Toggle notifications
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        setNotificationsEnabled(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [shortcutsOpen, forwardModal, profileOpen, emojiPickerOpen, contextMenu, replyTo]);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -338,7 +447,10 @@ export default function App() {
         });
         const existingIds = new Set(prevChats.map(c => c.id));
         const newChats = filteredChats.filter(c => !existingIds.has(c.id));
-        return [...mergedChats, ...newChats];
+        // Re-sort after merge to ensure correct order (new chats may have been appended at end)
+        return [...mergedChats, ...newChats].sort(
+          (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
+        );
       });
     });
 
@@ -375,25 +487,32 @@ export default function App() {
           }
           return [...prev, normalizedMsg];
         });
+      } else if (!msg.key.fromMe) {
+        // Show desktop notification for messages not in current chat
+        const senderName = msg.pushName || 'Contato';
+        const msgText = normalizedMsg._text || 'Mídia';
+        showDesktopNotification(senderName, msgText.length > 50 ? msgText.slice(0, 50) + '...' : msgText);
       }
       
-      // Update chat list
-      setChats(prev => {
-        const updated = [...prev];
-        const index = updated.findIndex(c => c.id === msg.key.remoteJid);
-        const text = normalizedMsg._text || 'Mídia';
-        
-        if (index !== -1) {
-          updated[index] = { 
-            ...updated[index], 
-            lastMessage: text,
-            lastMessageTime: msg.messageTimestamp
-          };
-          const [item] = updated.splice(index, 1);
-          updated.unshift(item);
-        }
-        return updated;
-      });
+      // Update chat list (skip reactions - they should not appear as last message preview)
+      if (normalizedMsg._type !== 'reaction') {
+        setChats(prev => {
+          const updated = [...prev];
+          const index = updated.findIndex(c => c.id === msg.key.remoteJid);
+          const text = normalizedMsg._text || 'Mídia';
+          
+          if (index !== -1) {
+            updated[index] = { 
+              ...updated[index], 
+              lastMessage: text,
+              lastMessageTime: msg.messageTimestamp
+            };
+            const [item] = updated.splice(index, 1);
+            updated.unshift(item);
+          }
+          return updated;
+        });
+      }
     });
 
     newSocket.on('message-deleted', (data: { jid: string; messageId: string }) => {
@@ -544,11 +663,11 @@ export default function App() {
         if (olderMessages.length > 0) {
           const normalizedOlder = olderMessages.map(normalizeMessage);
           
-          // Deduplicate before prepending (older messages go at the start)
+          // Deduplicate before prepending (older messages go at the start), then sort chronologically
           setMessages(prev => {
             const existingIds = new Set(prev.map(m => m.key.id).filter(Boolean));
             const uniqueOlder = normalizedOlder.filter(m => !m.key.id || !existingIds.has(m.key.id));
-            return [...uniqueOlder, ...prev];
+            return [...uniqueOlder, ...prev].sort((a, b) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
           });
           
           // Update oldest timestamp (first item is the oldest since server returns oldest-first)
@@ -936,6 +1055,62 @@ export default function App() {
     showToast('Mensagem copiada');
   };
 
+  // Open forward modal
+  const handleOpenForward = (msg: Message) => {
+    const text = msg._text || '[Mídia]';
+    setForwardModal({ messageId: msg.key.id, text });
+    setForwardSelected([]);
+    setForwardSearch('');
+    setContextMenu(null);
+  };
+
+  // Forward message to selected chats
+  const handleForwardMessage = async () => {
+    if (!forwardModal || forwardSelected.length === 0 || forwarding) return;
+    setForwarding(true);
+    try {
+      const msg = messages.find(m => m.key.id === forwardModal.messageId);
+      if (!msg) { showToast('Mensagem não encontrada'); return; }
+      
+      for (const jid of forwardSelected) {
+        const text = msg._text || '';
+        await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jid, text: `↪️ ${text}` }),
+        });
+      }
+      showToast(`Mensagem encaminhada para ${forwardSelected.length} conversa(s)`);
+      setForwardModal(null);
+    } catch {
+      showToast('Erro ao encaminhar mensagem');
+    } finally {
+      setForwarding(false);
+    }
+  };
+
+  // Toggle notification permission
+  const toggleNotifications = async () => {
+    if (!('Notification' in window)) {
+      showToast('Notificações não suportadas neste navegador');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      showToast('Permissão de notificação negada. Habilite nas configurações do navegador.');
+      return;
+    }
+    if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        setNotificationsEnabled(true);
+        showToast('Notificações ativadas');
+      }
+    } else {
+      setNotificationsEnabled(prev => !prev);
+      showToast(notificationsEnabled ? 'Notificações desativadas' : 'Notificações ativadas');
+    }
+  };
+
   // Send reaction
   const handleSendReaction = async (messageId: string, emoji: string) => {
     if (!selectedChat) return;
@@ -949,10 +1124,12 @@ export default function App() {
     setContextMenu(null);
   };
 
-  // Filtered chats based on search
+  // Filtered chats based on search and filter
   const filteredChats = chats.filter(chat => {
-    const inTab = activeTab === 'arquivadas' ? chat.archived : !chat.archived;
-    if (!inTab) return false;
+    if (chat.archived) return false;
+    if (chatFilter === 'unread' && (!chat.unreadCount || chat.unreadCount <= 0)) return false;
+    if (chatFilter === 'groups' && !chat.id.endsWith('@g.us')) return false;
+    if (chatFilter === 'favorites') return false;
     if (!searchQuery.trim()) return true;
     const name = getChatDisplayName(chat).toLowerCase();
     return name.includes(searchQuery.toLowerCase());
@@ -1093,19 +1270,19 @@ export default function App() {
 
   if (status === 'qr' && qr) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-[#f0f2f5]">
-        <div className="bg-white p-10 rounded-lg shadow-md flex flex-col items-center max-w-md text-center">
-          <h1 className="text-2xl font-light text-gray-700 mb-6">Para usar o WhatsApp no seu computador:</h1>
-          <ol className="text-left text-sm text-gray-600 space-y-3 mb-8">
+      <div className="flex flex-col items-center justify-center h-screen" style={{ background: 'var(--wa-bg)' }}>
+        <div className="p-10 rounded-lg shadow-md flex flex-col items-center max-w-md text-center" style={{ background: 'var(--wa-modal-bg)' }}>
+          <h1 className="text-2xl font-light mb-6" style={{ color: 'var(--wa-text-primary)' }}>Para usar o WhatsApp no seu computador:</h1>
+          <ol className="text-left text-sm space-y-3 mb-8" style={{ color: 'var(--wa-text-secondary)' }}>
             <li>1. Abra o WhatsApp no seu celular</li>
             <li>2. Toque em Mais opções ou Configurações e selecione Aparelhos conectados</li>
             <li>3. Toque em Conectar um aparelho</li>
             <li>4. Aponte seu celular para esta tela para capturar o código</li>
           </ol>
-          <div className="bg-white p-4 border-4 border-gray-100 rounded-lg">
+          <div className="p-4 rounded-lg" style={{ background: 'var(--wa-modal-bg)', border: '4px solid var(--wa-border)' }}>
             <img src={qr} alt="QR Code" className="w-64 h-64" />
           </div>
-          <p className="mt-6 text-xs text-gray-400">O código QR será atualizado automaticamente.</p>
+          <p className="mt-6 text-xs" style={{ color: 'var(--wa-text-secondary)' }}>O código QR será atualizado automaticamente.</p>
         </div>
       </div>
     );
@@ -1113,19 +1290,19 @@ export default function App() {
 
   if (status === 'connecting') {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-[#f0f2f5]">
+      <div className="flex flex-col items-center justify-center h-screen" style={{ background: 'var(--wa-bg)' }}>
         <div className="w-16 h-16 border-4 border-[#00a884] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-500 font-medium">Conectando ao WhatsApp...</p>
+        <p className="font-medium" style={{ color: 'var(--wa-text-secondary)' }}>Conectando ao WhatsApp...</p>
       </div>
     );
   }
 
   if (status === 'close') {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-[#f0f2f5]">
-        <div className="bg-white p-10 rounded-lg shadow-md flex flex-col items-center max-w-md text-center">
+      <div className="flex flex-col items-center justify-center h-screen" style={{ background: 'var(--wa-bg)' }}>
+        <div className="p-10 rounded-lg shadow-md flex flex-col items-center max-w-md text-center" style={{ background: 'var(--wa-modal-bg)' }}>
           <h1 className="text-2xl font-light text-red-500 mb-4">Conexão Fechada</h1>
-          <p className="text-gray-600 mb-6">A conexão com o WhatsApp foi encerrada. Tentando reconectar...</p>
+          <p className="mb-6" style={{ color: 'var(--wa-text-secondary)' }}>A conexão com o WhatsApp foi encerrada. Tentando reconectar...</p>
           <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
@@ -1134,61 +1311,153 @@ export default function App() {
 
   return (
     <div className={`wa-container ${selectedChat ? 'chat-open' : ''}`}>
+      {/* Navigation Rail */}
+      <nav className="wa-nav-rail">
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'chats' ? 'active' : ''}`}
+          onClick={() => setNavRailSection('chats')}
+          title="Conversas"
+        >
+          <MessageCircle size={24} />
+          {chats.filter(c => !c.archived && c.unreadCount && c.unreadCount > 0).length > 0 && (
+            <span className="wa-nav-rail-badge">
+              {chats.filter(c => !c.archived && c.unreadCount && c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
+            </span>
+          )}
+        </button>
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'status' ? 'active' : ''}`}
+          onClick={() => setNavRailSection('status')}
+          title="Status"
+        >
+          <CircleDot size={24} />
+        </button>
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'channels' ? 'active' : ''}`}
+          onClick={() => setNavRailSection('channels')}
+          title="Canais"
+        >
+          <Tv size={24} />
+        </button>
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'communities' ? 'active' : ''}`}
+          onClick={() => setNavRailSection('communities')}
+          title="Comunidades"
+        >
+          <Users size={24} />
+        </button>
+        <div className="wa-nav-rail-divider" />
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'archived' ? 'active' : ''}`}
+          onClick={() => { setNavRailSection('archived'); loadArchivedChats(); }}
+          title="Arquivadas"
+        >
+          <Archive size={24} />
+        </button>
+        <button 
+          className={`wa-nav-rail-item ${navRailSection === 'starred' ? 'active' : ''}`}
+          onClick={() => setNavRailSection('starred')}
+          title="Mensagens com estrela"
+        >
+          <Star size={24} />
+        </button>
+        <div className="wa-nav-rail-spacer" />
+        <button 
+          className={`wa-nav-rail-item ${darkMode ? 'active' : ''}`}
+          onClick={() => setDarkMode(prev => !prev)}
+          title={darkMode ? 'Modo claro' : 'Modo escuro'}
+        >
+          {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+        <button 
+          className="wa-nav-rail-item"
+          onClick={() => setProfileOpen(true)}
+          title="Perfil"
+        >
+          <div className="wa-nav-rail-avatar">
+            <User size={18} />
+            {chats.some(c => !c.archived && c.unreadCount && c.unreadCount > 0) && (
+              <span className="wa-nav-rail-avatar-dot" />
+            )}
+          </div>
+        </button>
+      </nav>
+
       {/* Sidebar */}
       <div className="wa-sidebar">
         <div className="wa-header">
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-            <User className="text-gray-500" size={24} />
+          <div className="wa-header-title">
+            <h2>WhatsApp</h2>
           </div>
-          <div className="flex gap-5 text-gray-500">
-            <motion.button whileTap={{ scale: 0.9 }} onClick={refreshChats} title="Atualizar conversas">
-              <MessageSquare size={20} />
+          <div className="flex gap-5" style={{ color: 'var(--wa-text-secondary)' }}>
+            <motion.button whileTap={{ scale: 0.9 }} title="Nova conversa">
+              <MessageSquarePlus size={24} />
             </motion.button>
-            <motion.button 
-              whileTap={{ scale: 0.9 }} 
-              onClick={loadMoreChats} 
-              title="Carregar mais conversas"
-              disabled={loadingChats}
-            >
-              {loadingChats ? (
-                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <ChevronDown size={20} />
+            <div style={{ position: 'relative' }}>
+              <motion.button whileTap={{ scale: 0.9 }} title="Menu" onClick={() => setSidebarMenuOpen(prev => !prev)}>
+                <MoreVertical size={24} />
+              </motion.button>
+              {sidebarMenuOpen && (
+                <>
+                  <div className="wa-context-menu-overlay" onClick={() => setSidebarMenuOpen(false)} />
+                  <div className="wa-context-menu" style={{ right: 0, left: 'auto', top: '100%', marginTop: 4 }}>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); refreshChats(); }}>
+                      <MessageSquare size={18} /> Atualizar conversas
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); loadMoreChats(); }}>
+                      <ChevronDown size={18} /> Carregar mais conversas
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); toggleNotifications(); }}>
+                      <Bell size={18} /> {notificationsEnabled ? 'Desativar notificações' : 'Ativar notificações'}
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); setShortcutsOpen(true); }}>
+                      <Keyboard size={18} /> Atalhos de teclado
+                    </div>
+                    <div className="wa-context-menu-item" onClick={() => { setSidebarMenuOpen(false); }}>
+                      <Settings size={18} /> Configurações
+                    </div>
+                  </div>
+                </>
               )}
-            </motion.button>
+            </div>
           </div>
         </div>
 
-        {/* Tab buttons */}
-        <div className="wa-tabs">
-          <button 
-            className={`wa-tab ${activeTab === 'ativas' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ativas')}
-          >
-            Conversas
-          </button>
-          <button 
-            className={`wa-tab ${activeTab === 'arquivadas' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('arquivadas'); loadArchivedChats(); }}
-          >
-            <Archive size={14} />
-            Arquivadas
-          </button>
+        {/* Filter chips */}
+        <div className="wa-filters">
+          {([
+            { key: 'all' as const, label: 'Todos' },
+            { key: 'unread' as const, label: 'Não lidos', count: chats.filter(c => !c.archived && c.unreadCount && c.unreadCount > 0).length },
+            { key: 'favorites' as const, label: 'Favoritos' },
+            { key: 'groups' as const, label: 'Grupos' },
+          ]).map(f => (
+            <button
+              key={f.key}
+              className={`wa-filter-chip ${chatFilter === f.key ? 'active' : ''}`}
+              onClick={() => setChatFilter(f.key)}
+            >
+              {f.label}
+              {f.count && f.count > 0 && (
+                <span className="wa-filter-chip-badge">{f.count}</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Search */}
-        <div className="p-2 bg-white">
-          <div className="bg-[#f0f2f5] flex items-center px-3 py-1.5 rounded-lg">
-            <Search className="text-gray-400 mr-3" size={18} />
+        <div className="p-2" style={{ background: 'var(--wa-sidebar-bg)' }}>
+          <div className="flex items-center px-3 py-1.5 rounded-lg" style={{ background: 'var(--wa-search-input)' }}>
+            <Search className="mr-3" size={18} style={{ color: 'var(--wa-text-secondary)' }} />
             <input 
               type="text" 
               placeholder="Pesquisar ou começar uma nova conversa" 
               className="bg-transparent border-none outline-none text-sm w-full"
+              style={{ color: 'var(--wa-text-primary)' }}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearchQuery('')} style={{ color: 'var(--wa-text-secondary)' }}>
                 <X size={16} />
               </button>
             )}
@@ -1205,28 +1474,50 @@ export default function App() {
                 setSelectedChat(chat.id);
                 if (chat.unreadCount && chat.unreadCount > 0) markChatAsRead(chat.id);
               }}
+              onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, chatId: chat.id, isGroup: chat.id.endsWith('@g.us' ) }); }}
             >
               {chat.avatar ? (
                 <img src={chat.avatar} alt={getChatDisplayName(chat)} className="wa-chat-item-avatar" />
               ) : (
                 <div className="wa-chat-item-avatar-placeholder">
-                  <User className="text-gray-400" size={28} />
+                  <User size={28} style={{ color: 'var(--wa-text-secondary)' }} />
                 </div>
               )}
               <div className="wa-chat-item-content">
                 <div className="wa-chat-item-top">
-                  <h3 className="wa-chat-item-name">{getChatDisplayName(chat)}</h3>
-                  <span className={`wa-chat-item-time ${chat.unreadCount && chat.unreadCount > 0 ? 'unread' : ''}`}>
-                    {formatChatTime(chat.lastMessageTime)}
-                  </span>
+                  <h3 className="wa-chat-item-name">
+                    {chat.id.endsWith('@g.us') && <Users size={14} style={{ marginRight: 4, verticalAlign: 'middle', opacity: 0.6 }} />}
+                    {getChatDisplayName(chat)}
+                  </h3>
+                  <div className="wa-chat-item-top-right">
+                    {chat.pinned && <Pin size={14} className="wa-chat-item-pin" />}
+                    {chat.muted && <VolumeX size={14} className="wa-chat-item-muted-icon" />}
+                    <span className={`wa-chat-item-time ${chat.unreadCount && chat.unreadCount > 0 ? 'unread' : ''}`}>
+                      {formatChatTime(chat.lastMessageTime)}
+                    </span>
+                  </div>
                 </div>
                 <div className="wa-chat-item-bottom">
                   <p className="wa-chat-item-message">
                     {typingJids.has(chat.id) ? (
-                      <span style={{ color: '#00a884', fontStyle: 'italic' }}>digitando...</span>
-                    ) : chat.lastMessage 
-                      ? `${chat.lastMessageSender && chat.id.endsWith('@g.us') ? chat.lastMessageSender + ': ' : ''}${chat.lastMessage}` 
-                      : 'Toque para conversar'}
+                      <span style={{ color: 'var(--wa-teal-dark)', fontStyle: 'italic' }}>digitando...</span>
+                    ) : chat.lastMessage ? (
+                      <span className="wa-chat-item-message-text">
+                        {chat.lastMessageStatus && (
+                          <span className="wa-chat-item-check">
+                            {chat.lastMessageStatus === 'sent' && <Check size={16} className="wa-check-sent-icon" />}
+                            {chat.lastMessageStatus === 'delivered' && <CheckCheck size={16} className="wa-check-delivered-icon" />}
+                            {chat.lastMessageStatus === 'read' && <CheckCheck size={16} className="wa-check-read-icon" />}
+                          </span>
+                        )}
+                        {chat.lastMessageSender && chat.id.endsWith('@g.us') && (
+                          <span>{chat.lastMessageSender}: </span>
+                        )}
+                        {chat.lastMessage}
+                      </span>
+                    ) : (
+                      'Toque para conversar'
+                    )}
                   </p>
                   {chat.unreadCount && chat.unreadCount > 0 && (
                     <span className="wa-unread-badge">{chat.unreadCount}</span>
@@ -1234,17 +1525,17 @@ export default function App() {
                 </div>
               </div>
               <button
-                className="wa-archive-btn"
-                onClick={(e) => { e.stopPropagation(); toggleArchiveChat(chat.id, chat.archived || false); }}
-                title={chat.archived ? 'Desarquivar' : 'Arquivar'}
+                className="wa-chat-item-menu"
+                onClick={(e) => { e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, chatId: chat.id, isGroup: chat.id.endsWith('@g.us' ) }); }}
+                title="Mais opções"
               >
-                {chat.archived ? '📤' : '📥'}
+                <ChevronDown size={16} />
               </button>
             </div>
           ))}
           {filteredChats.length === 0 && (
-            <div className="p-4 text-center text-gray-400">
-              {searchQuery ? 'Nenhuma conversa encontrada' : activeTab === 'ativas' ? 'Nenhuma conversa ativa' : 'Nenhuma conversa arquivada'}
+            <div className="p-4 text-center text-sm" style={{ color: 'var(--wa-text-secondary)' }}>
+              {searchQuery ? 'Nenhuma conversa encontrada' : chatFilter === 'unread' ? 'Nenhuma conversa não lida' : chatFilter === 'groups' ? 'Nenhuma conversa em grupo' : chatFilter === 'favorites' ? 'Nenhum favorito' : 'Nenhuma conversa'}
             </div>
           )}
         </div>
@@ -1262,12 +1553,12 @@ export default function App() {
                 {chatDetails?.avatar ? (
                   <img src={chatDetails.avatar} alt={chatDetails.displayName} className="w-10 h-10 rounded-full object-cover" />
                 ) : (
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <User className="text-gray-400" size={24} />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--wa-border)' }}>
+                    <User size={24} style={{ color: 'var(--wa-text-secondary)' }} />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <h3 className="font-medium text-gray-800 truncate">
+                  <h3 className="font-medium truncate" style={{ color: 'var(--wa-text-primary)' }}>
                     {chatDetails?.displayName || chats.find(c => c.id === selectedChat)?.displayName || selectedChat.split('@')[0]}
                   </h3>
                   <p className={`wa-header-status ${presenceMap[selectedChat] === 'available' ? 'online' : ''}`}>
@@ -1578,8 +1869,8 @@ export default function App() {
           </>
         ) : (
           <div className="wa-empty-state">
-            <div className="w-64 h-64 bg-[#f0f2f5] rounded-full flex items-center justify-center mb-8" style={{ opacity: 0.4 }}>
-              <MessageSquare size={100} className="text-gray-400" />
+            <div className="w-64 h-64 rounded-full flex items-center justify-center mb-8" style={{ opacity: 0.4, background: 'var(--wa-search-input)' }}>
+              <MessageSquare size={100} style={{ color: 'var(--wa-text-secondary)' }} />
             </div>
             <h2>WhatsApp Web</h2>
             <p>
@@ -1611,6 +1902,12 @@ export default function App() {
                   if (msg) handleCopyMessage(msg._text);
                 }}>
                   <Copy size={18} /> Copiar
+                </div>
+                <div className="wa-context-menu-item" onClick={() => {
+                  const msg = messages.find(m => m.key.id === contextMenu.messageId);
+                  if (msg) handleOpenForward(msg);
+                }}>
+                  <Forward size={18} /> Encaminhar
                 </div>
                 <div className="wa-context-menu-item" onClick={() => {
                   handleSendReaction(contextMenu.messageId!, '👍');
@@ -1657,6 +1954,218 @@ export default function App() {
 
       {/* Toast */}
       {toast && <div className="wa-toast">{toast}</div>}
+
+      {/* Forward Message Modal */}
+      {forwardModal && (
+        <div className="wa-modal-overlay" onClick={() => setForwardModal(null)}>
+          <div className="wa-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <h3>Encaminhar mensagem</h3>
+              <button className="wa-modal-close" onClick={() => setForwardModal(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="wa-modal-search">
+              <input
+                type="text"
+                placeholder="Pesquisar conversa..."
+                value={forwardSearch}
+                onChange={e => setForwardSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="wa-modal-body">
+              {chats
+                .filter(c => {
+                  const name = getChatDisplayName(c).toLowerCase();
+                  return !forwardSearch.trim() || name.includes(forwardSearch.toLowerCase());
+                })
+                .map(chat => (
+                  <div
+                    key={chat.id}
+                    className={`wa-forward-item ${forwardSelected.includes(chat.id) ? 'selected' : ''}`}
+                    onClick={() => {
+                      setForwardSelected(prev =>
+                        prev.includes(chat.id)
+                          ? prev.filter(id => id !== chat.id)
+                          : [...prev, chat.id]
+                      );
+                    }}
+                  >
+                    {chat.avatar ? (
+                      <img src={chat.avatar} alt="" className="wa-chat-item-avatar" />
+                    ) : (
+                      <div className="wa-chat-item-avatar-placeholder">
+                        <User size={28} style={{ color: 'var(--wa-text-secondary)' }} />
+                      </div>
+                    )}
+                    <div className="wa-chat-item-content">
+                      <h3 className="wa-chat-item-name">{getChatDisplayName(chat)}</h3>
+                    </div>
+                    {forwardSelected.includes(chat.id) && (
+                      <Check size={20} style={{ color: 'var(--wa-teal-dark)' }} />
+                    )}
+                  </div>
+                ))}
+              {chats.filter(c => {
+                const name = getChatDisplayName(c).toLowerCase();
+                return !forwardSearch.trim() || name.includes(forwardSearch.toLowerCase());
+              }).length === 0 && (
+                <div className="p-4 text-center text-sm" style={{ color: 'var(--wa-text-secondary)' }}>
+                  Nenhuma conversa encontrada
+                </div>
+              )}
+            </div>
+            <div className="wa-modal-footer">
+              <button className="wa-modal-btn wa-modal-btn-secondary" onClick={() => setForwardModal(null)}>
+                Cancelar
+              </button>
+              <button
+                className="wa-modal-btn wa-modal-btn-primary"
+                disabled={forwardSelected.length === 0 || forwarding}
+                onClick={handleForwardMessage}
+              >
+                {forwarding ? 'Enviando...' : `Encaminhar${forwardSelected.length > 0 ? ` (${forwardSelected.length})` : ''}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Profile Panel */}
+      {profileOpen && (
+        <>
+          <div className="wa-context-menu-overlay" onClick={() => setProfileOpen(false)} />
+          <div className="wa-profile-panel">
+            <div className="wa-profile-header">
+              <button className="wa-modal-close" onClick={() => setProfileOpen(false)} style={{ color: 'white' }}>
+                <ArrowLeft size={24} />
+              </button>
+              <div>
+                <h3>Perfil</h3>
+                <p>Configurações da conta</p>
+              </div>
+            </div>
+            <div className="wa-profile-avatar">
+              <User size={80} style={{ color: 'var(--wa-text-secondary)' }} />
+            </div>
+            <div className="wa-profile-info">
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Nome</div>
+                <div className="wa-profile-section-value">Usuário WhatsApp</div>
+              </div>
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Telefone</div>
+                <div className="wa-profile-section-value">
+                  {socket ? 'Conectado' : 'Desconectado'}
+                </div>
+              </div>
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Sobre</div>
+                <div className="wa-profile-section-value">Hey there! I am using WhatsApp.</div>
+              </div>
+              <div className="wa-profile-section" style={{ border: 'none' }}>
+                <div className="wa-profile-section-label">Configurações</div>
+                <label className="wa-notification-toggle" style={{ padding: '8px 0', marginTop: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={darkMode}
+                    onChange={() => setDarkMode(prev => !prev)}
+                  />
+                  Modo escuro
+                </label>
+                <label className="wa-notification-toggle" style={{ padding: '8px 0' }}>
+                  <input
+                    type="checkbox"
+                    checked={notificationsEnabled}
+                    onChange={toggleNotifications}
+                  />
+                  Notificações desktop
+                </label>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Keyboard Shortcuts Help */}
+      {shortcutsOpen && (
+        <div className="wa-shortcuts-overlay" onClick={() => setShortcutsOpen(false)}>
+          <div className="wa-shortcuts-modal" onClick={e => e.stopPropagation()}>
+            <div className="wa-shortcuts-header">
+              <h3>Atalhos de Teclado</h3>
+              <button className="wa-modal-close" onClick={() => setShortcutsOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="wa-shortcuts-body">
+              <div className="wa-shortcut-group">
+                <h4>Navegação</h4>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Pesquisar conversas</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Ctrl</span>
+                    <span className="wa-shortcut-key">K</span>
+                  </div>
+                </div>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Alternar modo escuro</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Ctrl</span>
+                    <span className="wa-shortcut-key">D</span>
+                  </div>
+                </div>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Abrir seletor de emoji</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Ctrl</span>
+                    <span className="wa-shortcut-key">E</span>
+                  </div>
+                </div>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Alternar notificações</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Ctrl</span>
+                    <span className="wa-shortcut-key">N</span>
+                  </div>
+                </div>
+              </div>
+              <div className="wa-shortcut-group">
+                <h4>Mensagens</h4>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Enviar mensagem</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Enter</span>
+                  </div>
+                </div>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Nova linha</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Shift</span>
+                    <span className="wa-shortcut-key">Enter</span>
+                  </div>
+                </div>
+              </div>
+              <div className="wa-shortcut-group">
+                <h4>Geral</h4>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Mostrar atalhos</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Ctrl</span>
+                    <span className="wa-shortcut-key">/</span>
+                  </div>
+                </div>
+                <div className="wa-shortcut-item">
+                  <span className="wa-shortcut-desc">Fechar modal / painel</span>
+                  <div className="wa-shortcut-keys">
+                    <span className="wa-shortcut-key">Esc</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
