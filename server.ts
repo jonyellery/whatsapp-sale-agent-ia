@@ -1856,6 +1856,101 @@ async function startServer() {
         }
     });
 
+    // Media proxy endpoint - downloads encrypted media from WhatsApp and serves it
+    app.get("/api/media/:jid/:messageId", async (req, res) => {
+        const { jid, messageId } = req.params;
+        
+        if (!sock) {
+            return res.status(500).json({ error: "Socket not initialized" });
+        }
+        
+        try {
+            // Find the message
+            let msg: any = null;
+            
+            // Check exact JID
+            const msgs = store.messages[jid]?.all() || [];
+            msg = msgs.find((m: any) => m.key?.id === messageId);
+            
+            // For individual contacts, also check device variants
+            if (!msg && jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                const baseJid = jid.replace('@s.whatsapp.net', '');
+                for (const key of Object.keys(store.messages)) {
+                    if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                        const variantMsgs = store.messages[key]?.all() || [];
+                        msg = variantMsgs.find((m: any) => m.key?.id === messageId);
+                        if (msg) break;
+                    }
+                }
+            }
+            
+            if (!msg) {
+                return res.status(404).json({ error: "Message not found" });
+            }
+            
+            // Determine media type and download
+            let stream: any;
+            let contentType = 'application/octet-stream';
+            let filename = 'media';
+            
+            const message = msg.message;
+            if (!message) {
+                return res.status(404).json({ error: "No message content" });
+            }
+            
+            // Unwrap if needed
+            const inner = message.viewOnceMessage?.message 
+                || message.viewOnceMessageV2?.message 
+                || message.ephemeralMessage?.message
+                || message.documentWithCaptionMessage?.message
+                || message;
+            
+            if (inner.stickerMessage) {
+                stream = await downloadContentFromMessage(inner.stickerMessage, 'sticker');
+                contentType = inner.stickerMessage.mimetype || 'image/webp';
+                filename = 'sticker.webp';
+            } else if (inner.imageMessage) {
+                stream = await downloadContentFromMessage(inner.imageMessage, 'image');
+                contentType = inner.imageMessage.mimetype || 'image/jpeg';
+                filename = 'image.jpg';
+            } else if (inner.videoMessage) {
+                stream = await downloadContentFromMessage(inner.videoMessage, 'video');
+                contentType = inner.videoMessage.mimetype || 'video/mp4';
+                filename = 'video.mp4';
+            } else if (inner.audioMessage) {
+                stream = await downloadContentFromMessage(inner.audioMessage, 'audio');
+                contentType = inner.audioMessage.mimetype || 'audio/ogg';
+                filename = inner.audioMessage.ptt ? 'voice.ogg' : 'audio.ogg';
+            } else if (inner.documentMessage) {
+                stream = await downloadContentFromMessage(inner.documentMessage, 'document');
+                contentType = inner.documentMessage.mimetype || 'application/octet-stream';
+                filename = inner.documentMessage.fileName || 'document';
+            } else if (inner.locationMessage) {
+                // Location doesn't need download - return map placeholder
+                return res.status(404).json({ error: "Location messages don't have downloadable media" });
+            } else {
+                return res.status(400).json({ error: "No downloadable media in message" });
+            }
+            
+            // Collect stream chunks
+            const chunks: Buffer[] = [];
+            for await (const chunk of stream) {
+                chunks.push(Buffer.from(chunk));
+            }
+            const buffer = Buffer.concat(chunks);
+            
+            // Set headers and send
+            res.set('Content-Type', contentType);
+            res.set('Content-Length', String(buffer.length));
+            res.set('Cache-Control', 'public, max-age=86400');
+            res.send(buffer);
+            
+        } catch (e: any) {
+            console.log("Error downloading media:", e.message || e);
+            res.status(500).json({ error: e.message || "Failed to download media" });
+        }
+    });
+
     app.post("/api/send", express.json(), async (req, res) => {
         const { jid, text } = req.body;
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });

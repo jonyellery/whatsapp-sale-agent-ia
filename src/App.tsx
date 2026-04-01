@@ -403,6 +403,13 @@ interface ChatDetails {
   description?: string;
 }
 
+// Helper to build media proxy URL
+const getMediaProxyUrl = (msg: WAMessage): string => {
+  const jid = msg.key.remoteJid;
+  const messageId = msg.key.id;
+  return `/api/media/${encodeURIComponent(jid)}/${encodeURIComponent(messageId)}`;
+};
+
 // Helper to extract quoted message text from various types
 const getQuotedMessageText = (quoted: any): string => {
   if (!quoted) return '[Mídia]';
@@ -478,7 +485,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   // Image message
   else if (msg.message?.imageMessage) {
     normalized._type = 'image';
-    normalized._mediaUrl = msg.message.imageMessage.url;
+    normalized._mediaUrl = getMediaProxyUrl(msg);
     normalized._thumbnail = msg.message.imageMessage.jpegThumbnail;
     normalized._text = msg.message.imageMessage.caption || '';
     if (msg.message.imageMessage?.contextInfo?.mentionedJid) {
@@ -494,7 +501,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   // Video message
   else if (msg.message?.videoMessage) {
     normalized._type = 'video';
-    normalized._mediaUrl = msg.message.videoMessage.url;
+    normalized._mediaUrl = getMediaProxyUrl(msg);
     normalized._thumbnail = msg.message.videoMessage.jpegThumbnail;
     normalized._text = msg.message.videoMessage.caption || '';
     normalized._duration = msg.message.videoMessage.seconds;
@@ -511,7 +518,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   // PTV message (push-to-video)
   else if (msg.message?.ptvMessage) {
     normalized._type = 'ptv';
-    normalized._mediaUrl = msg.message.ptvMessage.url;
+    normalized._mediaUrl = getMediaProxyUrl(msg);
     normalized._thumbnail = msg.message.ptvMessage.jpegThumbnail;
     normalized._duration = msg.message.ptvMessage.seconds;
     normalized._text = msg.message.ptvMessage.caption || '';
@@ -519,7 +526,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   // Audio message
   else if (msg.message?.audioMessage) {
     normalized._type = 'audio';
-    normalized._mediaUrl = msg.message.audioMessage.url;
+    normalized._mediaUrl = getMediaProxyUrl(msg);
     normalized._isPTT = msg.message.audioMessage.ptt;
     normalized._duration = msg.message.audioMessage.seconds;
     normalized._text = msg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
@@ -527,7 +534,7 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   // Sticker message
   else if (msg.message?.stickerMessage) {
     normalized._type = 'sticker';
-    normalized._mediaUrl = msg.message.stickerMessage.url;
+    normalized._mediaUrl = getMediaProxyUrl(msg);
     normalized._text = 'Sticker';
   }
   // Document message
