@@ -326,6 +326,8 @@ interface WAMessage {
   participant?: string;
   messageContextInfo?: MessageContextInfo;
   status?: number;
+  messageStubType?: number;
+  messageStubParameters?: string[];
 }
 
 interface Message extends WAMessage {
@@ -339,6 +341,10 @@ interface Message extends WAMessage {
   _replyTo?: {
     text?: string;
     stanzaId?: string;
+    author?: string;
+    isMedia?: boolean;
+    mediaType?: string;
+    thumbnail?: string;
   };
   _mentions?: string[];
   _reactionTo?: {
@@ -346,6 +352,13 @@ interface Message extends WAMessage {
     id?: string;
     fromMe?: boolean;
     participant?: string;
+  };
+  _linkPreview?: {
+    title?: string;
+    description?: string;
+    thumbnail?: string;
+    matchedText?: string;
+    canonicalUrl?: string;
   };
   _location?: {
     latitude?: number;
@@ -410,6 +423,15 @@ const getMediaProxyUrl = (msg: WAMessage): string => {
   return `/api/media/${encodeURIComponent(jid)}/${encodeURIComponent(messageId)}`;
 };
 
+// Helper to extract clean phone number from JID (removes device suffix)
+const getPhoneNumber = (jid: string): string => {
+  if (!jid) return '';
+  // Remove @s.whatsapp.net, @g.us, @lid, etc.
+  const base = jid.split('@')[0];
+  // Remove device suffix like :5 or :12
+  return base.split(':')[0];
+};
+
 // Helper to extract quoted message text from various types
 const getQuotedMessageText = (quoted: any): string => {
   if (!quoted) return '[Mídia]';
@@ -422,10 +444,89 @@ const getQuotedMessageText = (quoted: any): string => {
   if (quoted.documentMessage) return `📄 ${quoted.documentMessage.fileName || 'Documento'}`;
   if (quoted.contactMessage) return `👤 ${quoted.contactMessage.displayName || 'Contato'}`;
   if (quoted.locationMessage) return '📍 Localização';
+  if (quoted.pollCreationMessage) return `📊 ${quoted.pollCreationMessage.name || 'Enquete'}`;
+  if (quoted.liveLocationMessage) return '📍 Localização em tempo real';
   return '[Mídia]';
 };
 
+// Helper to extract full reply details from quoted message
+const getReplyDetails = (quoted: any): { text: string; isMedia: boolean; mediaType?: string; thumbnail?: string } => {
+  if (!quoted) return { text: '[Mídia]', isMedia: false };
+  if (quoted.conversation) return { text: quoted.conversation, isMedia: false };
+  if (quoted.extendedTextMessage?.text) return { text: quoted.extendedTextMessage.text, isMedia: false };
+  if (quoted.imageMessage) return { 
+    text: quoted.imageMessage.caption || '📷 Foto', 
+    isMedia: true, 
+    mediaType: 'image',
+    thumbnail: quoted.imageMessage.jpegThumbnail
+  };
+  if (quoted.videoMessage) return { 
+    text: quoted.videoMessage.caption || '🎥 Vídeo', 
+    isMedia: true, 
+    mediaType: 'video',
+    thumbnail: quoted.videoMessage.jpegThumbnail
+  };
+  if (quoted.audioMessage) return { 
+    text: quoted.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio', 
+    isMedia: true, 
+    mediaType: 'audio'
+  };
+  if (quoted.stickerMessage) return { text: '🎨 Sticker', isMedia: true, mediaType: 'sticker' };
+  if (quoted.documentMessage) return { 
+    text: `📄 ${quoted.documentMessage.fileName || 'Documento'}`, 
+    isMedia: true, 
+    mediaType: 'document'
+  };
+  if (quoted.contactMessage) return { text: `👤 ${quoted.contactMessage.displayName || 'Contato'}`, isMedia: false };
+  if (quoted.locationMessage) return { text: '📍 Localização', isMedia: true, mediaType: 'location' };
+  if (quoted.liveLocationMessage) return { text: '📍 Localização em tempo real', isMedia: true, mediaType: 'location' };
+  if (quoted.pollCreationMessage) return { text: `📊 ${quoted.pollCreationMessage.name || 'Enquete'}`, isMedia: false };
+  return { text: '[Mídia]', isMedia: false };
+};
+
 // Handle wrapped messages (viewOnce, ephemeral, documentWithCaption, etc.)
+// Convert group system message stubType to human-readable text
+const getStubTypeText = (stubType: number, params: string[]): string => {
+  const getName = (param?: string): string => {
+    if (!param) return 'Alguém';
+    try {
+      const parsed = JSON.parse(param);
+      return getPhoneNumber(parsed.id || param);
+    } catch {
+      return getPhoneNumber(param);
+    }
+  };
+
+  switch (stubType) {
+    case 20: return '📋 Grupo criado';
+    case 21: return `📝 Nome do grupo alterado para "${params[0] || ''}"`;
+    case 22: return '🖼️ Foto do grupo alterada';
+    case 23: return '🔗 Link de convite alterado';
+    case 24: return '📝 Descrição do grupo alterada';
+    case 25: return params[0] === 'on' 
+      ? '🔒 Somente admins podem editar informações do grupo'
+      : '🔓 Todos podem editar informações do grupo';
+    case 26: return params[0] === 'on'
+      ? '📢 Somente admins podem enviar mensagens'
+      : '💬 Todos podem enviar mensagens';
+    case 27: return params.map(p => `${getName(p)} entrou no grupo`).join(', ');
+    case 28: return params.map(p => `${getName(p)} foi removido(a) do grupo`).join(', ');
+    case 29: return params.map(p => `${getName(p)} agora é admin`).join(', ');
+    case 30: return params.map(p => `${getName(p)} não é mais admin`).join(', ');
+    case 31: return params.map(p => `${getName(p)} foi convidado(a)`).join(', ');
+    case 32: return params.map(p => `${getName(p)} saiu do grupo`).join(', ');
+    case 33: return '📱 Número de telefone alterado';
+    case 43: return '🗑️ Grupo foi excluído';
+    case 69: return params[0] === 'on'
+      ? '📤 Encaminhamento limitado ativado'
+      : '📤 Encaminhamento limitado desativado';
+    case 71: return params.map(p => `${getName(p)} solicitou entrar no grupo`).join(', ');
+    case 140: return params.map(p => `${getName(p)} aceitou o convite`).join(', ');
+    case 144: return params.map(p => `${getName(p)} solicitou entrar`).join(', ');
+    default: return '[Notificação do grupo]';
+  }
+};
+
 const unwrapMessage = (msg: WAMessage): WAMessage => {
   const message = msg.message;
   if (!message) return msg;
@@ -454,6 +555,13 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   const msg = unwrapMessage(inputMsg);
   const normalized: Message = { ...msg, message: msg.message };
   
+  // Handle group system messages (stub types)
+  if (msg.messageStubType && !msg.message) {
+    normalized._type = 'system';
+    normalized._text = getStubTypeText(msg.messageStubType, msg.messageStubParameters || []);
+    return normalized;
+  }
+  
   // Track if it's a wrapped message
   const isWrapped = msg !== inputMsg;
   if (inputMsg.message?.viewOnceMessage || inputMsg.message?.viewOnceMessageV2) {
@@ -470,16 +578,34 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
   } else if (msg.message?.extendedTextMessage) {
     normalized._type = 'text';
     normalized._text = msg.message.extendedTextMessage.text;
-    if (msg.message.extendedTextMessage.contextInfo?.quotedMessage) {
-      const quoted = msg.message.extendedTextMessage.contextInfo.quotedMessage;
+    
+    // Extract link preview info
+    const etm = msg.message.extendedTextMessage;
+    if (etm.title || etm.description || etm.jpegThumbnail || etm.matchedText) {
+      normalized._linkPreview = {
+        title: etm.title,
+        description: etm.description,
+        thumbnail: etm.jpegThumbnail,
+        matchedText: etm.matchedText,
+        canonicalUrl: etm.matchedText
+      };
+    }
+    
+    if (etm.contextInfo?.quotedMessage) {
+      const quoted = etm.contextInfo.quotedMessage;
+      const replyDetails = getReplyDetails(quoted);
       normalized._replyTo = {
-        text: getQuotedMessageText(quoted),
-        stanzaId: msg.message.extendedTextMessage.contextInfo.stanzaId
+        text: replyDetails.text,
+        stanzaId: etm.contextInfo.stanzaId,
+        author: etm.contextInfo.participant,
+        isMedia: replyDetails.isMedia,
+        mediaType: replyDetails.mediaType,
+        thumbnail: replyDetails.thumbnail
       };
     }
     // Check for mentions in contextInfo
-    if (msg.message.extendedTextMessage.contextInfo?.mentionedJid) {
-      normalized._mentions = msg.message.extendedTextMessage.contextInfo.mentionedJid;
+    if (etm.contextInfo?.mentionedJid) {
+      normalized._mentions = etm.contextInfo.mentionedJid;
     }
   }
   // Image message
@@ -492,9 +618,15 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
       normalized._mentions = msg.message.imageMessage.contextInfo.mentionedJid;
     }
     if (msg.message.imageMessage?.contextInfo?.quotedMessage) {
+      const qi = msg.message.imageMessage.contextInfo;
+      const rd = getReplyDetails(qi.quotedMessage);
       normalized._replyTo = {
-        text: getQuotedMessageText(msg.message.imageMessage.contextInfo.quotedMessage),
-        stanzaId: msg.message.imageMessage.contextInfo.stanzaId
+        text: rd.text,
+        stanzaId: qi.stanzaId,
+        author: qi.participant,
+        isMedia: rd.isMedia,
+        mediaType: rd.mediaType,
+        thumbnail: rd.thumbnail
       };
     }
   }
@@ -509,9 +641,15 @@ const normalizeMessage = (inputMsg: WAMessage): Message => {
       normalized._mentions = msg.message.videoMessage.contextInfo.mentionedJid;
     }
     if (msg.message.videoMessage?.contextInfo?.quotedMessage) {
+      const qi = msg.message.videoMessage.contextInfo;
+      const rd = getReplyDetails(qi.quotedMessage);
       normalized._replyTo = {
-        text: getQuotedMessageText(msg.message.videoMessage.contextInfo.quotedMessage),
-        stanzaId: msg.message.videoMessage.contextInfo.stanzaId
+        text: rd.text,
+        stanzaId: qi.stanzaId,
+        author: qi.participant,
+        isMedia: rd.isMedia,
+        mediaType: rd.mediaType,
+        thumbnail: rd.thumbnail
       };
     }
   }
@@ -1080,8 +1218,8 @@ export default function App() {
           if (index !== -1) {
             updated[index] = { 
               ...updated[index], 
-              name: contact.name || contact.notify || contact.id.split('@')[0],
-              displayName: contact.name || contact.notify || contact.id.split('@')[0]
+              name: contact.name || contact.notify || getPhoneNumber(contact.id),
+              displayName: contact.name || contact.notify || getPhoneNumber(contact.id)
             };
           }
         });
@@ -1369,9 +1507,9 @@ export default function App() {
     if (msg.key.fromMe) return 'Você';
     if (msg.pushName) return msg.pushName;
     if (msg.participant) {
-      // Try to get name from contacts or use ID
+      // Try to get name from contacts or use phone number
       const contact = store.current.contacts[msg.participant];
-      return contact?.notify || contact?.name || msg.participant.split('@')[0];
+      return contact?.notify || contact?.name || getPhoneNumber(msg.participant);
     }
     return 'Usuário';
   };
@@ -1383,14 +1521,14 @@ export default function App() {
     if (chat.name) return chat.name;
     if (chat.subject) return chat.subject; // For groups
     
-    // For contacts, extract from ID
+    // For contacts, extract phone number
     const jid = chat.id;
     if (jid.endsWith('@g.us')) {
       // For groups, use a fallback
       return 'Grupo';
     }
-    // For individual contacts, just show the number
-    return jid.split('@')[0];
+    // For individual contacts, just show the phone number
+    return getPhoneNumber(jid);
   };
 
   // Get contact name from JID - using contacts from server
@@ -1398,10 +1536,10 @@ export default function App() {
     // Try to get from store.contacts
     const contact = store.current.contacts[jid];
     if (contact) {
-      return contact.name || contact.notify || jid.split('@')[0];
+      return contact.name || contact.notify || getPhoneNumber(jid);
     }
-    // Fallback to JID number
-    return jid.split('@')[0];
+    // Fallback to phone number
+    return getPhoneNumber(jid);
   };
 
   // Process mentions in message text - replace @jid with contact name
@@ -1419,7 +1557,7 @@ export default function App() {
     mentions.forEach(jid => {
       const contactName = getContactName(jid);
       // Try to replace the JID in the text (could be in format @jid or just the number)
-      const jidNumber = jid.split('@')[0];
+      const jidNumber = getPhoneNumber(jid);
       result = result.replace(new RegExp(`@${jidNumber}`, 'g'), `@${contactName}`);
       result = result.replace(new RegExp(jidNumber, 'g'), `@${contactName}`);
     });
@@ -1708,6 +1846,63 @@ export default function App() {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
+  };
+
+  // Process messages to group album images together
+  const processAlbumGroups = (msgs: Message[]): (Message & { _albumItems?: Message[]; _albumId?: string })[] => {
+    const result: (Message & { _albumItems?: Message[]; _albumId?: string })[] = [];
+    const processed = new Set<string>();
+    
+    for (let i = 0; i < msgs.length; i++) {
+      const msg = msgs[i];
+      if (!msg.key.id || processed.has(msg.key.id)) continue;
+      
+      // Check if this message is the start of an album
+      if (msg._type === 'image' || msg._type === 'video') {
+        const albumItems: Message[] = [msg];
+        const albumId = `album-${msg.key.id}`;
+        
+        // Look ahead for consecutive images/videos from the same sender
+        for (let j = i + 1; j < msgs.length; j++) {
+          const nextMsg = msgs[j];
+          if (!nextMsg.key.id || processed.has(nextMsg.key.id)) continue;
+          
+          // Must be image or video
+          if (nextMsg._type !== 'image' && nextMsg._type !== 'video') break;
+          
+          // Must be from same sender
+          if (nextMsg.key.fromMe !== msg.key.fromMe) break;
+          
+          // Must be within 5 seconds
+          const timeDiff = Math.abs((nextMsg.messageTimestamp || 0) - (msg.messageTimestamp || 0));
+          if (timeDiff > 5) break;
+          
+          // Current item must not have caption (albums don't have captions on each image)
+          // Actually the first or last item might have caption, so check this condition loosely
+          albumItems.push(nextMsg);
+          processed.add(nextMsg.key.id);
+        }
+        
+        // If we found 2+ consecutive images/videos, treat as album
+        if (albumItems.length >= 2) {
+          result.push({
+            ...msg,
+            _albumItems: albumItems,
+            _albumId: albumId
+          });
+          // Mark all album items as processed
+          for (const item of albumItems) {
+            if (item.key.id) processed.add(item.key.id);
+          }
+        } else {
+          result.push(msg);
+        }
+      } else {
+        result.push(msg);
+      }
+    }
+    
+    return result;
   };
 
   // Render message content based on type
@@ -2158,6 +2353,35 @@ export default function App() {
         // Reaction messages are rendered inline below the original message, not as bubbles
         return null;
       
+      case 'text':
+        return (
+          <div className="wa-text-content">
+            <p className="wa-message-text">{processMentions(msg._text || '[Mensagem]', msg._mentions)}</p>
+            {msg._linkPreview && (
+              <div className="wa-link-preview">
+                {msg._linkPreview.thumbnail && (
+                  <img 
+                    src={`data:image/jpeg;base64,${msg._linkPreview.thumbnail}`}
+                    alt=""
+                    className="wa-link-preview-thumb"
+                  />
+                )}
+                <div className="wa-link-preview-info">
+                  {msg._linkPreview.title && (
+                    <span className="wa-link-preview-title">{msg._linkPreview.title}</span>
+                  )}
+                  {msg._linkPreview.description && (
+                    <span className="wa-link-preview-description">{msg._linkPreview.description}</span>
+                  )}
+                  {msg._linkPreview.matchedText && (
+                    <span className="wa-link-preview-url">{msg._linkPreview.matchedText}</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      
       default:
         return <p className="wa-message-text">{processMentions(msg._text || '[Mensagem]', msg._mentions)}</p>;
     }
@@ -2454,7 +2678,7 @@ export default function App() {
                 )}
                 <div className="min-w-0">
                   <h3 className="font-medium truncate" style={{ color: 'var(--wa-text-primary)' }}>
-                    {chatDetails?.displayName || chats.find(c => c.id === selectedChat)?.displayName || selectedChat.split('@')[0]}
+                    {chatDetails?.displayName || chats.find(c => c.id === selectedChat)?.displayName || getPhoneNumber(selectedChat)}
                   </h3>
                   <p className={`wa-header-status ${presenceMap[selectedChat] === 'available' ? 'online' : ''}`}>
                     {selectedChat?.endsWith('@g.us') 
@@ -2503,12 +2727,14 @@ export default function App() {
               )}
 
               {/* Filter out reaction messages for the main list */}
-              {messages.filter(m => m._type !== 'reaction').map((msg, idx, arr) => {
+              {processAlbumGroups(messages.filter(m => m._type !== 'reaction')).map((msg, idx, arr) => {
                 const isGroup = selectedChat?.endsWith('@g.us');
                 const showSenderName = isGroup && !msg.key.fromMe;
                 const prevMsg = idx > 0 ? arr[idx - 1] : null;
                 const showDate = !prevMsg || getDateLabel(msg.messageTimestamp) !== getDateLabel(prevMsg.messageTimestamp);
                 const isContinuation = prevMsg && prevMsg.key.fromMe === msg.key.fromMe;
+                const isAlbum = !!(msg as any)._albumItems;
+                const albumItems = (msg as any)._albumItems as Message[] | undefined;
 
                 const reactions = messages.filter(m => 
                   m._type === 'reaction' && m._reactionTo?.id === msg.key.id
@@ -2524,6 +2750,11 @@ export default function App() {
                         <span>{getDateLabel(msg.messageTimestamp)}</span>
                       </div>
                     )}
+                    {msg._type === 'system' ? (
+                      <div className="wa-system-message">
+                        <span className="wa-system-message-text">{msg._text}</span>
+                      </div>
+                    ) : (
                     <motion.div 
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -2536,10 +2767,33 @@ export default function App() {
                       {/* Reply indicator */}
                       {msg._replyTo && (
                         <div className="wa-reply-indicator">
-                          <div className="wa-reply-indicator-bar"></div>
+                          <div className="wa-reply-indicator-bar" style={{ background: msg._replyTo.author ? `hsl(${(msg._replyTo.author || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 70%, 40%)` : 'var(--wa-teal-dark)' }}></div>
                           <div className="wa-reply-indicator-content">
-                            <div className="wa-reply-indicator-name">Você</div>
-                            <div className="wa-reply-indicator-text">{msg._replyTo.text}</div>
+                            <div className="wa-reply-indicator-name" style={{ color: msg._replyTo.author ? `hsl(${(msg._replyTo.author || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 70%, 40%)` : 'var(--wa-teal-dark)' }}>
+                              {msg._replyTo.author ? getContactName(msg._replyTo.author) : 'Você'}
+                            </div>
+                            {msg._replyTo.thumbnail ? (
+                              <div className="wa-reply-indicator-media">
+                                <img 
+                                  src={`data:image/jpeg;base64,${msg._replyTo.thumbnail}`}
+                                  alt=""
+                                  className="wa-reply-indicator-thumb"
+                                />
+                                <div className="wa-reply-indicator-media-text">
+                                  <span className="wa-reply-indicator-media-type">
+                                    {msg._replyTo.mediaType === 'image' ? '📷 Foto' : msg._replyTo.mediaType === 'video' ? '🎥 Vídeo' : msg._replyTo.text}
+                                  </span>
+                                  <span className="wa-reply-indicator-caption">
+                                    {msg._replyTo.mediaType === 'image' || msg._replyTo.mediaType === 'video' 
+                                      ? msg._replyTo.text.replace(/^(📷 Foto|🎥 Vídeo)\s*/, '') || ''
+                                      : ''
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="wa-reply-indicator-text">{msg._replyTo.text}</div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -2551,7 +2805,50 @@ export default function App() {
                         </div>
                       )}
                       
-                      {renderMessageContent(msg)}
+                      {isAlbum && albumItems ? (
+                        <div className={`wa-album-grid ${albumItems.length === 2 ? 'wa-album-grid-2' : albumItems.length === 3 ? 'wa-album-grid-3' : albumItems.length >= 4 ? 'wa-album-grid-4' : ''}`}>
+                          {albumItems.slice(0, 4).map((item, itemIdx) => (
+                            <div key={item.key.id || itemIdx} className="wa-album-item">
+                              {item._type === 'image' ? (
+                                item._thumbnail ? (
+                                  <img 
+                                    src={`data:image/jpeg;base64,${item._thumbnail}`} 
+                                    alt=""
+                                    className="wa-album-item-img"
+                                  />
+                                ) : item._mediaUrl ? (
+                                  <img 
+                                    src={item._mediaUrl} 
+                                    alt=""
+                                    className="wa-album-item-img"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="wa-album-item-placeholder"><ImageIcon size={24} /></div>
+                                )
+                              ) : (
+                                item._thumbnail ? (
+                                  <div className="wa-album-item-video">
+                                    <img 
+                                      src={`data:image/jpeg;base64,${item._thumbnail}`} 
+                                      alt=""
+                                      className="wa-album-item-img"
+                                    />
+                                    <div className="wa-album-item-play"><Play size={20} fill="white" /></div>
+                                  </div>
+                                ) : (
+                                  <div className="wa-album-item-placeholder"><Video size={24} /></div>
+                                )
+                              )}
+                            </div>
+                          ))}
+                          {albumItems.length > 4 && (
+                            <div className="wa-album-more">+{albumItems.length - 4}</div>
+                          )}
+                        </div>
+                      ) : (
+                        renderMessageContent(msg)
+                      )}
                       
                       {/* Reactions */}
                       {reactions.length > 0 && (
@@ -2589,6 +2886,7 @@ export default function App() {
                         )}
                       </div>
                     </motion.div>
+                    )}
                   </React.Fragment>
                 );
               })}

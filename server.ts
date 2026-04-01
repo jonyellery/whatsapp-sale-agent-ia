@@ -37,6 +37,13 @@ const normalizeJid = (jid: string): string => {
     return jid;
 };
 
+// Extract clean phone number from JID (removes domain and device suffix)
+const getPhoneNumber = (jid: string): string => {
+    if (!jid) return '';
+    const base = jid.split('@')[0];
+    return base.split(':')[0];
+};
+
 // File upload configuration
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -222,7 +229,7 @@ class SimpleStore {
                         if (!existingChat) {
                             this.chats.set(chatJid, {
                                 id: chatJid,
-                                name: contact.name || contact.notify || chatJid.split('@')[0],
+                                name: contact.name || contact.notify || getPhoneNumber(chatJid),
                                 unreadCount: 0,
                                 archived: false
                             });
@@ -308,7 +315,7 @@ if (fs.existsSync(storePath)) {
                 if (!store.chats.get(jid)) {
                     store.chats.set(jid, {
                         id: jid,
-                        name: jid.split('@')[0],
+                        name: getPhoneNumber(jid),
                         unreadCount: 0
                     });
                 }
@@ -323,7 +330,7 @@ if (fs.existsSync(storePath)) {
                     const c = contact as any;
                     store.chats.set(jid, {
                         id: jid,
-                        name: c.name || c.notify || jid.split('@')[0],
+                        name: c.name || c.notify || getPhoneNumber(jid),
                         unreadCount: 0
                     });
                 }
@@ -389,7 +396,7 @@ async function startServer() {
 
     // Helper function to get chat with avatar (defined at function scope so it can be used by API endpoints)
     const getChatWithAvatarFromStore = async (chat: any): Promise<any> => {
-        let displayName = chat.name || chat.subject || chat.id.split('@')[0];
+        let displayName = chat.name || chat.subject || getPhoneNumber(chat.id);
         let avatar = null;
         
         // Check for archived status - Baileys uses 'archive' field in updates, but 'archived' in history
@@ -466,7 +473,7 @@ async function startServer() {
                 // For groups, try to get the sender's name from the message
                 if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
                     // Get sender name from pushName or participant
-                    const senderName = lastMsg.pushName || lastMsg.key?.participant?.split('@')[0] || 'Membro';
+                    const senderName = lastMsg.pushName || (lastMsg.key?.participant ? getPhoneNumber(lastMsg.key.participant) : null) || 'Membro';
                     lastMessageSender = senderName;
                 }
                 
@@ -533,6 +540,27 @@ async function startServer() {
                 } else if (lastMsg.message?.reactionMessage) {
                     // Skip reactions - they are filtered out above
                     lastMessageText = '';
+                } else if (lastMsg.messageStubType) {
+                    // Group system messages
+                    const stubNames: Record<number, string> = {
+                        20: '📋 Grupo criado',
+                        21: '📝 Nome do grupo alterado',
+                        22: '🖼️ Foto do grupo alterada',
+                        23: '🔗 Link de convite alterado',
+                        24: '📝 Descrição alterada',
+                        25: '🔒 Configuração do grupo alterada',
+                        26: '📢 Modo de envio alterado',
+                        27: '👤 Entrou no grupo',
+                        28: '👤 Removido do grupo',
+                        29: '👤 Promovido a admin',
+                        30: '👤 Não é mais admin',
+                        31: '👤 Convidado para o grupo',
+                        32: '👤 Saiu do grupo',
+                        33: '📱 Número alterado',
+                        43: '🗑️ Grupo excluído',
+                        71: '👤 Solicitou entrar',
+                    };
+                    lastMessageText = stubNames[lastMsg.messageStubType] || '[Notificação do grupo]';
                 } else {
                     lastMessageText = '[Mensagem]';
                 }
@@ -705,7 +733,7 @@ async function startServer() {
                                 const c = contact as any;
                                 store.chats.set(jid, {
                                     id: jid,
-                                    name: c.name || c.notify || jid.split('@')[0],
+                                    name: c.name || c.notify || getPhoneNumber(jid),
                                     unreadCount: 0,
                                     conversationTimestamp: Math.floor(Date.now() / 1000)
                                 });
@@ -774,7 +802,7 @@ async function startServer() {
             if (!existingChat) {
                 // Try to get name from contacts
                 const contact = store.contacts[jid];
-                const chatName = contact?.name || contact?.notify || jid.split('@')[0];
+                const chatName = contact?.name || contact?.notify || getPhoneNumber(jid);
                 // Create a basic chat entry
                 store.chats.set(jid, {
                     id: jid,
@@ -838,7 +866,7 @@ async function startServer() {
                 } else {
                     // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
                     const contactInfo = store.contacts[update.id];
-                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || update.id.split('@')[0];
+                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || getPhoneNumber(update.id);
                     store.chats.set(update.id, {
                         id: update.id,
                         name: chatName,
@@ -878,7 +906,7 @@ async function startServer() {
                     if (!existingChat) {
                         store.chats.set(contact.id, {
                             id: contact.id,
-                            name: contact.name || contact.notify || contact.id.split('@')[0],
+                                name: contact.name || contact.notify || getPhoneNumber(contact.id),
                             unreadCount: 0,
                             archived: false,
                             conversationTimestamp: Math.floor(Date.now() / 1000)
@@ -1166,7 +1194,7 @@ async function startServer() {
                         // Always ensure chat entry exists for individual contacts
                         if (contact.id.endsWith('@s.whatsapp.net')) {
                             const existingChat = store.chats.get(contact.id);
-                            const contactName = contact.name || contact.notify || contact.id.split('@')[0];
+                            const contactName = contact.name || contact.notify || getPhoneNumber(contact.id);
                             if (!existingChat) {
                                 store.chats.set(contact.id, {
                                     id: contact.id,
@@ -1175,7 +1203,7 @@ async function startServer() {
                                     conversationTimestamp: Math.floor(Date.now() / 1000)
                                 });
                                 console.log(`[SOCKET] Created chat from history contact ${contact.id}: ${contactName}`);
-                            } else if (!existingChat.name || existingChat.name === contact.id.split('@')[0]) {
+                            } else if (!existingChat.name || existingChat.name === getPhoneNumber(contact.id)) {
                                 // Update chat name if it's currently just a phone number
                                 existingChat.name = contactName;
                                 store.chats.set(contact.id, existingChat);
@@ -1220,7 +1248,7 @@ async function startServer() {
                         if (!existingChat) {
                             // Create a basic chat entry for this JID
                             const contactInfo = store.contacts[jid];
-                            const chatName = contactInfo?.name || contactInfo?.notify || jid.split('@')[0];
+                            const chatName = contactInfo?.name || contactInfo?.notify || getPhoneNumber(jid);
                             store.chats.set(jid, {
                                 id: jid,
                                 name: chatName,
@@ -1627,7 +1655,7 @@ async function startServer() {
             
             return {
                 ...chat,
-                displayName: name || chat.id.split('@')[0],
+                displayName: name || getPhoneNumber(chat.id),
                 avatar: avatar,
                 description: description
             };
@@ -2286,7 +2314,7 @@ async function startServer() {
         // Get chat details including avatar
         socket.on("get-chat-details", async (jid) => {
             try {
-                let displayName = jid.split('@')[0];
+                let displayName = getPhoneNumber(jid);
                 let avatar = null;
                 let participants = [];
                 let description = '';
@@ -2322,7 +2350,7 @@ async function startServer() {
                     description
                 });
             } catch (e) {
-                socket.emit("chat-details", { jid, displayName: jid.split('@')[0], avatar: null });
+                socket.emit("chat-details", { jid, displayName: getPhoneNumber(jid), avatar: null });
             }
         });
 
