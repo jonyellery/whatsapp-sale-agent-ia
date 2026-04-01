@@ -951,6 +951,566 @@ body {
   white-space: nowrap;
 }
 
+.wa-document-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--wa-teal-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.wa-document-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wa-document-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wa-document-type {
+  font-size: 12px;
+  color: var(--wa-text-secondary);
+}
+
+/* Video Play Overlay */
+.wa-video-thumb-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.wa-video-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.wa-video-play-overlay:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.wa-video-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Audio with play button */
+.wa-ptt-icon, .wa-audio-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--wa-teal-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.wa-ptt-info, .wa-audio-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-ptt-label, .wa-audio-label {
+  font-size: 13px;
+  color: var(--wa-text-primary);
+}
+
+.wa-ptt-duration, .wa-audio-duration {
+  font-size: 11px;
+  color: var(--wa-text-secondary);
+}
+
+.wa-ptt-play, .wa-audio-play {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wa-teal-dark);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* View Once / Ephemeral Badges */
+.wa-view-once-badge, .wa-ephemeral-badge {
+  font-size: 11px;
+  color: var(--wa-text-secondary);
+  margin-top: 4px;
+}
+
+/* Location Messages */
+.wa-location-container {
+  min-width: 250px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--wa-input-bg);
+}
+
+.wa-location-map {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.wa-location-map-placeholder {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(135deg, #e0f2e0, #c8e6c9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wa-location-pin {
+  font-size: 36px;
+}
+
+.wa-location-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wa-location-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-location-address {
+  font-size: 12px;
+  color: var(--wa-text-secondary);
+}
+
+.wa-location-link {
+  font-size: 12px;
+  color: var(--wa-teal-dark);
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+.wa-location-link:hover {
+  text-decoration: underline;
+}
+
+/* Contact Messages */
+.wa-contact-container, .wa-contacts-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  min-width: 200px;
+}
+
+.wa-contact-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--wa-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wa-text-secondary);
+  flex-shrink: 0;
+}
+
+.wa-contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-contact-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-contact-action {
+  font-size: 12px;
+  color: var(--wa-teal-dark);
+}
+
+/* Poll Messages */
+.wa-poll-container {
+  min-width: 250px;
+}
+
+.wa-poll-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--wa-border);
+  margin-bottom: 8px;
+}
+
+.wa-poll-icon {
+  font-size: 18px;
+}
+
+.wa-poll-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wa-poll-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--wa-input-bg);
+  border-radius: 8px;
+  border: 1px solid var(--wa-border);
+  cursor: pointer;
+}
+
+.wa-poll-option:hover {
+  background: var(--wa-search-input);
+}
+
+.wa-poll-option-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--wa-text-secondary);
+  flex-shrink: 0;
+}
+
+.wa-poll-option-text {
+  font-size: 14px;
+  color: var(--wa-text-primary);
+}
+
+/* List Messages */
+.wa-list-container {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  min-width: 250px;
+}
+
+.wa-list-icon {
+  font-size: 24px;
+}
+
+.wa-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wa-list-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-list-description {
+  font-size: 13px;
+  color: var(--wa-text-secondary);
+}
+
+.wa-list-action {
+  font-size: 12px;
+  color: var(--wa-teal-dark);
+  margin-top: 4px;
+}
+
+/* Button Messages */
+.wa-buttons-container {
+  min-width: 200px;
+}
+
+.wa-buttons-text {
+  font-size: 14px;
+  color: var(--wa-text-primary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.wa-buttons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wa-button-item {
+  padding: 8px 16px;
+  text-align: center;
+  border: 1px solid var(--wa-teal-dark);
+  border-radius: 6px;
+  color: var(--wa-teal-dark);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wa-button-item:hover {
+  background: rgba(0,168,132,0.08);
+}
+
+.wa-buttons-footer {
+  font-size: 11px;
+  color: var(--wa-text-secondary);
+  margin-top: 6px;
+}
+
+/* Template Messages */
+.wa-template-container {
+  min-width: 200px;
+}
+
+.wa-template-text {
+  font-size: 14px;
+  color: var(--wa-text-primary);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.wa-template-footer {
+  font-size: 11px;
+  color: var(--wa-text-secondary);
+  margin-top: 6px;
+}
+
+/* Group Invite Messages */
+.wa-group-invite-container {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  min-width: 220px;
+}
+
+.wa-group-invite-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.wa-group-invite-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--wa-teal-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.wa-group-invite-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wa-group-invite-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-group-invite-action {
+  font-size: 12px;
+  color: var(--wa-teal-dark);
+}
+
+/* Product Messages */
+.wa-product-container {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  min-width: 220px;
+}
+
+.wa-product-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.wa-product-icon {
+  font-size: 36px;
+}
+
+.wa-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wa-product-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-product-description {
+  font-size: 12px;
+  color: var(--wa-text-secondary);
+}
+
+/* Order Messages */
+.wa-order-container {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  min-width: 200px;
+}
+
+.wa-order-icon {
+  font-size: 28px;
+}
+
+.wa-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wa-order-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+}
+
+.wa-order-detail {
+  font-size: 12px;
+  color: var(--wa-text-secondary);
+}
+
+/* Deleted Messages */
+.wa-deleted-container {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.wa-deleted-text {
+  font-size: 14px;
+  color: var(--wa-text-secondary);
+  font-style: italic;
+}
+
+/* Edited Messages */
+.wa-edited-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-edited-text {
+  font-size: 14px;
+  color: var(--wa-text-primary);
+  word-wrap: break-word;
+}
+
+.wa-edited-badge {
+  font-size: 11px;
+  color: var(--wa-text-secondary);
+  margin-top: 2px;
+}
+
+/* System Messages */
+.wa-system-container {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.wa-system-text {
+  font-size: 13px;
+  color: var(--wa-text-secondary);
+}
+
+/* Call Messages */
+.wa-call-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 14px;
+  color: var(--wa-text-primary);
+}
+
+/* View Once Messages */
+.wa-view-once-container, .wa-ephemeral-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  gap: 8px;
+}
+
+.wa-view-once-icon, .wa-ephemeral-icon {
+  font-size: 32px;
+}
+
+.wa-view-once-text, .wa-ephemeral-text {
+  font-size: 13px;
+  color: var(--wa-text-secondary);
+}
+
+/* Album Messages */
+.wa-album-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.wa-album-icon {
+  font-size: 24px;
+}
+
+.wa-album-text {
+  font-size: 14px;
+  color: var(--wa-text-primary);
+}
+
 /* ===== REACTIONS ===== */
 .wa-message-reactions {
   display: flex;

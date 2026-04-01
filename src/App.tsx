@@ -61,7 +61,21 @@ interface MessageContextInfo {
     };
     imageMessage?: {
       jpegThumbnail?: string;
+      caption?: string;
     };
+    videoMessage?: {
+      jpegThumbnail?: string;
+      caption?: string;
+    };
+    stickerMessage?: {};
+    audioMessage?: {};
+    documentMessage?: {
+      fileName?: string;
+    };
+    contactMessage?: {
+      displayName?: string;
+    };
+    locationMessage?: {};
   };
   quotedType?: string;
   stanzaId?: string;
@@ -81,6 +95,10 @@ interface WAMessage {
     extendedTextMessage?: {
       text: string;
       contextInfo?: MessageContextInfo;
+      title?: string;
+      description?: string;
+      jpegThumbnail?: string;
+      matchedText?: string;
     };
     imageMessage?: {
       url?: string;
@@ -94,20 +112,36 @@ interface WAMessage {
       mimetype?: string;
       caption?: string;
       jpegThumbnail?: string;
+      seconds?: number;
       contextInfo?: MessageContextInfo;
     };
     audioMessage?: {
       url?: string;
       mimetype?: string;
       ptt?: boolean;
+      seconds?: number;
     };
     stickerMessage?: {
       url?: string;
       mimetype?: string;
+      isAnimated?: boolean;
     };
     documentMessage?: {
       fileName?: string;
       mimetype?: string;
+      title?: string;
+      pageCount?: number;
+      fileSize?: string | number;
+      contextInfo?: MessageContextInfo;
+    };
+    documentWithCaptionMessage?: {
+      message?: {
+        documentMessage?: {
+          fileName?: string;
+          mimetype?: string;
+          caption?: string;
+        };
+      };
     };
     reactionMessage?: {
       text?: string;
@@ -118,6 +152,20 @@ interface WAMessage {
         participant?: string;
       };
     };
+    protocolMessage?: {
+      type?: number;
+      key?: {
+        remoteJid?: string;
+        id?: string;
+        fromMe?: boolean;
+      };
+      editedMessage?: {
+        conversation?: string;
+        extendedTextMessage?: { text?: string };
+        imageMessage?: { caption?: string };
+        videoMessage?: { caption?: string };
+      };
+    };
     senderKeyDistributionMessage?: {
       groupId?: string;
     };
@@ -125,21 +173,169 @@ interface WAMessage {
       expectedImageCount?: number;
       expectedVideoCount?: number;
     };
+    locationMessage?: {
+      degreesLatitude?: number;
+      degreesLongitude?: number;
+      name?: string;
+      address?: string;
+      url?: string;
+      jpegThumbnail?: string;
+    };
+    liveLocationMessage?: {
+      degreesLatitude?: number;
+      degreesLongitude?: number;
+      caption?: string;
+      jpegThumbnail?: string;
+      sequenceNumber?: number;
+    };
+    contactMessage?: {
+      displayName?: string;
+      vcard?: string;
+    };
+    contactsArrayMessage?: {
+      displayName?: string;
+      contacts?: Array<{
+        displayName?: string;
+        vcard?: string;
+      }>;
+    };
+    listMessage?: {
+      title?: string;
+      description?: string;
+      buttonText?: string;
+      footerText?: string;
+      sections?: Array<{
+        title?: string;
+        rows?: Array<{
+          title?: string;
+          description?: string;
+        }>;
+      }>;
+    };
+    listResponseMessage?: {
+      title?: string;
+      singleSelectReply?: {
+        selectedRowId?: string;
+      };
+      contextInfo?: MessageContextInfo;
+    };
+    buttonsMessage?: {
+      contentText?: string;
+      footerText?: string;
+      headerType?: number;
+      buttons?: Array<{
+        buttonId?: string;
+        buttonText?: { displayText?: string };
+        type?: number;
+      }>;
+    };
+    buttonsResponseMessage?: {
+      selectedButtonId?: string;
+      selectedDisplayText?: string;
+      contextInfo?: MessageContextInfo;
+    };
+    templateMessage?: {
+      hydratedTemplate?: {
+        hydratedContentText?: string;
+        hydratedFooterText?: string;
+        hydratedButtons?: Array<{
+          index?: number;
+          quickReplyButton?: { displayText?: string };
+          urlButton?: { displayText?: string; url?: string };
+          callButton?: { displayText?: string; phoneNumber?: string };
+        }>;
+      };
+    };
+    templateButtonReplyMessage?: {
+      selectedId?: string;
+      selectedDisplayText?: string;
+      contextInfo?: MessageContextInfo;
+    };
+    groupInviteMessage?: {
+      groupJid?: string;
+      inviteCode?: string;
+      inviteExpiration?: number;
+      groupName?: string;
+      jpegThumbnail?: string;
+      caption?: string;
+    };
+    productMessage?: {
+      product?: {
+        title?: string;
+        description?: string;
+        currencyCode?: string;
+        priceAmount1000?: number;
+        productImage?: {
+          jpegThumbnail?: string;
+        };
+      };
+    };
+    orderMessage?: {
+      orderId?: string;
+      thumbnail?: string;
+      itemCount?: number;
+      status?: number;
+      surface?: number;
+      message?: string;
+      orderTitle?: string;
+      sellerJid?: string;
+      token?: string;
+    };
+    pollCreationMessage?: {
+      name?: string;
+      options?: Array<{
+        optionName?: string;
+      }>;
+    };
+    viewOnceMessage?: {
+      message?: any;
+    };
+    viewOnceMessageV2?: {
+      message?: any;
+    };
+    ephemeralMessage?: {
+      message?: any;
+    };
+    editedMessage?: {
+      message?: {
+        protocolMessage?: {
+          type?: number;
+          key?: any;
+          editedMessage?: any;
+          timestampMs?: number;
+        };
+      };
+    };
+    ptvMessage?: {
+      url?: string;
+      mimetype?: string;
+      caption?: string;
+      jpegThumbnail?: string;
+      seconds?: number;
+    };
+    call?: {
+      callKey?: Uint8Array;
+      conversionSource?: string;
+      conversionData?: Uint8Array;
+      conversionDelaySeconds?: number;
+    };
   };
   messageTimestamp?: number;
   pushName?: string;
   broadcast?: boolean;
   participant?: string;
   messageContextInfo?: MessageContextInfo;
+  status?: number;
 }
 
 interface Message extends WAMessage {
   // Normalized fields for easier access
-  _type?: 'text' | 'image' | 'video' | 'audio' | 'sticker' | 'document' | 'reaction' | 'unknown';
+  _type?: 'text' | 'image' | 'video' | 'audio' | 'sticker' | 'document' | 'reaction' | 'location' | 'liveLocation' | 'contact' | 'contacts' | 'list' | 'listResponse' | 'buttons' | 'buttonsResponse' | 'template' | 'groupInvite' | 'poll' | 'product' | 'order' | 'deleted' | 'edited' | 'system' | 'viewOnce' | 'ephemeral' | 'call' | 'ptv' | 'album' | 'unknown';
   _text?: string;
   _mediaUrl?: string;
   _thumbnail?: string;
   _isPTT?: boolean;
+  _duration?: number;
   _replyTo?: {
     text?: string;
     stanzaId?: string;
@@ -151,6 +347,34 @@ interface Message extends WAMessage {
     fromMe?: boolean;
     participant?: string;
   };
+  _location?: {
+    latitude?: number;
+    longitude?: number;
+    name?: string;
+    address?: string;
+  };
+  _contactInfo?: {
+    displayName?: string;
+    vcard?: string;
+    count?: number;
+  };
+  _pollOptions?: string[];
+  _interactiveContent?: {
+    title?: string;
+    description?: string;
+    buttonText?: string;
+    footerText?: string;
+    buttons?: string[];
+  };
+  _groupInvite?: {
+    groupName?: string;
+    inviteCode?: string;
+    inviteExpiration?: number;
+  };
+  _isViewOnce?: boolean;
+  _isEphemeral?: boolean;
+  _isDeleted?: boolean;
+  _editedText?: string;
 }
 
 interface Chat {
@@ -179,10 +403,59 @@ interface ChatDetails {
   description?: string;
 }
 
+// Helper to extract quoted message text from various types
+const getQuotedMessageText = (quoted: any): string => {
+  if (!quoted) return '[Mídia]';
+  if (quoted.conversation) return quoted.conversation;
+  if (quoted.extendedTextMessage?.text) return quoted.extendedTextMessage.text;
+  if (quoted.imageMessage) return quoted.imageMessage.caption || '📷 Foto';
+  if (quoted.videoMessage) return quoted.videoMessage.caption || '🎥 Vídeo';
+  if (quoted.audioMessage) return quoted.audioMessage.ptt ? '🎤 Áudio' : '🎵 Áudio';
+  if (quoted.stickerMessage) return '🎨 Sticker';
+  if (quoted.documentMessage) return `📄 ${quoted.documentMessage.fileName || 'Documento'}`;
+  if (quoted.contactMessage) return `👤 ${quoted.contactMessage.displayName || 'Contato'}`;
+  if (quoted.locationMessage) return '📍 Localização';
+  return '[Mídia]';
+};
+
+// Handle wrapped messages (viewOnce, ephemeral, documentWithCaption, etc.)
+const unwrapMessage = (msg: WAMessage): WAMessage => {
+  const message = msg.message;
+  if (!message) return msg;
+
+  // Unwrap viewOnceMessage
+  if (message.viewOnceMessage?.message) {
+    return { ...msg, message: message.viewOnceMessage.message };
+  }
+  // Unwrap viewOnceMessageV2
+  if (message.viewOnceMessageV2?.message) {
+    return { ...msg, message: message.viewOnceMessageV2.message };
+  }
+  // Unwrap ephemeralMessage
+  if (message.ephemeralMessage?.message) {
+    return { ...msg, message: message.ephemeralMessage.message };
+  }
+  // Unwrap documentWithCaptionMessage
+  if (message.documentWithCaptionMessage?.message) {
+    return { ...msg, message: message.documentWithCaptionMessage.message };
+  }
+  return msg;
+};
+
 // Helper to extract message content and determine type
-const normalizeMessage = (msg: WAMessage): Message => {
-  const normalized: Message = { ...msg };
+const normalizeMessage = (inputMsg: WAMessage): Message => {
+  const msg = unwrapMessage(inputMsg);
+  const normalized: Message = { ...msg, message: msg.message };
   
+  // Track if it's a wrapped message
+  const isWrapped = msg !== inputMsg;
+  if (inputMsg.message?.viewOnceMessage || inputMsg.message?.viewOnceMessageV2) {
+    normalized._isViewOnce = true;
+  }
+  if (inputMsg.message?.ephemeralMessage) {
+    normalized._isEphemeral = true;
+  }
+
   // Check for text message (conversation or extendedTextMessage)
   if (msg.message?.conversation) {
     normalized._type = 'text';
@@ -193,7 +466,7 @@ const normalizeMessage = (msg: WAMessage): Message => {
     if (msg.message.extendedTextMessage.contextInfo?.quotedMessage) {
       const quoted = msg.message.extendedTextMessage.contextInfo.quotedMessage;
       normalized._replyTo = {
-        text: quoted.conversation || quoted.extendedTextMessage?.text || '[Mídia]',
+        text: getQuotedMessageText(quoted),
         stanzaId: msg.message.extendedTextMessage.contextInfo.stanzaId
       };
     }
@@ -207,10 +480,15 @@ const normalizeMessage = (msg: WAMessage): Message => {
     normalized._type = 'image';
     normalized._mediaUrl = msg.message.imageMessage.url;
     normalized._thumbnail = msg.message.imageMessage.jpegThumbnail;
-    normalized._text = msg.message.imageMessage.caption || '[Imagem]';
-    // Check for mentions in image message
+    normalized._text = msg.message.imageMessage.caption || '';
     if (msg.message.imageMessage?.contextInfo?.mentionedJid) {
       normalized._mentions = msg.message.imageMessage.contextInfo.mentionedJid;
+    }
+    if (msg.message.imageMessage?.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(msg.message.imageMessage.contextInfo.quotedMessage),
+        stanzaId: msg.message.imageMessage.contextInfo.stanzaId
+      };
     }
   }
   // Video message
@@ -218,17 +496,32 @@ const normalizeMessage = (msg: WAMessage): Message => {
     normalized._type = 'video';
     normalized._mediaUrl = msg.message.videoMessage.url;
     normalized._thumbnail = msg.message.videoMessage.jpegThumbnail;
-    normalized._text = msg.message.videoMessage.caption || '[Vídeo]';
-    // Check for mentions in video message
+    normalized._text = msg.message.videoMessage.caption || '';
+    normalized._duration = msg.message.videoMessage.seconds;
     if (msg.message.videoMessage?.contextInfo?.mentionedJid) {
       normalized._mentions = msg.message.videoMessage.contextInfo.mentionedJid;
     }
+    if (msg.message.videoMessage?.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(msg.message.videoMessage.contextInfo.quotedMessage),
+        stanzaId: msg.message.videoMessage.contextInfo.stanzaId
+      };
+    }
+  }
+  // PTV message (push-to-video)
+  else if (msg.message?.ptvMessage) {
+    normalized._type = 'ptv';
+    normalized._mediaUrl = msg.message.ptvMessage.url;
+    normalized._thumbnail = msg.message.ptvMessage.jpegThumbnail;
+    normalized._duration = msg.message.ptvMessage.seconds;
+    normalized._text = msg.message.ptvMessage.caption || '';
   }
   // Audio message
   else if (msg.message?.audioMessage) {
     normalized._type = 'audio';
     normalized._mediaUrl = msg.message.audioMessage.url;
     normalized._isPTT = msg.message.audioMessage.ptt;
+    normalized._duration = msg.message.audioMessage.seconds;
     normalized._text = msg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
   }
   // Sticker message
@@ -240,19 +533,243 @@ const normalizeMessage = (msg: WAMessage): Message => {
   // Document message
   else if (msg.message?.documentMessage) {
     normalized._type = 'document';
-    normalized._text = `📄 ${msg.message.documentMessage.fileName || 'Documento'}`;
+    normalized._text = msg.message.documentMessage.fileName || msg.message.documentMessage.title || 'Documento';
+    if (msg.message.documentMessage?.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(msg.message.documentMessage.contextInfo.quotedMessage),
+        stanzaId: msg.message.documentMessage.contextInfo.stanzaId
+      };
+    }
   }
   // Reaction message
   else if (msg.message?.reactionMessage) {
     normalized._type = 'reaction';
-    normalized._text = msg.message.reactionMessage.text || '👍';
-    // Store the key of the message being reacted to
+    normalized._text = msg.message.reactionMessage.text || '';
     normalized._reactionTo = msg.message.reactionMessage.key;
   }
-  // Album message (placeholder)
+  // Protocol message (deletions, edits, etc.)
+  else if (msg.message?.protocolMessage) {
+    const pmType = msg.message.protocolMessage.type;
+    // Type 0 = REVOKE (deleted message)
+    if (pmType === 0) {
+      normalized._type = 'deleted';
+      normalized._isDeleted = true;
+      normalized._text = '🚫 Essa mensagem foi apagada';
+    }
+    // Type 14 = EPHEMERAL setting
+    else if (pmType === 14) {
+      normalized._type = 'system';
+      normalized._text = '⏱️ Mensagens temporárias ativadas';
+    }
+    else {
+      normalized._type = 'system';
+      normalized._text = 'ℹ️ Atualização de mensagem';
+    }
+  }
+  // Edited message
+  else if (msg.message?.editedMessage?.message?.protocolMessage) {
+    const editedProto = msg.message.editedMessage.message.protocolMessage;
+    const edited = editedProto.editedMessage;
+    normalized._type = 'edited';
+    if (edited?.conversation) {
+      normalized._text = edited.conversation;
+      normalized._editedText = edited.conversation;
+    } else if (edited?.extendedTextMessage?.text) {
+      normalized._text = edited.extendedTextMessage.text;
+      normalized._editedText = edited.extendedTextMessage.text;
+    } else if (edited?.imageMessage?.caption) {
+      normalized._text = edited.imageMessage.caption;
+    } else if (edited?.videoMessage?.caption) {
+      normalized._text = edited.videoMessage.caption;
+    } else {
+      normalized._text = '✏️ Mensagem editada';
+    }
+  }
+  // Location message
+  else if (msg.message?.locationMessage) {
+    normalized._type = 'location';
+    const loc = msg.message.locationMessage;
+    normalized._location = {
+      latitude: loc.degreesLatitude,
+      longitude: loc.degreesLongitude,
+      name: loc.name,
+      address: loc.address
+    };
+    normalized._text = loc.name || loc.address || '📍 Localização';
+    normalized._thumbnail = loc.jpegThumbnail;
+  }
+  // Live location message
+  else if (msg.message?.liveLocationMessage) {
+    normalized._type = 'liveLocation';
+    const loc = msg.message.liveLocationMessage;
+    normalized._location = {
+      latitude: loc.degreesLatitude,
+      longitude: loc.degreesLongitude,
+      name: loc.caption || 'Localização em tempo real'
+    };
+    normalized._text = loc.caption || '📍 Localização em tempo real';
+    normalized._thumbnail = loc.jpegThumbnail;
+  }
+  // Contact message
+  else if (msg.message?.contactMessage) {
+    normalized._type = 'contact';
+    normalized._contactInfo = {
+      displayName: msg.message.contactMessage.displayName,
+      vcard: msg.message.contactMessage.vcard
+    };
+    normalized._text = `👤 ${msg.message.contactMessage.displayName || 'Contato'}`;
+  }
+  // Contacts array message
+  else if (msg.message?.contactsArrayMessage) {
+    normalized._type = 'contacts';
+    const contacts = msg.message.contactsArrayMessage.contacts || [];
+    normalized._contactInfo = {
+      displayName: msg.message.contactsArrayMessage.displayName,
+      count: contacts.length
+    };
+    normalized._text = `👥 ${contacts.length} contato${contacts.length !== 1 ? 's' : ''}`;
+  }
+  // Poll creation message
+  else if (msg.message?.pollCreationMessage) {
+    normalized._type = 'poll';
+    const poll = msg.message.pollCreationMessage;
+    normalized._text = `📊 ${poll.name || 'Enquete'}`;
+    normalized._pollOptions = (poll.options || []).map(o => o.optionName || '');
+  }
+  // List message
+  else if (msg.message?.listMessage) {
+    normalized._type = 'list';
+    const list = msg.message.listMessage;
+    normalized._interactiveContent = {
+      title: list.title,
+      description: list.description,
+      buttonText: list.buttonText,
+      footerText: list.footerText
+    };
+    normalized._text = list.title || list.description || '📋 Lista';
+  }
+  // List response message
+  else if (msg.message?.listResponseMessage) {
+    normalized._type = 'listResponse';
+    const resp = msg.message.listResponseMessage;
+    normalized._text = resp.title || resp.singleSelectReply?.selectedRowId || '📋 Resposta de lista';
+    if (resp.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(resp.contextInfo.quotedMessage),
+        stanzaId: resp.contextInfo.stanzaId
+      };
+    }
+  }
+  // Buttons message
+  else if (msg.message?.buttonsMessage) {
+    normalized._type = 'buttons';
+    const btn = msg.message.buttonsMessage;
+    normalized._interactiveContent = {
+      title: btn.contentText,
+      footerText: btn.footerText,
+      buttons: (btn.buttons || []).map(b => b.buttonText?.displayText || '')
+    };
+    normalized._text = btn.contentText || '🔘 Mensagem com botões';
+  }
+  // Buttons response message
+  else if (msg.message?.buttonsResponseMessage) {
+    normalized._type = 'buttonsResponse';
+    const resp = msg.message.buttonsResponseMessage;
+    normalized._text = resp.selectedDisplayText || resp.selectedButtonId || '🔘 Resposta de botão';
+    if (resp.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(resp.contextInfo.quotedMessage),
+        stanzaId: resp.contextInfo.stanzaId
+      };
+    }
+  }
+  // Template message
+  else if (msg.message?.templateMessage) {
+    normalized._type = 'template';
+    const tmpl = msg.message.templateMessage.hydratedTemplate;
+    if (tmpl) {
+      normalized._interactiveContent = {
+        title: tmpl.hydratedContentText,
+        footerText: tmpl.hydratedFooterText,
+        buttons: (tmpl.hydratedButtons || []).map(b => {
+          if (b.quickReplyButton) return b.quickReplyButton.displayText || '';
+          if (b.urlButton) return `${b.urlButton.displayText || '🔗'}`;
+          if (b.callButton) return `📞 ${b.callButton.displayText || ''}`;
+          return '';
+        }).filter(Boolean)
+      };
+      normalized._text = tmpl.hydratedContentText || '📝 Template';
+    } else {
+      normalized._text = '📝 Template';
+    }
+  }
+  // Template button reply message
+  else if (msg.message?.templateButtonReplyMessage) {
+    normalized._type = 'template';
+    const resp = msg.message.templateButtonReplyMessage;
+    normalized._text = resp.selectedDisplayText || resp.selectedId || '🔘 Resposta de template';
+    if (resp.contextInfo?.quotedMessage) {
+      normalized._replyTo = {
+        text: getQuotedMessageText(resp.contextInfo.quotedMessage),
+        stanzaId: resp.contextInfo.stanzaId
+      };
+    }
+  }
+  // Group invite message
+  else if (msg.message?.groupInviteMessage) {
+    normalized._type = 'groupInvite';
+    const invite = msg.message.groupInviteMessage;
+    normalized._groupInvite = {
+      groupName: invite.groupName,
+      inviteCode: invite.inviteCode,
+      inviteExpiration: invite.inviteExpiration
+    };
+    normalized._text = invite.caption || `Convite para o grupo ${invite.groupName || ''}`;
+    normalized._thumbnail = invite.jpegThumbnail;
+  }
+  // Product message
+  else if (msg.message?.productMessage) {
+    normalized._type = 'product';
+    const prod = msg.message.productMessage.product;
+    if (prod) {
+      normalized._text = `🛒 ${prod.title || 'Produto'}`;
+      normalized._thumbnail = prod.productImage?.jpegThumbnail;
+    } else {
+      normalized._text = '🛒 Produto';
+    }
+  }
+  // Order message
+  else if (msg.message?.orderMessage) {
+    normalized._type = 'order';
+    const order = msg.message.orderMessage;
+    normalized._text = `📦 ${order.orderTitle || order.message || 'Pedido'}`;
+    normalized._thumbnail = order.thumbnail;
+  }
+  // Call message
+  else if (msg.message?.call) {
+    normalized._type = 'call';
+    normalized._text = '📞 Chamada';
+  }
+  // Album message
   else if (msg.message?.albumMessage) {
-    normalized._type = 'image';
-    normalized._text = `📸 Álbum (${msg.message.albumMessage.expectedImageCount || ''} fotos)`;
+    normalized._type = 'album';
+    const album = msg.message.albumMessage;
+    const imgCount = album.expectedImageCount || 0;
+    const vidCount = album.expectedVideoCount || 0;
+    const parts: string[] = [];
+    if (imgCount > 0) parts.push(`${imgCount} foto${imgCount !== 1 ? 's' : ''}`);
+    if (vidCount > 0) parts.push(`${vidCount} vídeo${vidCount !== 1 ? 's' : ''}`);
+    normalized._text = `📸 Álbum${parts.length > 0 ? ` (${parts.join(', ')})` : ''}`;
+  }
+  // View once (should have been unwrapped, but just in case)
+  else if (msg.message?.viewOnceMessage || msg.message?.viewOnceMessageV2) {
+    normalized._type = 'viewOnce';
+    normalized._text = '👀 Mensagem de visualização única';
+  }
+  // Ephemeral (should have been unwrapped, but just in case)
+  else if (msg.message?.ephemeralMessage) {
+    normalized._type = 'ephemeral';
+    normalized._text = '⏱️ Mensagem temporária';
   }
   // Unknown type
   else {
@@ -517,7 +1034,11 @@ export default function App() {
 
     newSocket.on('message-deleted', (data: { jid: string; messageId: string }) => {
       if (selectedChatRef.current === data.jid) {
-        setMessages(prev => prev.filter(m => m.key.id !== data.messageId));
+        setMessages(prev => prev.map(m => 
+          m.key.id === data.messageId 
+            ? { ...m, _type: 'deleted' as const, _isDeleted: true, _text: '🚫 Essa mensagem foi apagada', message: undefined }
+            : m
+        ));
       }
     });
 
@@ -1174,6 +1695,14 @@ export default function App() {
     'Símbolos': ['❤','💯','✅','❌','⭐','🔥','💤','💬','👁‍🗨','🔔','🎵','🎶','➕','➖','➗','✖','💲','💱','™','©','®','〰','➰','➿','🔚','🔙','🔛','🔝','🔜','✔','☑','🔘','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤','🔺','🔻','🔸','🔹','🔶','🔷','🔲','🔳','▪','▫','◾','◽','◼','◻','🟥','🟧','🟨','🟩','🟦','🟪','⬛','⬜','🟫']
   };
 
+  // Format duration in seconds to mm:ss
+  const formatDuration = (seconds?: number): string => {
+    if (!seconds) return '';
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   // Render message content based on type
   const renderMessageContent = (msg: Message) => {
     switch (msg._type) {
@@ -1193,9 +1722,20 @@ export default function App() {
                 className="wa-media-image"
                 loading="lazy"
               />
-            ) : null}
-            {msg._text && msg._text !== '[Imagem]' && (
+            ) : (
+              <div className="wa-media-placeholder">
+                <ImageIcon size={32} />
+                <span>📷 Foto</span>
+              </div>
+            )}
+            {msg._text && msg._text !== '[Imagem]' && msg._text !== '' && (
               <p className="wa-media-caption">{processMentions(msg._text, msg._mentions)}</p>
+            )}
+            {msg._isViewOnce && (
+              <span className="wa-view-once-badge">👁️ Visualização única</span>
+            )}
+            {msg._isEphemeral && (
+              <span className="wa-ephemeral-badge">⏱️ Temporária</span>
             )}
           </div>
         );
@@ -1204,17 +1744,57 @@ export default function App() {
         return (
           <div className="wa-video-container">
             {msg._thumbnail ? (
-              <img 
-                src={`data:image/jpeg;base64,${msg._thumbnail}`} 
-                alt={msg._text || 'Vídeo'} 
-                className="wa-media-thumbnail"
-              />
+              <div className="wa-video-thumb-wrapper">
+                <img 
+                  src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                  alt={msg._text || 'Vídeo'} 
+                  className="wa-media-thumbnail"
+                />
+                <div className="wa-video-play-overlay">
+                  <Play size={32} fill="white" />
+                </div>
+                {msg._duration && (
+                  <span className="wa-video-duration">{formatDuration(msg._duration)}</span>
+                )}
+              </div>
             ) : (
               <div className="wa-media-placeholder">
                 <Video size={32} />
+                <span>🎥 Vídeo{msg._duration ? ` (${formatDuration(msg._duration)})` : ''}</span>
               </div>
             )}
-            <span className="wa-media-label">{msg._text || '[Vídeo]'}</span>
+            {msg._text && msg._text !== '[Vídeo]' && msg._text !== '' && (
+              <p className="wa-media-caption">{processMentions(msg._text, msg._mentions)}</p>
+            )}
+          </div>
+        );
+      
+      case 'ptv':
+        return (
+          <div className="wa-video-container">
+            {msg._thumbnail ? (
+              <div className="wa-video-thumb-wrapper">
+                <img 
+                  src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                  alt="Vídeo" 
+                  className="wa-media-thumbnail"
+                />
+                <div className="wa-video-play-overlay">
+                  <Play size={32} fill="white" />
+                </div>
+                {msg._duration && (
+                  <span className="wa-video-duration">{formatDuration(msg._duration)}</span>
+                )}
+              </div>
+            ) : (
+              <div className="wa-media-placeholder">
+                <Video size={32} />
+                <span>🎥 Vídeo{msg._duration ? ` (${formatDuration(msg._duration)})` : ''}</span>
+              </div>
+            )}
+            {msg._text && msg._text !== '' && (
+              <p className="wa-media-caption">{msg._text}</p>
+            )}
           </div>
         );
       
@@ -1223,13 +1803,33 @@ export default function App() {
           <div className="wa-audio-container">
             {msg._isPTT ? (
               <div className="wa-ptt">
-                <Music size={18} />
-                <span>Mensagem de voz</span>
+                <div className="wa-ptt-icon">
+                  <Mic size={18} />
+                </div>
+                <div className="wa-ptt-info">
+                  <span className="wa-ptt-label">Mensagem de voz</span>
+                  {msg._duration && (
+                    <span className="wa-ptt-duration">{formatDuration(msg._duration)}</span>
+                  )}
+                </div>
+                <button className="wa-ptt-play" title="Reproduzir">
+                  <Play size={16} />
+                </button>
               </div>
             ) : (
               <div className="wa-audio">
-                <Music size={18} />
-                <span>Áudio</span>
+                <div className="wa-audio-icon">
+                  <Music size={18} />
+                </div>
+                <div className="wa-audio-info">
+                  <span className="wa-audio-label">Áudio</span>
+                  {msg._duration && (
+                    <span className="wa-audio-duration">{formatDuration(msg._duration)}</span>
+                  )}
+                </div>
+                <button className="wa-audio-play" title="Reproduzir">
+                  <Play size={16} />
+                </button>
               </div>
             )}
           </div>
@@ -1246,7 +1846,10 @@ export default function App() {
                 loading="lazy"
               />
             ) : (
-              <Sticker size={48} className="text-gray-400" />
+              <div className="wa-media-placeholder">
+                <Smile size={32} />
+                <span>Sticker</span>
+              </div>
             )}
           </div>
         );
@@ -1254,8 +1857,293 @@ export default function App() {
       case 'document':
         return (
           <div className="wa-document-container">
-            <Paperclip size={20} />
-            <span>{msg._text || 'Documento'}</span>
+            <div className="wa-document-icon">
+              <FileText size={24} />
+            </div>
+            <div className="wa-document-info">
+              <span className="wa-document-name">{msg._text || 'Documento'}</span>
+              {msg.message?.documentMessage?.mimetype && (
+                <span className="wa-document-type">{msg.message.documentMessage.mimetype}</span>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'location':
+        return (
+          <div className="wa-location-container">
+            {msg._thumbnail ? (
+              <img 
+                src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                alt="Localização" 
+                className="wa-location-map"
+              />
+            ) : (
+              <div className="wa-location-map-placeholder">
+                <span className="wa-location-pin">📍</span>
+              </div>
+            )}
+            <div className="wa-location-info">
+              {msg._location?.name && (
+                <span className="wa-location-name">{msg._location.name}</span>
+              )}
+              {msg._location?.address && (
+                <span className="wa-location-address">{msg._location.address}</span>
+              )}
+              {msg._location?.latitude !== undefined && msg._location?.longitude !== undefined && (
+                <a 
+                  className="wa-location-link"
+                  href={`https://www.google.com/maps?q=${msg._location.latitude},${msg._location.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                >
+                  Abrir no Google Maps
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'liveLocation':
+        return (
+          <div className="wa-location-container">
+            {msg._thumbnail ? (
+              <img 
+                src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                alt="Localização em tempo real" 
+                className="wa-location-map"
+              />
+            ) : (
+              <div className="wa-location-map-placeholder">
+                <span className="wa-location-pin">📍</span>
+              </div>
+            )}
+            <div className="wa-location-info">
+              <span className="wa-location-name">📍 Localização em tempo real</span>
+              {msg._location?.latitude !== undefined && msg._location?.longitude !== undefined && (
+                <a 
+                  className="wa-location-link"
+                  href={`https://www.google.com/maps?q=${msg._location.latitude},${msg._location.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                >
+                  Abrir no Google Maps
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'contact':
+        return (
+          <div className="wa-contact-container">
+            <div className="wa-contact-avatar">
+              <User size={24} />
+            </div>
+            <div className="wa-contact-info">
+              <span className="wa-contact-name">{msg._contactInfo?.displayName || 'Contato'}</span>
+              <span className="wa-contact-action">Toque para ver o contato</span>
+            </div>
+          </div>
+        );
+      
+      case 'contacts':
+        return (
+          <div className="wa-contacts-container">
+            <div className="wa-contact-avatar">
+              <Users size={24} />
+            </div>
+            <div className="wa-contact-info">
+              <span className="wa-contact-name">{msg._text || 'Contatos'}</span>
+              <span className="wa-contact-action">Toque para ver os contatos</span>
+            </div>
+          </div>
+        );
+      
+      case 'poll':
+        return (
+          <div className="wa-poll-container">
+            <div className="wa-poll-header">
+              <span className="wa-poll-icon">📊</span>
+              <span className="wa-poll-title">{msg.message?.pollCreationMessage?.name || 'Enquete'}</span>
+            </div>
+            <div className="wa-poll-options">
+              {(msg._pollOptions || []).map((option, i) => (
+                <div key={i} className="wa-poll-option">
+                  <span className="wa-poll-option-radio"></span>
+                  <span className="wa-poll-option-text">{option}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      
+      case 'list':
+      case 'listResponse':
+        return (
+          <div className="wa-list-container">
+            <div className="wa-list-icon">📋</div>
+            <div className="wa-list-content">
+              {msg._interactiveContent?.title && (
+                <span className="wa-list-title">{msg._interactiveContent.title}</span>
+              )}
+              {msg._interactiveContent?.description && (
+                <span className="wa-list-description">{msg._interactiveContent.description}</span>
+              )}
+              <span className="wa-list-action">Toque para ver as opções</span>
+            </div>
+          </div>
+        );
+      
+      case 'buttons':
+      case 'buttonsResponse':
+        return (
+          <div className="wa-buttons-container">
+            {msg._interactiveContent?.title && (
+              <p className="wa-buttons-text">{msg._interactiveContent.title}</p>
+            )}
+            {msg._interactiveContent?.buttons && msg._interactiveContent.buttons.length > 0 && (
+              <div className="wa-buttons-list">
+                {msg._interactiveContent.buttons.map((btn, i) => (
+                  <div key={i} className="wa-button-item">{btn}</div>
+                ))}
+              </div>
+            )}
+            {msg._interactiveContent?.footerText && (
+              <span className="wa-buttons-footer">{msg._interactiveContent.footerText}</span>
+            )}
+          </div>
+        );
+      
+      case 'template':
+        return (
+          <div className="wa-template-container">
+            {msg._interactiveContent?.title && (
+              <p className="wa-template-text">{msg._interactiveContent.title}</p>
+            )}
+            {msg._interactiveContent?.buttons && msg._interactiveContent.buttons.length > 0 && (
+              <div className="wa-buttons-list">
+                {msg._interactiveContent.buttons.map((btn, i) => (
+                  <div key={i} className="wa-button-item">{btn}</div>
+                ))}
+              </div>
+            )}
+            {msg._interactiveContent?.footerText && (
+              <span className="wa-template-footer">{msg._interactiveContent.footerText}</span>
+            )}
+          </div>
+        );
+      
+      case 'groupInvite':
+        return (
+          <div className="wa-group-invite-container">
+            {msg._thumbnail ? (
+              <img 
+                src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                alt={msg._groupInvite?.groupName || 'Convite'} 
+                className="wa-group-invite-image"
+              />
+            ) : (
+              <div className="wa-group-invite-icon">
+                <Users size={28} />
+              </div>
+            )}
+            <div className="wa-group-invite-info">
+              <span className="wa-group-invite-title">
+                Convite para {msg._groupInvite?.groupName || 'grupo'}
+              </span>
+              <span className="wa-group-invite-action">Toque para entrar no grupo</span>
+            </div>
+          </div>
+        );
+      
+      case 'product':
+        return (
+          <div className="wa-product-container">
+            {msg._thumbnail ? (
+              <img 
+                src={`data:image/jpeg;base64,${msg._thumbnail}`} 
+                alt="Produto" 
+                className="wa-product-image"
+              />
+            ) : (
+              <div className="wa-product-icon">🛒</div>
+            )}
+            <div className="wa-product-info">
+              <span className="wa-product-name">{msg.message?.productMessage?.product?.title || 'Produto'}</span>
+              {msg.message?.productMessage?.product?.description && (
+                <span className="wa-product-description">{msg.message.productMessage.product.description}</span>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'order':
+        return (
+          <div className="wa-order-container">
+            <div className="wa-order-icon">📦</div>
+            <div className="wa-order-info">
+              <span className="wa-order-title">{msg._text || 'Pedido'}</span>
+              {msg.message?.orderMessage?.itemCount && (
+                <span className="wa-order-detail">{msg.message.orderMessage.itemCount} item(s)</span>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'deleted':
+        return (
+          <div className="wa-deleted-container">
+            <span className="wa-deleted-text">{msg._text}</span>
+          </div>
+        );
+      
+      case 'edited':
+        return (
+          <div className="wa-edited-container">
+            <span className="wa-edited-text">{msg._editedText || msg._text}</span>
+            <span className="wa-edited-badge">✏️ editada</span>
+          </div>
+        );
+      
+      case 'system':
+        return (
+          <div className="wa-system-container">
+            <span className="wa-system-text">{msg._text}</span>
+          </div>
+        );
+      
+      case 'call':
+        return (
+          <div className="wa-call-container">
+            <Phone size={18} />
+            <span>{msg._text}</span>
+          </div>
+        );
+      
+      case 'viewOnce':
+        return (
+          <div className="wa-view-once-container">
+            <div className="wa-view-once-icon">👁️</div>
+            <span className="wa-view-once-text">Mensagem de visualização única</span>
+          </div>
+        );
+      
+      case 'ephemeral':
+        return (
+          <div className="wa-ephemeral-container">
+            <div className="wa-ephemeral-icon">⏱️</div>
+            <span className="wa-ephemeral-text">Mensagem temporária</span>
+          </div>
+        );
+      
+      case 'album':
+        return (
+          <div className="wa-album-container">
+            <div className="wa-album-icon">📸</div>
+            <span className="wa-album-text">{msg._text || 'Álbum'}</span>
           </div>
         );
       

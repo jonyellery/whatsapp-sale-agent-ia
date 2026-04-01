@@ -478,17 +478,61 @@ async function startServer() {
                 } else if (lastMsg.message?.imageMessage?.caption) {
                     lastMessageText = lastMsg.message.imageMessage.caption;
                 } else if (lastMsg.message?.imageMessage) {
-                    lastMessageText = '[Imagem]';
+                    lastMessageText = '📷 Foto';
                 } else if (lastMsg.message?.videoMessage?.caption) {
                     lastMessageText = lastMsg.message.videoMessage.caption;
                 } else if (lastMsg.message?.videoMessage) {
-                    lastMessageText = '[Vídeo]';
+                    lastMessageText = '🎥 Vídeo';
                 } else if (lastMsg.message?.audioMessage) {
                     lastMessageText = lastMsg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
                 } else if (lastMsg.message?.stickerMessage) {
-                    lastMessageText = 'Sticker';
+                    lastMessageText = '🎨 Sticker';
                 } else if (lastMsg.message?.documentMessage) {
                     lastMessageText = `📄 ${lastMsg.message.documentMessage.fileName || 'Documento'}`;
+                } else if (lastMsg.message?.locationMessage) {
+                    lastMessageText = lastMsg.message.locationMessage.name || lastMsg.message.locationMessage.address || '📍 Localização';
+                } else if (lastMsg.message?.liveLocationMessage) {
+                    lastMessageText = lastMsg.message.liveLocationMessage.caption || '📍 Localização em tempo real';
+                } else if (lastMsg.message?.contactMessage) {
+                    lastMessageText = `👤 ${lastMsg.message.contactMessage.displayName || 'Contato'}`;
+                } else if (lastMsg.message?.contactsArrayMessage) {
+                    const count = lastMsg.message.contactsArrayMessage.contacts?.length || 0;
+                    lastMessageText = `👥 ${count} contato${count !== 1 ? 's' : ''}`;
+                } else if (lastMsg.message?.pollCreationMessage) {
+                    lastMessageText = `📊 ${lastMsg.message.pollCreationMessage.name || 'Enquete'}`;
+                } else if (lastMsg.message?.listMessage) {
+                    lastMessageText = lastMsg.message.listMessage.title || lastMsg.message.listMessage.description || '📋 Lista';
+                } else if (lastMsg.message?.listResponseMessage) {
+                    lastMessageText = lastMsg.message.listResponseMessage.title || '📋 Resposta de lista';
+                } else if (lastMsg.message?.buttonsMessage) {
+                    lastMessageText = lastMsg.message.buttonsMessage.contentText || '🔘 Mensagem com botões';
+                } else if (lastMsg.message?.buttonsResponseMessage) {
+                    lastMessageText = lastMsg.message.buttonsResponseMessage.selectedDisplayText || '🔘 Resposta de botão';
+                } else if (lastMsg.message?.templateMessage) {
+                    lastMessageText = lastMsg.message.templateMessage.hydratedTemplate?.hydratedContentText || '📝 Template';
+                } else if (lastMsg.message?.templateButtonReplyMessage) {
+                    lastMessageText = lastMsg.message.templateButtonReplyMessage.selectedDisplayText || '🔘 Resposta de template';
+                } else if (lastMsg.message?.groupInviteMessage) {
+                    lastMessageText = `Convite para ${lastMsg.message.groupInviteMessage.groupName || 'grupo'}`;
+                } else if (lastMsg.message?.productMessage) {
+                    lastMessageText = `🛒 ${lastMsg.message.productMessage.product?.title || 'Produto'}`;
+                } else if (lastMsg.message?.orderMessage) {
+                    lastMessageText = `📦 ${lastMsg.message.orderMessage.orderTitle || 'Pedido'}`;
+                } else if (lastMsg.message?.call) {
+                    lastMessageText = '📞 Chamada';
+                } else if (lastMsg.message?.protocolMessage) {
+                    lastMessageText = '🚫 Mensagem apagada';
+                } else if (lastMsg.message?.viewOnceMessage || lastMsg.message?.viewOnceMessageV2) {
+                    lastMessageText = '👀 Visualização única';
+                } else if (lastMsg.message?.ephemeralMessage) {
+                    lastMessageText = '⏱️ Mensagem temporária';
+                } else if (lastMsg.message?.albumMessage) {
+                    lastMessageText = '📸 Álbum';
+                } else if (lastMsg.message?.ptvMessage) {
+                    lastMessageText = '🎥 Vídeo';
+                } else if (lastMsg.message?.reactionMessage) {
+                    // Skip reactions - they are filtered out above
+                    lastMessageText = '';
                 } else {
                     lastMessageText = '[Mensagem]';
                 }
