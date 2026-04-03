@@ -3206,6 +3206,60 @@ export default function App() {
               )}
             </div>
           </div>
+        ) : navRailSection === 'archived' ? (
+          <div className="wa-chat-list">
+            {chats.filter(c => c.archived).length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'var(--wa-text-secondary)', padding: 24, fontSize: 14 }}>
+                Nenhuma conversa arquivada
+              </div>
+            ) : (
+              chats.filter(c => c.archived).map((chat) => (
+                <div 
+                  key={chat.id} 
+                  className={`wa-chat-item ${selectedChat === chat.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedChat(chat.id);
+                    if (chat.unreadCount && chat.unreadCount > 0) markChatAsRead(chat.id);
+                  }}
+                  onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, chatId: chat.id, isGroup: chat.id.endsWith('@g.us') }); }}
+                >
+                  {chat.avatar ? (
+                    <img src={chat.avatar} alt={getChatDisplayName(chat)} className="wa-chat-item-avatar" />
+                  ) : (
+                    <div className="wa-chat-item-avatar-placeholder">
+                      {chat.id.endsWith('@g.us') ? <Users size={28} /> : <User size={28} style={{ color: 'var(--wa-text-secondary)' }} />}
+                    </div>
+                  )}
+                  <div className="wa-chat-item-content">
+                    <div className="wa-chat-item-top">
+                      <h3 className="wa-chat-item-name">
+                        {chat.id.endsWith('@g.us') && <Users size={14} style={{ marginRight: 4, verticalAlign: 'middle', opacity: 0.6 }} />}
+                        {getChatDisplayName(chat)}
+                      </h3>
+                      <div className="wa-chat-item-top-right">
+                        <span className="wa-chat-item-time">
+                          {formatChatTime(chat.lastMessageTime)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="wa-chat-item-bottom">
+                      <p className="wa-chat-item-message">{chat.lastMessage || 'Toque para conversar'}</p>
+                      {chat.unreadCount && chat.unreadCount > 0 && (
+                        <span className="wa-unread-badge">{chat.unreadCount}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    className="wa-chat-item-menu"
+                    onClick={(e) => { e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, chatId: chat.id, isGroup: chat.id.endsWith('@g.us') }); }}
+                    title="Mais opções"
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
         ) : (
         <>
 

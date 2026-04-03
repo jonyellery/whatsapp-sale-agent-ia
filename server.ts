@@ -46,6 +46,12 @@ const getPhoneNumber = (jid: string): string => {
     return base.split(':')[0];
 };
 
+// Check if JID is a valid chat type (individual, group, LID, newsletter, broadcast)
+const isValidChatJid = (jid: string): boolean => {
+    return jid.endsWith('@s.whatsapp.net') || jid.endsWith('@g.us') || 
+           jid.endsWith('@lid') || jid.endsWith('@newsletter') || jid.endsWith('@broadcast');
+};
+
 // Resolve a JID (including @lid) to the best display name available
 // Uses LID→PN mapping to find the real contact when available
 const resolveContactName = (jid: string, contactsStore: { [key: string]: any }): string => {
@@ -97,7 +103,6 @@ if (fs.existsSync(authDir)) {
             } catch {}
         }
     }
-    console.log(`[LID] Loaded ${lidToPhoneMap.size} LID↔PN mappings from auth store`);
 }
 
 // Rate limiting
@@ -126,6 +131,10 @@ const presenceMap = new Map<string, string>();
 // LID → Phone Number mapping store (resolve @lid JIDs to real phone numbers)
 const lidToPhoneMap = new Map<string, string>(); // lidUser -> pnUser
 const phoneToLidMap = new Map<string, string>(); // pnUser -> lidUser
+console.log(`[LID] Loaded ${lidToPhoneMap.size} LID↔PN mappings from auth store`);
+
+// Avatar cache to prevent flickering (jid -> avatar URL or null)
+const avatarCache = new Map<string, string | null>();
 
 // Enhanced store implementation for Baileys v7 with contacts and groups
 class SimpleStore {
@@ -210,7 +219,7 @@ class SimpleStore {
         eventEmitter.on("chats.upsert", (chats: any[]) => {
             console.log("[STORE] chats.upsert received:", chats.length, "chats");
             for (const chat of chats) {
-                if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
+                if (chat.id && (isValidChatJid(chat.id))) {
                     console.log(`[STORE] Upsert chat ${chat.id}: archived=${chat.archived}, name=${chat.name || chat.subject}`);
                     const existing = this.chats.get(chat.id);
                     const merged = this.mergeChatData(existing, chat);
@@ -388,7 +397,7 @@ if (fs.existsSync(storePath)) {
 
         if (data.chats && Array.isArray(data.chats)) {
             for (const chat of data.chats) {
-                if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
+                if (chat.id && (isValidChatJid(chat.id))) {
                     store.chats.set(chat.id, chat);
                 }
             }
@@ -519,12 +528,20 @@ async function startServer() {
             }
         }
         
-        // Try to get profile picture
+        // Try to get profile picture - use cache to prevent flickering
         if (sock) {
-            try {
-                avatar = await sock.profilePictureUrl(chat.id, 'image');
-            } catch (e) {
-                // No profile picture
+            const cachedAvatar = avatarCache.get(chat.id);
+            if (cachedAvatar !== undefined) {
+                avatar = cachedAvatar;
+            } else {
+                try {
+                    avatar = await sock.profilePictureUrl(chat.id, 'image');
+                    // Cache the result (null means no avatar)
+                    avatarCache.set(chat.id, avatar || null);
+                } catch (e) {
+                    avatar = null;
+                    avatarCache.set(chat.id, null);
+                }
             }
         }
         
@@ -542,13 +559,7 @@ async function startServer() {
                     chatMessages = chatMessages.concat(store.messages[key]?.all() || []);
                 }
             }
-        }
-        
-        // Debug log
-        if (chat.id.includes('@s.whatsapp.net')) {
-            console.log(`[AVATAR] Chat ${chat.id}: ${chatMessages.length} messages, timestamp: ${lastMessageTime}, archived: ${isArchived}`);
-        }
-        
+        }  
         if (chatMessages.length > 0) {
             // Sort by timestamp descending to get the most recent
             // Filter out reactions - they should not appear as last message preview (matches WhatsApp Web behavior)
@@ -671,6 +682,7 @@ async function startServer() {
             pinnedAt: chat.pinnedAt,
             muted: chat.muted,
             ephemeralExpiration: chat.ephemeralExpiration,
+            unreadCount: chat.unreadCount || 0,
             lastMessage: lastMessageText,
             lastMessageSender: lastMessageSender,
             lastMessageTime: lastMessageTime,
@@ -777,7 +789,7 @@ async function startServer() {
                     console.log("[SYNC] Checking for chats after connection...");
                     
                     let chats = store.chats.all().filter((c: any) => 
-                        (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                        isValidChatJid(c.id) && c.archived !== true
                     );
                     
                     console.log("Chats found:", chats.length);
@@ -806,7 +818,7 @@ async function startServer() {
                     setTimeout(async () => {
                         console.log("[DELAYED-SYNC] Re-emitting chats-list after history sync settle...");
                         let allChats = store.chats.all().filter((c: any) => 
-                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                            isValidChatJid(c.id) && c.archived !== true
                         );
                         // Recalculate timestamps one more time
                         for (const chat of allChats) {
@@ -820,7 +832,7 @@ async function startServer() {
                             }
                         }
                         allChats = store.chats.all().filter((c: any) => 
-                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                            isValidChatJid(c.id) && c.archived !== true
                         );
                         allChats = sortChatsByRecent(allChats);
                         const refreshedWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
@@ -850,7 +862,7 @@ async function startServer() {
                         // Re-emit the full chat list if any were created
                         if (createdCount > 0) {
                             let allChats = store.chats.all().filter((c: any) => 
-                                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                                isValidChatJid(c.id) && c.archived !== true
                             );
                             allChats = sortChatsByRecent(allChats);
                             const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
@@ -883,7 +895,7 @@ async function startServer() {
                         
                         // Re-emit chats with updated group names - FILTER archived
                         let refreshedChats = store.chats.all().filter((c: any) => 
-                            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                            isValidChatJid(c.id) && c.archived !== true
                         );
                         refreshedChats = sortChatsByRecent(refreshedChats);
                         const refreshedWithAvatars = await Promise.all(refreshedChats.map(getChatWithAvatarFromStore));
@@ -922,7 +934,7 @@ async function startServer() {
             console.log("[SOCKET] chats.upsert event received:", chats.length, "chats");
             // Ensure each chat exists before updating - USE MERGE to preserve archived status
             for (const chat of chats) {
-                if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
+                if (chat.id && (isValidChatJid(chat.id))) {
                     console.log(`[SOCKET] Upsert chat ${chat.id}: archived=${chat.archived}, archive=${chat.archive}, name=${chat.name || chat.subject}`);
                     const existing = store.chats.get(chat.id);
                     const merged = store.mergeChatData(existing, chat);
@@ -930,7 +942,7 @@ async function startServer() {
                 }
             }
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
@@ -985,7 +997,7 @@ async function startServer() {
             
             // Get all chats and emit to frontend - FILTER OUT archived
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
@@ -1033,7 +1045,7 @@ async function startServer() {
             io.emit("contacts-update", Object.values(store.contacts));
             
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
@@ -1131,7 +1143,7 @@ async function startServer() {
             
             // Update chat list after processing messages
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
@@ -1180,7 +1192,7 @@ async function startServer() {
             
             // Update chat list with recent messages - FILTER archived
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
@@ -1307,7 +1319,7 @@ async function startServer() {
             // Process chats from history
             if (history.chats && history.chats.length > 0) {
                 for (const chat of history.chats) {
-                    if (chat.id && (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@g.us'))) {
+                    if (chat.id && (isValidChatJid(chat.id))) {
                         console.log(`[SOCKET] History chat ${chat.id}: archived=${chat.archived}, name=${chat.name || chat.subject}`);
                         
                         if (chat.archived === true) {
@@ -1427,13 +1439,13 @@ async function startServer() {
             // Get all ACTIVE chats with avatars - FILTER archived
             // Sort by most recent first
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
             // Log counts for debugging
             const totalChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                isValidChatJid(c.id)
             );
             const totalArchivedCount = totalChats.filter((c: any) => c.archived === true).length;
             console.log(`[SOCKET] After history sync: ${totalChats.length} total, ${totalArchivedCount} archived, ${allChats.length} active to emit`);
@@ -1477,7 +1489,7 @@ async function startServer() {
             // Baileys may send either 'archived' or 'archive' depending on the event type
             const isChatArchived = (c: any) => 
                 (c.archived === true || c.archive === true) &&
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'));
+                (isValidChatJid(c.id));
 
             let archivedChats = allChats.filter(isChatArchived);
             
@@ -1487,7 +1499,7 @@ async function startServer() {
             // This is for debugging - some chats might be in a different state
             const chatsWithArchivedProp = allChats.filter((c: any) => 
                 c.archived !== undefined &&
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
+                (isValidChatJid(c.id))
             );
             console.log("Chats with archived property (true/false):", chatsWithArchivedProp.length);
             
@@ -1500,7 +1512,7 @@ async function startServer() {
                     // Method 1: Use chatModify to trigger archive sync
                     // This doesn't modify anything but may trigger a sync
                     const allJids = store.chats.all()
-                        .filter((c: any) => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
+                        .filter((c: any) => isValidChatJid(c.id))
                         .map((c: any) => c.id);
                     
                     // Just request one archived chat to trigger the sync
@@ -1556,7 +1568,7 @@ async function startServer() {
             
             // Re-emit active chats list (archived chat will disappear from active list)
             let activeChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             activeChats = sortChatsByRecent(activeChats);
             const activeWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
@@ -1580,14 +1592,14 @@ async function startServer() {
             
             // Get current ACTIVE chats - FILTER archived
             const activeChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             
             console.log("[API] Active chats in store:", activeChats.length);
             
             // Log total and archived counts for debugging
             const allChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                isValidChatJid(c.id)
             );
             const archivedCount = allChats.filter((c: any) => c.archived === true).length;
             console.log(`[API] Total: ${allChats.length}, Archived: ${archivedCount}, Active: ${activeChats.length}`);
@@ -1620,7 +1632,7 @@ async function startServer() {
             
             // Get all chat JIDs
             const allJids = store.chats.all()
-                .filter((c: any) => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
+                .filter((c: any) => isValidChatJid(c.id))
                 .map((c: any) => c.id);
             
             console.log(`[API] Will sync metadata for ${allJids.length} chats`);
@@ -1644,14 +1656,14 @@ async function startServer() {
             
             // After potential sync, emit updated ACTIVE chats - FILTER archived
             let allChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
             const totalChats = store.chats.all().filter((c: any) => 
-                c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')
+                isValidChatJid(c.id)
             );
             const archivedCount = totalChats.filter((c: any) => c.archived === true).length;
             console.log(`[API] Sync complete: ${totalChats.length} total, ${archivedCount} archived, ${chatsWithAvatars.length} active`);
@@ -1741,7 +1753,7 @@ async function startServer() {
             await new Promise(resolve => setTimeout(resolve, 5000));
             
             const chats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             
             // Get avatars - use the function that checks contacts and groups
@@ -1780,7 +1792,7 @@ async function startServer() {
             await new Promise(resolve => setTimeout(resolve, 5000));
             
             const chats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             
             // Get avatars - use the function that checks contacts and groups
@@ -1795,7 +1807,7 @@ async function startServer() {
     app.get("/api/chats", (req, res) => {
         // Return ACTIVE chats from store with contact info - FILTER archived
         const chats = store.chats.all().filter((c: any) => 
-            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+            isValidChatJid(c.id) && c.archived !== true
         ).map((chat: any) => {
             const contact = store.getContact(chat.id);
             let name = chat.name || chat.subject;
@@ -2268,7 +2280,7 @@ async function startServer() {
             await sock.sendReadReceipt(jid);
             // Re-emit chats list with updated unread count - FILTER archived
             let allChats = store.chats.all().filter((c: any) =>
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
@@ -2562,7 +2574,7 @@ async function startServer() {
     app.get("/api/unread-chats", async (req, res) => {
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });
         const unreadChats = store.chats.all().filter((c: any) =>
-            (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
+            (isValidChatJid(c.id))
             && c.unreadCount > 0
             && c.archived !== true
         );
@@ -3849,7 +3861,7 @@ async function startServer() {
         socket.on("get-chats", async () => {
             // Try to get chats with avatar info - sort by most recent first - FILTER archived
             let existingChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             
             // Recalculate timestamps from messages to ensure freshness
@@ -3866,7 +3878,7 @@ async function startServer() {
             
             // Re-fetch after timestamp updates
             existingChats = store.chats.all().filter((c: any) => 
-                (c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us')) && c.archived !== true
+                isValidChatJid(c.id) && c.archived !== true
             );
             existingChats = sortChatsByRecent(existingChats);
             
