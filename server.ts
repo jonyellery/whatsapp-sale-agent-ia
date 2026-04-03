@@ -1146,6 +1146,8 @@ async function startServer() {
                 isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
+            
+            allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(
                 allChats.map(getChatWithAvatar)
             );
