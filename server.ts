@@ -1382,15 +1382,6 @@ async function startServer() {
                 isValidChatJid(c.id) && c.archived !== true
             );
             
-            // Debug: show LID chats in the list
-            const lidChats = allChats.filter(c => c.id.endsWith('@lid'));
-            if (lidChats.length > 0) {
-                console.log(`[SOCKET] LID chats in list: ${lidChats.length}`);
-                for (const c of lidChats) {
-                    console.log(`  - ${c.name} (${c.id}): ts=${c.conversationTimestamp}`);
-                }
-            }
-            
             allChats = sortChatsByRecent(allChats);
             
             emitChats();

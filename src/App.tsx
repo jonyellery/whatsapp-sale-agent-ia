@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo, PureComponent } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { 
   Search, 
@@ -1423,14 +1423,13 @@ export default function App() {
     }
   }, [messages]);
 
-  // Force scroll to bottom when chat is first opened (initial message load)
+  // Initial scroll to bottom when chat is first opened - but only after messages load
   useEffect(() => {
     if (selectedChat && messages.length > 0) {
-      // Small delay to ensure DOM is fully rendered
-      const timer = setTimeout(() => {
+      // Use requestAnimationFrame to ensure DOM is fully rendered
+      requestAnimationFrame(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-      }, 100);
-      return () => clearTimeout(timer);
+      });
     }
   }, [selectedChat]);
 
@@ -1609,39 +1608,78 @@ export default function App() {
     }
   };
 
-  const formatTime = (timestamp?: number) => {
+  // Memoized format functions - avoid recreating on every render
+  const formatTime = useCallback((timestamp?: number) => {
     if (!timestamp) return '';
     const date = new Date(timestamp * 1000);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, []);
 
-  const formatChatTime = (timestamp?: number) => {
+  // Cache for chat time formatting - avoids repeated date calculations
+  const chatTimeCache = useRef<Map<number, string>>(new Map());
+  
+  const formatChatTime = useCallback((timestamp?: number) => {
     if (!timestamp) return '';
     const now = new Date();
     const msgDate = new Date(timestamp * 1000);
+    const today = now.toDateString();
+    const msgDateStr = msgDate.toDateString();
     
-    if (msgDate.toDateString() === now.toDateString()) {
+    if (msgDateStr === today) {
       return msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    if (msgDate.toDateString() === yesterday.toDateString()) {
+    if (msgDateStr === yesterday.toDateString()) {
       return 'Ontem';
     }
     
     return msgDate.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
-  };
+  }, []);
+
+  // Memoized getChatDisplayName to avoid recalculating on every render
+  const getChatDisplayName = useCallback((chat: Chat): string => {
+    if (chat.displayName) return chat.displayName;
+    if (chat.name) return chat.name;
+    if (chat.subject) return chat.subject;
+    const contact = store.current.contacts[chat.id];
+    if (contact) {
+      return contact.name || contact.notify || getPhoneNumber(chat.id);
+    }
+    const jid = chat.id;
+    if (jid.endsWith('@g.us')) {
+      return 'Grupo';
+    }
+    return getPhoneNumber(jid);
+  }, []);
+
+  // Memoized getContactName
+  const getContactName = useCallback((jid: string): string => {
+    if (!jid) return '';
+    const contact = store.current.contacts[jid];
+    if (contact) {
+      return contact.name || contact.notify || getPhoneNumber(jid);
+    }
+    if (jid.endsWith('@lid')) {
+      const mappedPn = store.current.lidMappings[jid];
+      if (mappedPn) {
+        const pnContact = store.current.contacts[mappedPn];
+        if (pnContact) return pnContact.name || pnContact.notify || getPhoneNumber(mappedPn);
+        return getPhoneNumber(mappedPn);
+      }
+    }
+    return getPhoneNumber(jid);
+  }, []);
 
   // Get display name for message sender (for group messages)
-  const getSenderName = (msg: Message): string => {
+  const getSenderName = useCallback((msg: Message): string => {
     if (msg.key.fromMe) return 'Você';
     if (msg.pushName) return msg.pushName;
     const participantJid = msg.participant || msg.key?.participant;
     if (participantJid) {
       const contact = store.current.contacts[participantJid];
       if (contact?.notify || contact?.name) return contact.notify || contact.name;
-      // For @lid JIDs, try LID→PN mapping to find the real contact
       if (participantJid.endsWith('@lid')) {
         const mappedPn = store.current.lidMappings[participantJid];
         if (mappedPn) {
@@ -1653,51 +1691,7 @@ export default function App() {
       return getPhoneNumber(participantJid) || 'Usuário';
     }
     return 'Usuário';
-  };
-
-  // Get display name for chat in sidebar
-  const getChatDisplayName = (chat: Chat): string => {
-    // Try different sources for display name
-    if (chat.displayName) return chat.displayName;
-    if (chat.name) return chat.name;
-    if (chat.subject) return chat.subject; // For groups
-    
-    // Try contacts store
-    const contact = store.current.contacts[chat.id];
-    if (contact) {
-      return contact.name || contact.notify || getPhoneNumber(chat.id);
-    }
-    
-    // For contacts, extract phone number
-    const jid = chat.id;
-    if (jid.endsWith('@g.us')) {
-      // For groups, use a fallback
-      return 'Grupo';
-    }
-    // For individual contacts, just show the phone number
-    return getPhoneNumber(jid);
-  };
-
-  // Get contact name from JID - using contacts from server
-  const getContactName = (jid: string): string => {
-    if (!jid) return '';
-    // Try to get from store.contacts
-    const contact = store.current.contacts[jid];
-    if (contact) {
-      return contact.name || contact.notify || getPhoneNumber(jid);
-    }
-    // For @lid JIDs, try LID→PN mapping
-    if (jid.endsWith('@lid')) {
-      const mappedPn = store.current.lidMappings[jid];
-      if (mappedPn) {
-        const pnContact = store.current.contacts[mappedPn];
-        if (pnContact) return pnContact.name || pnContact.notify || getPhoneNumber(mappedPn);
-        return getPhoneNumber(mappedPn);
-      }
-    }
-    // Fallback to phone number
-    return getPhoneNumber(jid);
-  };
+  }, []);
 
   // Process mentions in message text - replace @jid with contact name
   const processMentions = (text: string | undefined, mentions?: string[]): React.ReactNode => {
@@ -1842,12 +1836,12 @@ export default function App() {
     socket.emit('typing', { jid: selectedChat, isTyping });
   }, [socket, selectedChat]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     sendTyping(true);
     typingTimeoutRef.current = window.setTimeout(() => sendTyping(false), 2000);
-  };
+  }, [sendTyping]);
 
   // Reply to message
   const handleReply = (msg: Message) => {
@@ -2397,16 +2391,18 @@ export default function App() {
     } catch { showToast('Erro ao atualizar perfil'); }
   };
 
-  // Filtered chats based on search and filter
-  const filteredChats = chats.filter(chat => {
-    if (chat.archived) return false;
-    if (chatFilter === 'unread' && (!chat.unreadCount || chat.unreadCount <= 0)) return false;
-    if (chatFilter === 'groups' && !chat.id.endsWith('@g.us')) return false;
-    if (chatFilter === 'favorites') return false;
-    if (!searchQuery.trim()) return true;
-    const name = getChatDisplayName(chat).toLowerCase();
-    return name.includes(searchQuery.toLowerCase());
-  });
+  // Filtered chats based on search and filter - memoized to avoid re-filtering on every render
+  const filteredChats = useMemo(() => {
+    return chats.filter(chat => {
+      if (chat.archived) return false;
+      if (chatFilter === 'unread' && (!chat.unreadCount || chat.unreadCount <= 0)) return false;
+      if (chatFilter === 'groups' && !chat.id.endsWith('@g.us')) return false;
+      if (chatFilter === 'favorites') return false;
+      if (!searchQuery.trim()) return true;
+      const name = getChatDisplayName(chat).toLowerCase();
+      return name.includes(searchQuery.toLowerCase());
+    });
+  }, [chats, chatFilter, searchQuery]);
 
   // Format recording time
   const formatRecordingTime = (seconds: number) => {

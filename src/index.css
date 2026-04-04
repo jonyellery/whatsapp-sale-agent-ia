@@ -508,6 +508,7 @@ body {
   padding: 20px 60px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 2px;
 }
 
