@@ -67,7 +67,8 @@ import {
   Plus,
   MapPin,
   Contact,
-  BarChart3
+  BarChart3,
+  Smartphone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -1030,6 +1031,22 @@ export default function App() {
   const [channelDesc, setChannelDesc] = useState('');
   const [channelMessages, setChannelMessages] = useState<any[]>([]);
 
+  // Starred messages
+  const [starredMessages, setStarredMessages] = useState<any[]>([]);
+  const [starredLoading, setStarredLoading] = useState(false);
+
+  // Message search filters
+  const [messageSearchFilter, setMessageSearchFilter] = useState<'all' | 'image' | 'video' | 'document' | 'link'>('all');
+
+  // Contact profile panel
+  const [contactProfileOpen, setContactProfileOpen] = useState(false);
+  const [contactSharedMedia, setContactSharedMedia] = useState<any[]>([]);
+  const [contactCommonGroups, setContactCommonGroups] = useState<any[]>([]);
+  const [loadingSharedMedia, setLoadingSharedMedia] = useState(false);
+
+  // Device info
+  const [deviceInfo, setDeviceInfo] = useState<{ device: string; platform: string; lastSeen: number }[]>([]);
+
   // Community data
   const [communities, setCommunities] = useState<any[]>([]);
   const [communityName, setCommunityName] = useState('');
@@ -1182,6 +1199,8 @@ export default function App() {
             store.current.lidMappings = { ...store.current.lidMappings, ...mappings };
           })
           .catch(() => {});
+        // Fetch device info
+        fetchDeviceInfo();
       }
     });
 
@@ -1234,7 +1253,8 @@ export default function App() {
           oldestMessageTimeRef.current = oldest.messageTimestamp || oldestMessageTimeRef.current;
         }
         
-        setHasMoreMessages(data.messages.length >= 30);
+        // Sempre mostra botão de carregar mais se tiver menos de 100 msgs
+        setHasMoreMessages(data.messages.length < 100);
         prevMessagesCountRef.current = normalizedMessages.length;
       }
     });
@@ -1512,7 +1532,12 @@ export default function App() {
     if (!socket || status !== 'open') return;
     
     try {
+      console.log('Refreshing chats...');
       await fetch('/api/refresh-chats', { method: 'GET' });
+      
+      // After refresh, also force sync to ensure all individual contacts appear
+      console.log('Running force sync for individual contacts...');
+      await fetch('/api/force-sync', { method: 'GET' });
     } catch (e) {
       console.log('Refresh error:', e);
     }
@@ -2306,6 +2331,54 @@ export default function App() {
     } catch { showToast('Erro ao enviar broadcast'); }
   };
 
+  // Load starred messages
+  const loadStarredMessages = async () => {
+    if (!socket || status !== 'open') return;
+    setStarredLoading(true);
+    try {
+      const res = await fetch('/api/starred-messages');
+      const data = await res.json();
+      setStarredMessages(data.messages || []);
+    } catch { showToast('Erro ao carregar mensagens estreladas'); }
+    setStarredLoading(false);
+  };
+
+  // Load shared media for contact
+  const loadContactSharedMedia = async (jid: string) => {
+    setLoadingSharedMedia(true);
+    try {
+      const res = await fetch(`/api/shared-media/${encodeURIComponent(jid)}`);
+      const data = await res.json();
+      setContactSharedMedia(data.media || []);
+    } catch { setContactSharedMedia([]); }
+    setLoadingSharedMedia(false);
+  };
+
+  // Load common groups for contact
+  const loadContactCommonGroups = async (jid: string) => {
+    try {
+      const res = await fetch(`/api/common-groups/${encodeURIComponent(jid)}`);
+      const data = await res.json();
+      setContactCommonGroups(data.groups || []);
+    } catch { setContactCommonGroups([]); }
+  };
+
+  // Open contact profile panel
+  const openContactProfile = (jid: string) => {
+    setContactProfileOpen(true);
+    loadContactSharedMedia(jid);
+    loadContactCommonGroups(jid);
+  };
+
+  // Fetch device info
+  const fetchDeviceInfo = async () => {
+    try {
+      const res = await fetch('/api/device-info');
+      const data = await res.json();
+      setDeviceInfo(data.devices || []);
+    } catch {}
+  };
+
   // Business profile handler
   const handleUpdateBusinessProfile = async () => {
     try {
@@ -3009,7 +3082,7 @@ export default function App() {
         </button>
         <button 
           className={`wa-nav-rail-item ${navRailSection === 'starred' ? 'active' : ''}`}
-          onClick={() => setNavRailSection('starred')}
+          onClick={() => { setNavRailSection('starred'); loadStarredMessages(); }}
           title="Mensagens com estrela"
         >
           <Star size={24} />
@@ -3260,6 +3333,56 @@ export default function App() {
               ))
             )}
           </div>
+        ) : navRailSection === 'starred' ? (
+          <div className="wa-chat-list">
+            {starredLoading ? (
+              <div style={{ textAlign: 'center', padding: 24 }}>
+                <div className="w-8 h-8 border-2 border-[#00a884] border-t-transparent rounded-full animate-spin" style={{ margin: '0 auto' }}></div>
+              </div>
+            ) : starredMessages.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'var(--wa-text-secondary)', padding: 24, fontSize: 14 }}>
+                Nenhuma mensagem com estrela
+              </div>
+            ) : (
+              starredMessages.map((msg: any) => {
+                const chat = chats.find(c => c.id === msg.key?.remoteJid);
+                return (
+                  <div 
+                    key={msg.key?.id} 
+                    className="wa-chat-item"
+                    onClick={() => {
+                      if (msg.key?.remoteJid) {
+                        setSelectedChat(msg.key.remoteJid);
+                        setNavRailSection('chats');
+                      }
+                    }}
+                  >
+                    <div className="wa-chat-item-avatar-placeholder">
+                      <Star size={20} style={{ color: 'var(--wa-teal-dark)' }} />
+                    </div>
+                    <div className="wa-chat-item-content">
+                      <div className="wa-chat-item-top">
+                        <h3 className="wa-chat-item-name">
+                          {chat ? getChatDisplayName(chat) : getPhoneNumber(msg.key?.remoteJid || '')}
+                        </h3>
+                        <div className="wa-chat-item-top-right">
+                          <span className="wa-chat-item-time">
+                            {formatTime(msg.messageTimestamp)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="wa-chat-item-bottom">
+                        <p className="wa-chat-item-message">
+                          <Star size={12} style={{ marginRight: 4, color: 'var(--wa-teal-dark)' }} />
+                          {msg.message?.conversation?.slice(0, 50) || msg.message?.extendedTextMessage?.text?.slice(0, 50) || '[Mídia]'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         ) : (
         <>
 
@@ -3378,6 +3501,14 @@ export default function App() {
               <div className="wa-header-right">
                 <Phone size={20} className="cursor-pointer" />
                 <Search size={20} className="cursor-pointer" onClick={() => setMessageSearchOpen(true)} title="Buscar mensagens" />
+                <div 
+                  className="cursor-pointer" 
+                  onClick={() => !selectedChat?.endsWith('@g.us') && openContactProfile(selectedChat)}
+                  title="Ver perfil"
+                  style={{ opacity: selectedChat?.endsWith('@g.us') ? 0.5 : 1, cursor: selectedChat?.endsWith('@g.us') ? 'not-allowed' : 'pointer' }}
+                >
+                  <User size={20} />
+                </div>
                 <MoreHorizontal 
                   size={20} 
                   className="cursor-pointer"
@@ -4017,6 +4148,28 @@ export default function App() {
                 <div className="wa-profile-section-label">Sobre</div>
                 <div className="wa-profile-section-value">Hey there! I am using WhatsApp.</div>
               </div>
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Aparelhos conectados</div>
+                <div style={{ marginTop: 8 }}>
+                  {deviceInfo.length > 0 ? (
+                    deviceInfo.map((d, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--wa-border)' }}>
+                        <Smartphone size={18} style={{ color: 'var(--wa-teal-dark)' }} />
+                        <div>
+                          <div style={{ fontSize: 14, color: 'var(--wa-text-primary)' }}>{d.device}</div>
+                          <div style={{ fontSize: 12, color: 'var(--wa-text-secondary)' }}>{d.platform === 'android' ? 'Android' : d.platform === 'ios' ? 'iPhone' : d.platform === 'desktop' ? 'Computador' : 'WhatsApp Web'}</div>
+                        </div>
+                        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--wa-teal-dark)' }}>✓ conectado</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ fontSize: 13, color: 'var(--wa-text-secondary)' }}>
+                      <Smartphone size={18} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                      Celular - conectado
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="wa-profile-section" style={{ border: 'none' }}>
                 <div className="wa-profile-section-label">Configurações</div>
                 <label className="wa-notification-toggle" style={{ padding: '8px 0', marginTop: 8 }}>
@@ -4035,6 +4188,94 @@ export default function App() {
                   />
                   Notificações desktop
                 </label>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Contact Profile Panel */}
+      {contactProfileOpen && selectedChat && (
+        <>
+          <div className="wa-context-menu-overlay" onClick={() => setContactProfileOpen(false)} />
+          <div className="wa-profile-panel">
+            <div className="wa-profile-header">
+              <button className="wa-modal-close" onClick={() => setContactProfileOpen(false)} style={{ color: 'white' }}>
+                <ArrowLeft size={24} />
+              </button>
+              <div>
+                <h3>Perfil</h3>
+                <p>Informações do contato</p>
+              </div>
+            </div>
+            <div className="wa-profile-avatar">
+              {chatDetails?.avatar ? (
+                <img src={chatDetails.avatar} alt="" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <User size={80} style={{ color: 'var(--wa-text-secondary)' }} />
+              )}
+            </div>
+            <div className="wa-profile-info">
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Nome</div>
+                <div className="wa-profile-section-value">{chatDetails?.displayName || getPhoneNumber(selectedChat)}</div>
+              </div>
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Telefone</div>
+                <div className="wa-profile-section-value" style={{ fontFamily: 'monospace' }}>{getPhoneNumber(selectedChat)}</div>
+              </div>
+              <div className="wa-profile-section">
+                <div className="wa-profile-section-label">Mídia compartilhada</div>
+                <div style={{ marginTop: 8 }}>
+                  {loadingSharedMedia ? (
+                    <div style={{ textAlign: 'center', padding: 12 }}>
+                      <div className="w-6 h-6 border-2 border-[#00a884] border-t-transparent rounded-full animate-spin" style={{ margin: '0 auto' }}></div>
+                    </div>
+                  ) : contactSharedMedia.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+                      {contactSharedMedia.slice(0, 9).map((m: any, i: number) => (
+                        <div key={i} style={{ aspectRatio: 1, background: 'var(--wa-hover)', borderRadius: 4, overflow: 'hidden' }}>
+                          {m.thumbnail ? (
+                            <img src={`data:image/jpeg;base64,${m.thumbnail}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              {m.type === 'video' ? <Video size={20} /> : m.type === 'document' ? <FileText size={20} /> : <ImageIcon size={20} />}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 13, color: 'var(--wa-text-secondary)', textAlign: 'center', padding: 12 }}>
+                      Nenhuma mídia compartilhada
+                    </div>
+                  )}
+                </div>
+              </div>
+              {contactCommonGroups.length > 0 && (
+                <div className="wa-profile-section">
+                  <div className="wa-profile-section-label">Grupos em comum</div>
+                  <div style={{ marginTop: 8 }}>
+                    {contactCommonGroups.map((g: any, i: number) => (
+                      <div key={i} className="wa-chat-item" style={{ padding: 8 }}
+                        onClick={() => { setSelectedChat(g.jid); setContactProfileOpen(false); }}>
+                        <div className="wa-chat-item-avatar-placeholder" style={{ width: 36, height: 36 }}>
+                          <Users size={18} />
+                        </div>
+                        <div className="wa-chat-item-content">
+                          <div style={{ fontSize: 14 }}>{g.name}</div>
+                          <div style={{ fontSize: 12, color: 'var(--wa-text-secondary)' }}>{g.participants} participantes</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="wa-profile-section" style={{ border: 'none', paddingTop: 16 }}>
+                <button className="wa-modal-btn wa-modal-btn-danger" style={{ width: '100%' }}
+                  onClick={() => { setBlockConfirmModal(selectedChat); setContactProfileOpen(false); }}>
+                  <Ban size={16} /> Bloquear contato
+                </button>
               </div>
             </div>
           </div>
@@ -4461,11 +4702,11 @@ export default function App() {
 
       {/* Message Search Modal */}
       {messageSearchOpen && (
-        <div className="wa-modal-overlay" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}>
+        <div className="wa-modal-overlay" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); setMessageSearchFilter('all'); }}>
           <div className="wa-modal" onClick={e => e.stopPropagation()}>
             <div className="wa-modal-header">
               <h3>Buscar mensagens</h3>
-              <button className="wa-modal-close" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}><X size={20} /></button>
+              <button className="wa-modal-close" onClick={() => { setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); setMessageSearchFilter('all'); }}><X size={20} /></button>
             </div>
             <div style={{ padding: '8px 16px' }}>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -4473,6 +4714,31 @@ export default function App() {
                   onKeyDown={e => e.key === 'Enter' && handleSearchMessages()} placeholder="Digite para buscar..."
                   style={{ flex: 1, padding: 8, borderRadius: 6, border: '1px solid var(--wa-border)', background: 'var(--wa-bg-primary)', color: 'var(--wa-text-primary)' }} autoFocus />
                 <button className="wa-modal-btn wa-modal-btn-primary" onClick={handleSearchMessages}>Buscar</button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+                {[
+                  { key: 'all', label: 'Todas', icon: '🔍' },
+                  { key: 'image', label: 'Fotos', icon: '📷' },
+                  { key: 'video', label: 'Vídeos', icon: '🎥' },
+                  { key: 'document', label: 'Arquivos', icon: '📄' },
+                  { key: 'link', label: 'Links', icon: '🔗' }
+                ].map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => { setMessageSearchFilter(f.key as any); handleSearchMessages(); }}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: 12,
+                      borderRadius: 12,
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: messageSearchFilter === f.key ? 'var(--wa-teal-dark)' : 'var(--wa-hover)',
+                      color: messageSearchFilter === f.key ? 'white' : 'var(--wa-text-primary)'
+                    }}
+                  >
+                    {f.icon} {f.label}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="wa-modal-body" style={{ maxHeight: 400 }}>
@@ -4482,13 +4748,14 @@ export default function App() {
                 </div>
               ) : (
                 messageSearchResults.map((msg: any) => {
-                  const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '[mídia]';
+                  const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || msg.message?.videoMessage?.caption || '[mídia]';
                   const time = msg.messageTimestamp ? new Date(msg.messageTimestamp * 1000).toLocaleString('pt-BR') : '';
+                  const isMedia = msg.message?.imageMessage || msg.message?.videoMessage || msg.message?.documentMessage;
                   return (
                     <div key={msg.key?.id} className="wa-context-menu-item" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 12 }}
-                      onClick={() => { setSelectedChat(msg.chatJid || msg.key?.remoteJid); setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); }}>
+                      onClick={() => { setSelectedChat(msg.chatJid || msg.key?.remoteJid); setMessageSearchOpen(false); setMessageSearchQuery(''); setMessageSearchResults([]); setMessageSearchFilter('all'); }}>
                       <div style={{ fontSize: 12, color: 'var(--wa-text-secondary)', marginBottom: 4 }}>{time}</div>
-                      <div style={{ fontSize: 14 }}>{text}</div>
+                      <div style={{ fontSize: 14 }}>{isMedia && '📎'} {text}</div>
                     </div>
                   );
                 })
