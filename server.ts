@@ -264,9 +264,12 @@ class SimpleStore {
                 console.log(`[STORE] msg from=${msg.key.fromMe ? 'ME' : jid}, ts=${msg.messageTimestamp}, type=${Object.keys(msg.message || {}).join(',') || 'none'}`);
                 if (!this.messages[jid]) {
                     const arr: any[] = [];
-                    this.messages[jid] = { all: () => arr };
+                    this.messages[jid] = { 
+                        all: () => arr,
+                        getArray: () => arr
+                    };
                 }
-                const msgs = this.messages[jid].all();
+                const msgs = this.messages[jid].getArray ? this.messages[jid].getArray() : this.messages[jid].all();
                 // Avoid duplicates
                 if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
                     msgs.push(msg);
@@ -433,13 +436,28 @@ if (fs.existsSync(storePath)) {
                             msgs = msgs.concat(store.messages[key]?.all() || []);
                         }
                     }
+                    const lid = phoneToLidMap.get(baseJid);
+                    if (lid) {
+                        const lidJid = `${lid}@lid`;
+                        const lidMsgs = store.messages[lidJid]?.all() || [];
+                        msgs = msgs.concat(lidMsgs);
+                    }
+                }
+                if (chatId?.endsWith('@lid')) {
+                    const lidPart = chatId.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        const pnJid = `${pnUser}@s.whatsapp.net`;
+                        const pnMsgs = store.messages[pnJid]?.all() || [];
+                        msgs = msgs.concat(pnMsgs);
+                    }
                 }
                 return msgs;
             };
             
             const allChats = store.chats.all();
             for (const chat of allChats) {
-                if (chat.id.endsWith('@s.whatsapp.net')) {
+                if (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@lid')) {
                     const chatMessages = getAllChatMessages(chat.id);
                     if (chatMessages.length > 0) {
                         const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
@@ -763,6 +781,13 @@ async function startServer() {
                             msgs = msgs.concat(store.messages[key]?.all() || []);
                         }
                     }
+                    // Also check @lid variant
+                    const lid = phoneToLidMap.get(baseJid);
+                    if (lid) {
+                        const lidJid = `${lid}@lid`;
+                        const lidMsgs = store.messages[lidJid]?.all() || [];
+                        msgs = msgs.concat(lidMsgs);
+                    }
                 }
                 
                 // For @lid, also check the corresponding @s.whatsapp.net JID
@@ -902,6 +927,12 @@ async function startServer() {
                                     msgs = msgs.concat(store.messages[key]?.all() || []);
                                 }
                             }
+                            const lid = phoneToLidMap.get(baseJid);
+                            if (lid) {
+                                const lidJid = `${lid}@lid`;
+                                const lidMsgs = store.messages[lidJid]?.all() || [];
+                                msgs = msgs.concat(lidMsgs);
+                            }
                         }
                         if (chatId.endsWith('@lid')) {
                             const lidPart = chatId.replace('@lid', '');
@@ -1038,17 +1069,43 @@ async function startServer() {
 
         // Create a helper function to ensure chat exists
         const ensureChatExists = (jid: string) => {
+            // Create chat for this JID if not exists
             const existingChat = store.chats.get(jid);
             if (!existingChat) {
-                // Try to get name from contacts - use resolveContactName for LIDs
                 const contact = store.contacts[jid];
                 const chatName = contact?.name || contact?.notify || resolveContactName(jid, store.contacts);
-                // Create a basic chat entry
                 store.chats.set(jid, {
                     id: jid,
                     name: chatName,
                     unreadCount: 0
                 });
+            }
+            // Also ensure the variant exists (@s.whatsapp.net <-> @lid)
+            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                const baseJid = jid.replace('@s.whatsapp.net', '');
+                const lid = phoneToLidMap.get(baseJid);
+                if (lid && !store.chats.get(`${lid}@lid`)) {
+                    const contact = store.contacts[`${lid}@lid`];
+                    const chatName = contact?.name || contact?.notify || resolveContactName(`${lid}@lid`, store.contacts);
+                    store.chats.set(`${lid}@lid`, {
+                        id: `${lid}@lid`,
+                        name: chatName,
+                        unreadCount: 0
+                    });
+                }
+            }
+            if (jid.endsWith('@lid')) {
+                const lidPart = jid.replace('@lid', '');
+                const pnUser = lidToPhoneMap.get(lidPart);
+                if (pnUser && !store.chats.get(`${pnUser}@s.whatsapp.net`)) {
+                    const contact = store.contacts[`${pnUser}@s.whatsapp.net`];
+                    const chatName = contact?.name || contact?.notify || resolveContactName(`${pnUser}@s.whatsapp.net`, store.contacts);
+                    store.chats.set(`${pnUser}@s.whatsapp.net`, {
+                        id: `${pnUser}@s.whatsapp.net`,
+                        name: chatName,
+                        unreadCount: 0
+                    });
+                }
             }
         };
 
@@ -1061,6 +1118,25 @@ async function startServer() {
                     const existing = store.chats.get(chat.id);
                     const merged = store.mergeChatData(existing, chat);
                     store.chats.set(chat.id, merged);
+                    // Also create/update the variant if this is @s.whatsapp.net or @lid
+                    if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                        const baseJid = chat.id.replace('@s.whatsapp.net', '');
+                        const lid = phoneToLidMap.get(baseJid);
+                        if (lid) {
+                            const lidJid = `${lid}@lid`;
+                            const existingLid = store.chats.get(lidJid);
+                            store.chats.set(lidJid, store.mergeChatData(existingLid, { ...chat, id: lidJid }));
+                        }
+                    }
+                    if (chat.id.endsWith('@lid')) {
+                        const lidPart = chat.id.replace('@lid', '');
+                        const pnUser = lidToPhoneMap.get(lidPart);
+                        if (pnUser) {
+                            const pnJid = `${pnUser}@s.whatsapp.net`;
+                            const existingPn = store.chats.get(pnJid);
+                            store.chats.set(pnJid, store.mergeChatData(existingPn, { ...chat, id: pnJid }));
+                        }
+                    }
                 }
             }
             let allChats = store.chats.all().filter((c: any) => 
@@ -1105,6 +1181,27 @@ async function startServer() {
                     
                     // Update the store
                     store.chats.set(update.id, mergedChat);
+                    // Also sync variant if this is @s.whatsapp.net or @lid
+                    if (update.id.endsWith('@s.whatsapp.net') && !update.id.includes(':')) {
+                        const baseJid = update.id.replace('@s.whatsapp.net', '');
+                        const lid = phoneToLidMap.get(baseJid);
+                        if (lid) {
+                            const lidChat = store.chats.get(`${lid}@lid`);
+                            if (lidChat) {
+                                store.chats.set(`${lid}@lid`, { ...lidChat, ...update, id: `${lid}@lid`, conversationTimestamp: newTs });
+                            }
+                        }
+                    }
+                    if (update.id.endsWith('@lid')) {
+                        const lidPart = update.id.replace('@lid', '');
+                        const pnUser = lidToPhoneMap.get(lidPart);
+                        if (pnUser) {
+                            const pnChat = store.chats.get(`${pnUser}@s.whatsapp.net`);
+                            if (pnChat) {
+                                store.chats.set(`${pnUser}@s.whatsapp.net`, { ...pnChat, ...update, id: `${pnUser}@s.whatsapp.net`, conversationTimestamp: newTs });
+                            }
+                        }
+                    }
                 } else {
                     // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
                     const contactInfo = store.contacts[update.id];
@@ -1231,12 +1328,36 @@ async function startServer() {
                     msgs.push(msg);
                 }
                 
-                // Update chat timestamp
+                // Update chat timestamp - handle LID variants too
                 const chat = store.chats.get(jid);
                 if (chat && msg.messageTimestamp) {
                     if (!chat.conversationTimestamp || msg.messageTimestamp > chat.conversationTimestamp) {
                         chat.conversationTimestamp = msg.messageTimestamp;
                         store.chats.set(jid, chat);
+                    }
+                    // Also update LID variant if exists
+                    if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                        const baseJid = jid.replace('@s.whatsapp.net', '');
+                        const lid = phoneToLidMap.get(baseJid);
+                        if (lid) {
+                            const lidChat = store.chats.get(`${lid}@lid`);
+                            if (lidChat && (!lidChat.conversationTimestamp || msg.messageTimestamp > lidChat.conversationTimestamp)) {
+                                lidChat.conversationTimestamp = msg.messageTimestamp;
+                                store.chats.set(`${lid}@lid`, lidChat);
+                            }
+                        }
+                    }
+                    // Also update @s.whatsapp.net variant if this is @lid
+                    if (jid.endsWith('@lid')) {
+                        const lidPart = jid.replace('@lid', '');
+                        const pnUser = lidToPhoneMap.get(lidPart);
+                        if (pnUser) {
+                            const pnChat = store.chats.get(`${pnUser}@s.whatsapp.net`);
+                            if (pnChat && (!pnChat.conversationTimestamp || msg.messageTimestamp > pnChat.conversationTimestamp)) {
+                                pnChat.conversationTimestamp = msg.messageTimestamp;
+                                store.chats.set(`${pnUser}@s.whatsapp.net`, pnChat);
+                            }
+                        }
                     }
                 }
                 
@@ -1531,11 +1652,14 @@ async function startServer() {
                     
                     if (jid) {
                         // Store the actual message - use persistent array to avoid losing messages
-                        if (!store.messages[jid]) {
-                            const arr: any[] = [];
-                            store.messages[jid] = { all: () => arr };
-                        }
-                        const msgs = store.messages[jid].all();
+                if (!store.messages[jid]) {
+                    const arr: any[] = [];
+                    store.messages[jid] = { 
+                        all: () => arr,
+                        getArray: () => arr
+                    };
+                }
+                const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
                         // Avoid duplicates
                         if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
                             msgs.push(msg);
@@ -1563,8 +1687,34 @@ async function startServer() {
             
             // Recalculate conversationTimestamp for ALL chats from their latest messages
             // This ensures timestamps are always correct even if WhatsApp sends stale data
+            const getAllMessagesForChat = (chatId: string): any[] => {
+                let msgs = store.messages[chatId]?.all() || [];
+                if (chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
+                    const baseJid = chatId.replace('@s.whatsapp.net', '');
+                    for (const key of Object.keys(store.messages)) {
+                        if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                            msgs = msgs.concat(store.messages[key]?.all() || []);
+                        }
+                    }
+                    const lid = phoneToLidMap.get(baseJid);
+                    if (lid) {
+                        const lidMsgs = store.messages[`${lid}@lid`]?.all() || [];
+                        msgs = msgs.concat(lidMsgs);
+                    }
+                }
+                if (chatId.endsWith('@lid')) {
+                    const lidPart = chatId.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        const pnMsgs = store.messages[`${pnUser}@s.whatsapp.net`]?.all() || [];
+                        msgs = msgs.concat(pnMsgs);
+                    }
+                }
+                return msgs;
+            };
+            
             for (const chat of store.chats.all()) {
-                const chatMessages = store.messages[chat.id]?.all() || [];
+                const chatMessages = getAllMessagesForChat(chat.id);
                 if (chatMessages.length > 0) {
                     const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
                     if (latestMsgTs > 0 && (!chat.conversationTimestamp || latestMsgTs > chat.conversationTimestamp)) {
@@ -2270,31 +2420,47 @@ async function startServer() {
             
             // Store the fetched messages
             if (history && history.length > 0) {
+                console.log("[LOAD-MORE] First msg timestamp:", history[0]?.messageTimestamp, "Last msg timestamp:", history[history.length-1]?.messageTimestamp);
                 for (const msg of history) {
                     if (!msg || !msg.key) continue;
                     
                     const msgJid = normalizeJid(msg.key.remoteJid);
+                    console.log("[LOAD-MORE] Storing msg:", msg.key.id, "ts=", msg.messageTimestamp, "jid=", msgJid);
                     
                     if (!store.messages[msgJid]) {
                         const arr: any[] = [];
-                        store.messages[msgJid] = { all: () => arr };
+                        store.messages[msgJid] = { 
+                            all: () => arr,
+                            getArray: () => arr
+                        };
+                        (store as any)._messagesMap?.set?.(msgJid, arr);
                     }
-                    const msgs = store.messages[msgJid].all();
+                    const msgs = store.messages[msgJid].getArray ? store.messages[msgJid].getArray() : store.messages[msgJid].all();
                     if (msg.key.id && !msgs.find((m: any) => m.key?.id === msg.key.id)) {
                         msgs.push(msg);
                     }
                 }
             }
             
+            console.log("[LOAD-MORE] Before timestamp:", before);
+            console.log("[LOAD-MORE] Store messages keys for this jid:", Object.keys(store.messages).filter(k => k.includes(jid.split('@')[0])));
+            
             // Get messages before the timestamp - check all device JID variants
+            // Use >= to include messages at exactly the boundary (just older than current oldest)
             let allMsgs: any[] = [];
             const seen = new Set<string>();
             
             // Check the exact JID
-            for (const msg of (store.messages[jid]?.all() || [])) {
+            const storeMsgs = store.messages[jid]?.all() || [];
+            console.log("[LOAD-MORE] Messages in store for exact jid:", storeMsgs.length);
+            for (const msg of storeMsgs) {
                 if (msg.key?.id && !seen.has(msg.key.id)) {
-                    seen.add(msg.key.id);
-                    allMsgs.push(msg);
+                    // Only include messages older than 'before' (which is the oldest current message timestamp)
+                    if ((msg.messageTimestamp || 0) < before || (msg.messageTimestamp || 0) === before) {
+                        seen.add(msg.key.id);
+                        allMsgs.push(msg);
+                        console.log("[LOAD-MORE] Included msg:", msg.key.id, "ts=", msg.messageTimestamp);
+                    }
                 }
             }
             
@@ -2305,8 +2471,10 @@ async function startServer() {
                     if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
                         for (const msg of (store.messages[key]?.all() || [])) {
                             if (msg.key?.id && !seen.has(msg.key.id)) {
-                                seen.add(msg.key.id);
-                                allMsgs.push(msg);
+                                if ((msg.messageTimestamp || 0) < before || (msg.messageTimestamp || 0) === before) {
+                                    seen.add(msg.key.id);
+                                    allMsgs.push(msg);
+                                }
                             }
                         }
                     }
@@ -2314,7 +2482,6 @@ async function startServer() {
             }
             
             allMsgs = allMsgs
-                .filter((m: any) => (m.messageTimestamp || 0) < before)
                 .sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0))
                 .slice(0, limit);
             
@@ -4264,6 +4431,7 @@ async function startServer() {
             const seen = new Set<string>();
             
             console.log(`[GET-MESSAGES] Looking for messages for ${jid}`);
+            console.log(`[GET-MESSAGES] Store messages keys:`, Object.keys(store.messages).filter(k => k.includes(jid.split('@')[0])));
             
             // 1. Busca JID direto
             for (const msg of (store.messages[jid]?.all() || [])) {
@@ -4383,11 +4551,48 @@ async function startServer() {
                             
                             // Armazena no store
                             if (!store.messages[jid]) {
-                                store.messages[jid] = { all: () => [] };
+                                const arr: any[] = [];
+                                store.messages[jid] = { 
+                                    all: () => arr,
+                                    getArray: () => arr
+                                };
                             }
-                            const storeMsgs = store.messages[jid].all();
-                            if (!storeMsgs.find((m: any) => m.key?.id === msgId)) {
-                                storeMsgs.push(standardizedMsg);
+                            const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
+                            if (!msgs.find((m: any) => m.key?.id === msgId)) {
+                                msgs.push(standardizedMsg);
+                                
+                                // Update chat timestamp when new messages are added
+                                const chat = store.chats.get(jid);
+                                if (chat && msgTimestamp) {
+                                    if (!chat.conversationTimestamp || msgTimestamp > chat.conversationTimestamp) {
+                                        chat.conversationTimestamp = msgTimestamp;
+                                        store.chats.set(jid, chat);
+                                    }
+                                }
+                                // Also update LID variant if exists
+                                if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                                    const baseJid = jid.replace('@s.whatsapp.net', '');
+                                    const lid = phoneToLidMap.get(baseJid);
+                                    if (lid) {
+                                        const lidChat = store.chats.get(`${lid}@lid`);
+                                        if (lidChat && (!lidChat.conversationTimestamp || msgTimestamp > lidChat.conversationTimestamp)) {
+                                            lidChat.conversationTimestamp = msgTimestamp;
+                                            store.chats.set(`${lid}@lid`, lidChat);
+                                        }
+                                    }
+                                }
+                                // Also update @s.whatsapp.net variant if this is @lid
+                                if (jid.endsWith('@lid')) {
+                                    const lidPart = jid.replace('@lid', '');
+                                    const pnUser = lidToPhoneMap.get(lidPart);
+                                    if (pnUser) {
+                                        const pnChat = store.chats.get(`${pnUser}@s.whatsapp.net`);
+                                        if (pnChat && (!pnChat.conversationTimestamp || msgTimestamp > pnChat.conversationTimestamp)) {
+                                            pnChat.conversationTimestamp = msgTimestamp;
+                                            store.chats.set(`${pnUser}@s.whatsapp.net`, pnChat);
+                                        }
+                                    }
+                                }
                             }
                         }
                         
@@ -4421,6 +4626,11 @@ async function startServer() {
             
             // 5. Ordena e emite
             allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+            
+            // Emit updated chats-list so the chat moves to correct position based on latest message
+            const allChats = store.chats.all().filter((c: any) => !c.archived);
+            allChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
+            socket.emit("chats-list", allChats);
             
             console.log(`[GET-MESSAGES] Emitting ${allMsgs.length} messages for ${jid}`);
             socket.emit("messages-list", { jid, messages: allMsgs });

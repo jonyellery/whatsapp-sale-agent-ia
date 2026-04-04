@@ -1462,9 +1462,9 @@ export default function App() {
             return [...uniqueOlder, ...prev].sort((a, b) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
           });
           
-          // Update oldest timestamp (first item is the oldest since server returns oldest-first)
-          const oldest = normalizedOlder[0];
-          oldestMessageTimeRef.current = oldest.messageTimestamp || oldestMessageTimeRef.current;
+          // Update oldest timestamp (last item is the most recent of the loaded batch)
+          const latest = normalizedOlder[normalizedOlder.length - 1];
+          oldestMessageTimeRef.current = latest.messageTimestamp || oldestMessageTimeRef.current;
           
           // Preserve scroll position after DOM updates
           if (container) {
