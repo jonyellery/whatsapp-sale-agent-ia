@@ -198,6 +198,7 @@ body {
   flex-direction: column;
   position: relative;
   min-width: 0;
+  overflow: hidden;
 }
 
 /* ===== CHAT BACKGROUND PATTERN ===== */
@@ -501,15 +502,39 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* ===== MESSAGES AREA ===== */
 .wa-messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 60px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wa-border) transparent;
+}
+
+.wa-messages-inner {
+  display: flex;
+  flex-direction: column-reverse;
+  min-height: 100%;
+}
+
+.wa-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.wa-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wa-messages::-webkit-scrollbar-thumb {
+  background-color: var(--wa-border);
+  border-radius: 3px;
+}
+
+.wa-messages::-webkit-scrollbar-thumb:hover {
+  background-color: var(--wa-text-secondary);
 }
 
 /* ===== MESSAGE BUBBLES ===== */
@@ -572,6 +597,11 @@ body {
 }
 .wa-bubble-other.wa-bubble-continuation {
   border-top-left-radius: 7.5px;
+  margin-top: 6px;
+}
+
+.wa-bubble-self.wa-bubble-continuation {
+  margin-top: 6px;
 }
 
 /* ===== MESSAGE META (time + checks) ===== */

@@ -1204,37 +1204,117 @@ export default function App() {
       }
     });
 
-      newSocket.on('chats-list', (data: Chat[]) => {
-      const filteredChats = data
-        .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us'))
-        .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
-      
-      setChats(prevChats => {
-        const incomingMap = new Map(filteredChats.map(c => [c.id, c]));
-        const mergedChats = prevChats.map(existingChat => {
-          const incoming = incomingMap.get(existingChat.id);
-          if (incoming) {
-            // Normalize archived: Baileys may send 'archive' or 'archived'
-            const incomingArchived = incoming.archived !== undefined 
-              ? incoming.archived 
-              : incoming.archive !== undefined 
-                ? incoming.archive 
-                : existingChat.archived;
-            return {
-              ...existingChat,
-              ...incoming,
-              archived: incomingArchived
-            };
-          }
-          return existingChat;
+      newSocket.on('chats-list', (data: any) => {
+      if (Array.isArray(data)) {
+        // Legacy or direct array emission
+        const filteredChats = data
+          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index) // Deduplicate by id first
+          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'))
+          .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+
+        setChats(prevChats => {
+          const incomingMap = new Map(filteredChats.map(c => [c.id, c]));
+          const mergedChats = prevChats.map(existingChat => {
+            const incoming = incomingMap.get(existingChat.id);
+            if (incoming) {
+              // Normalize archived: Baileys may send 'archive' or 'archived'
+              const incomingArchived = incoming.archived !== undefined
+                ? incoming.archived
+                : incoming.archive !== undefined
+                  ? incoming.archive
+                  : existingChat.archived;
+              return {
+                ...existingChat,
+                ...incoming,
+                archived: incomingArchived
+              };
+            }
+            return existingChat;
+          });
+          const existingIds = new Set(prevChats.map(c => c.id));
+          const newChats = filteredChats.filter(c => !existingIds.has(c.id));
+          // Ensure uniqueness in final list
+          const allChats = [...mergedChats, ...newChats];
+          const uniqueChats = new Map();
+          allChats.forEach(chat => uniqueChats.set(chat.id, chat));
+          return Array.from(uniqueChats.values()).sort(
+            (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
+          );
         });
-        const existingIds = new Set(prevChats.map(c => c.id));
-        const newChats = filteredChats.filter(c => !existingIds.has(c.id));
-        // Re-sort after merge to ensure correct order (new chats may have been appended at end)
-        return [...mergedChats, ...newChats].sort(
-          (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
-        );
-      });
+      } else if (data.type === 'full') {
+        if (!Array.isArray(data.chats)) {
+          console.error('Invalid full chats data:', data);
+          return;
+        }
+        const filteredChats = data.chats
+          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index) // Deduplicate by id first
+          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'))
+          .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+
+        setChats(prevChats => {
+          const incomingMap = new Map(filteredChats.map(c => [c.id, c]));
+          const mergedChats = prevChats.map(existingChat => {
+            const incoming = incomingMap.get(existingChat.id);
+            if (incoming) {
+              // Normalize archived: Baileys may send 'archive' or 'archived'
+              const incomingArchived = incoming.archived !== undefined
+                ? incoming.archived
+                : incoming.archive !== undefined
+                  ? incoming.archive
+                  : existingChat.archived;
+              return {
+                ...existingChat,
+                ...incoming,
+                archived: incomingArchived
+              };
+            }
+            return existingChat;
+          });
+          const existingIds = new Set(prevChats.map(c => c.id));
+          const newChats = filteredChats.filter(c => !existingIds.has(c.id));
+          // Ensure uniqueness in final list
+          const allChats = [...mergedChats, ...newChats];
+          const uniqueChats = new Map();
+          allChats.forEach(chat => uniqueChats.set(chat.id, chat));
+          return Array.from(uniqueChats.values()).sort(
+            (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
+          );
+        });
+      } else if (data.type === 'diff') {
+        const { updated, removed } = data.changes;
+        setChats(prevChats => {
+          // Remove removed chats
+          let newChats = prevChats.filter(c => !removed.some(r => r.id === c.id));
+          // Update or add updated chats
+          const updatedMap = new Map(updated.map(c => [c.id, c]));
+          newChats = newChats.map(existing => {
+            const update = updatedMap.get(existing.id);
+            if (update) {
+              updatedMap.delete(existing.id); // Mark as processed
+              // Normalize archived
+              const incomingArchived = update.archived !== undefined
+                ? update.archived
+                : update.archive !== undefined
+                  ? update.archive
+                  : existing.archived;
+              return {
+                ...existing,
+                ...update,
+                archived: incomingArchived
+              };
+            }
+            return existing;
+          });
+          // Add new updated chats that weren't in existing
+          newChats = [...newChats, ...Array.from(updatedMap.values())];
+          // Deduplicate, filter, and sort
+          const deduplicated = newChats.filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index);
+          const filtered = deduplicated.filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
+          return filtered.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+        });
+      } else {
+        console.error('Unknown chats-list data type:', data);
+      }
     });
 
     newSocket.on('chat-details', (data: ChatDetails) => {
@@ -1262,7 +1342,7 @@ export default function App() {
     newSocket.on('new-message', (msg: WAMessage) => {
       if (!msg?.key?.remoteJid) return;
       const normalizedMsg = normalizeMessage(msg);
-      
+
       if (selectedChatRef.current === msg.key.remoteJid) {
         setMessages(prev => {
           // Deduplication: check if message already exists
@@ -1277,19 +1357,22 @@ export default function App() {
         const msgText = normalizedMsg._text || 'Mídia';
         showDesktopNotification(senderName, msgText.length > 50 ? msgText.slice(0, 50) + '...' : msgText);
       }
-      
+
       // Update chat list (skip reactions - they should not appear as last message preview)
       if (normalizedMsg._type !== 'reaction') {
         setChats(prev => {
           const updated = [...prev];
           const index = updated.findIndex(c => c.id === msg.key.remoteJid);
           const text = normalizedMsg._text || 'Mídia';
-          
+
           if (index !== -1) {
-            updated[index] = { 
-              ...updated[index], 
+            const isNotSelected = selectedChatRef.current !== msg.key.remoteJid;
+            const isIncoming = !msg.key.fromMe;
+            updated[index] = {
+              ...updated[index],
               lastMessage: text,
-              lastMessageTime: msg.messageTimestamp
+              lastMessageTime: msg.messageTimestamp,
+              unreadCount: isNotSelected && isIncoming ? (updated[index].unreadCount || 0) + 1 : updated[index].unreadCount
             };
             const [item] = updated.splice(index, 1);
             updated.unshift(item);
@@ -1390,6 +1473,19 @@ export default function App() {
       }
     });
 
+    newSocket.on('chats.update', (updates: any[]) => {
+      setChats(prev => {
+        const updated = [...prev];
+        for (const update of updates) {
+          const index = updated.findIndex(c => c.id === update.id);
+          if (index !== -1) {
+            updated[index] = { ...updated[index], ...update };
+          }
+        }
+        return updated;
+      });
+    });
+
     return () => {
       newSocket.close();
     };
@@ -1404,9 +1500,12 @@ export default function App() {
       setHasMoreMessages(true);
       prevMessagesCountRef.current = 0;
       isNearBottomRef.current = true;
-      
+
       socket.emit('get-messages', selectedChat);
       socket.emit('get-chat-details', selectedChat);
+
+      // Reset unread count for the selected chat
+      setChats(prev => prev.map(c => c.id === selectedChat ? { ...c, unreadCount: 0 } : c));
     }
   }, [selectedChat, socket]);
 

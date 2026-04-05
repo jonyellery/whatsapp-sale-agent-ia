@@ -1,0 +1,2905 @@
+[2026-04-05T11:10:25.210Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T11-10-25.txt
+[2026-04-05T11:10:25.227Z] [LID] Loaded 24 LID↔PN mappings from auth store
+[2026-04-05T11:10:30.636Z] [STORE] Loaded chats from store file: 4657
+[2026-04-05T11:10:30.641Z] [STORE] Loaded messages from store file, JIDs: 2548
+[2026-04-05T11:10:31.678Z] [STORE] Recalculated timestamps for individual chats from messages
+[2026-04-05T11:10:31.682Z] [STORE] Loaded contacts from store file: 4664
+[2026-04-05T11:10:31.682Z] [STORE] Loaded group metadata from store file: 46
+[2026-04-05T11:10:31.683Z] [STORE] Last cleanup: 2026-04-05T09:49:49.124Z
+[2026-04-05T11:10:32.708Z] Server running on http://localhost:3000
+[2026-04-05T11:10:36.385Z] opened connection
+[2026-04-05T11:10:36.386Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:10:36.386Z] receivedPendingNotifications: undefined
+[2026-04-05T11:10:36.560Z] Client connected to socket
+[2026-04-05T11:10:36.589Z] [GET-CHATS] Socket event received
+[2026-04-05T11:10:36.597Z] [GET-CHATS] Filtered active chats: 4637
+[2026-04-05T11:10:46.380Z] [GET-CHATS] Chats after sort: 4637
+[2026-04-05T11:10:50.126Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:10:50.126Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:10:57.804Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:10:57.807Z] Chats found: 4637
+[2026-04-05T11:10:57.807Z] All chats count: 4657
+[2026-04-05T11:10:57.808Z] Archived chats count: 20
+[2026-04-05T11:11:13.358Z] Loading archived chats...
+[2026-04-05T11:11:13.359Z] Total chats in store: 4657
+[2026-04-05T11:11:13.360Z] Direct archived chats in store: 20
+[2026-04-05T11:11:13.360Z] Chats with archived property (true/false): 1834
+[2026-04-05T11:11:13.394Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:11:14.562Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T11:11:14.563Z] [STORE] msg from=120363402759318233@g.us, ts=1775384718, type=none
+[2026-04-05T11:11:14.568Z] [STORE] msg stored for 120363402759318233@g.us, total=42703
+[2026-04-05T11:11:14.569Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T11:11:25.134Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:11:25.135Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:11:32.844Z] Archived chats found: 20
+[2026-04-05T11:11:32.857Z] Client disconnected from socket
+[2026-04-05T11:11:32.874Z] Client connected to socket
+[2026-04-05T11:11:32.900Z] ERROR: Failed to decrypt message with any known session...
+[2026-04-05T11:11:32.901Z] ERROR: Session error:MessageCounterError: Key used already or never filled MessageCounterError: Key used already or never filled
+    at SessionCipher.doDecryptWhisperMessage (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:236:19)
+    at SessionCipher.decryptWithSessions (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:147:40)
+    at 125232690024584_1.0 [as awaitable] (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:171:39)
+    at async _asyncQueueExecutor (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\queue_job.js:20:29)
+[2026-04-05T11:11:32.944Z] [GET-CHATS] Socket event received
+[2026-04-05T11:11:32.946Z] [GET-CHATS] Filtered active chats: 4637
+[2026-04-05T11:11:42.300Z] [GET-CHATS] Chats after sort: 4637
+[2026-04-05T11:11:43.792Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T11:11:43.793Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775384721, type=none
+[2026-04-05T11:11:43.793Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=63
+[2026-04-05T11:11:43.794Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T11:11:54.554Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:11:54.555Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:11:59.952Z] Loading archived chats...
+[2026-04-05T11:11:59.954Z] Total chats in store: 4657
+[2026-04-05T11:11:59.954Z] Direct archived chats in store: 20
+[2026-04-05T11:11:59.955Z] Chats with archived property (true/false): 1834
+[2026-04-05T11:11:59.993Z] Archived chats found: 20
+[2026-04-05T11:11:59.995Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:12:01.374Z] [GET-CHATS] Resolved chats: 4637 Sample: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkJCQkKCQoLCwoODw0PDhUTERETFR8WGBYYFh8wHiMeHiMeMCozKScpMypMOzU1O0xXSUVJV2pfX2qFf4WuruoBCQkJCQoJCgsLCg4PDQ8OFRMRERMVHxYYFhgWHzAeIx4eIx4wKjMpJykzKkw7NTU7TFdJRUlXal9faoV/ha6u6v/CABEIAKAAWgMBIgACEQEDEQH/xAAzAAACAwEBAQEAAAAAAAAAAAAEBQMGBwIBAAgBAAMBAQEAAAAAAAAAAAAAAAECAwAEBf/aAAwDAQACEAMQAAAA0nOXWcudrIyrSgso5MahTQNMTzpQffuXXr7zwhrQ7KrcrrtRuVb9Dz5NqeT0Y2ujKamcGj+TOCGWmQER5oAGfOye5VgInds0I0yHRmS3ZhFaiPavaOvho8ZEEqcQyrduhZfSL4c2n4vTRHsWLCscsF3b59VGeQRavL3Sp0D6bC46rJW3XD6ZLNF66Sr4/vR8u+90WwzI1O0Zc65cs0Fyr1Ai9eS6KPYXhNZU8HQIurkeo7MfyXqgF4XEV8ewHbIwjGW1XOdMtq+HZqxWfRVYqM7bJxRrBSTktCDNrKypjXZlEshovIJCthVbevsE6c9+yVivK77OhFLFBlIFhUzJDVzCy+8cqZvIvmUsTr5hB5LAwnXmDoydSyqB3//EADcQAAIBAwMCBAMHAwMFAAAAAAECAwAEEQUSIQYxEyJBURQyYRAVI0JSYnGBkcEWQ6FygrGy8f/aAAgBAQABPwC/u1srSWc9wMKPdj2FW2oz2l14+SwY5k/dmra6gvIllhYEH09RRphTqDU8KurI65VgQRV/ZNZzlO6HlDQ+zNZrqK98e5Fuh8kH/Lmr/Umiu1RPlT5q0vVWt3WeBsoT51q1vILyFZYmBB7j2NGmFOua1CyS5hZD37qfY06NE7I4wynBFZrP2XUxjieRjk/+SauUcOz5yCck1a3klu4Knj1FaTq7QOs8DZX86VaXkN5CskTZB7j2o0RUiVrdhvX4hB5lHn+orNDJOAK8Cb9BrUZy0gjB4WiBip4CuWTt7e1W1zJA4ZT/ACK0jWmt5FljY7D86VbXUN3As0TBlYUa1/VV0y1DjBkc4UGn6v3wGNovxTxvqCa2urhwEZOchc8VFAqjhQK8MU+SSTyTRFEVPb92QfyKhmeJtymtD157OUMCTEfnSr7XbS3003qMHzgIvuxr7o1vVpTczkjf6yGn6PnVCzzAEewqbT73Tykjt5SSA9aVqK3H4UjfijkfuFYo4oiiKK1PbZyy8NUbtG2Rwa6fszfTLPISYYTkKexY1EAceWmH0FXVjBeW7QSLwf8Ag1Hp0llrKQv6bip9/sIFEfY8qKcE09xnhVpwXOT3rR82uj2zbvDEmWZvWtLluJ7s4mlaMNne4IrVjfJcL55fD75jJzWm3zEqFlkcHusikMP7gVrKj7ztGA52P9jpRpjgE0w9T681lB6ivEirR7eNtMs0ccCFT/cZp5Xt51igsgY9pJara5a6UC4tDH3DA8j6EGo4LeIZRFH8Cr5IZZ3Y4MqJx9FJrNOlPGfaplPCe5q4OWOBwKWAkbsHFeEvsas5GWziEeNwiXbSC77ySorH0wWrN/HKgIUpn5lPf+RQk/L64q6miJfb85OCfoK3U1rIfymms5PaplxJJ9PLU0ZGOO9BAsar7CpAACa0e/8AEsYO5eLCt/Shqtrsy6g4qTUkkT8Pije5Xycn1NbiSSe5+zTdD09rC2M1uZHaNSz725J/qKn6W0aT8k8ZP6ZG/wA5q66DiYH4S+P8OM1qvTWp2UqvNADAv+4hyKlFTK7Msagkk8AdzWmaZd2tvukHhyOdwVvapXuF4ayLH3ABqGO7kICwCMe3/wAq30yQx7ScE/mP+BUunXkW5jEWQfmXms1NPrDajJ8NJOIBJsQoTgKOB2qLU7sKpGpSCXJ3xsFKgDtywqHWdQUE3ENtKFxnYSDzx3G4VrurfFaakUcMqyTPt8NiCcDnjGat9AiIDXLksfyLVtYWtscwwIp98c/3oRkjB5HtXw8R7xr/AGFJCijhaRfU8LTycYA/gV4IPJWPP/SKtrGxk+Gkkt1DMVIDZIB/g1f9Y6vY6ld2q6QZYYLl8OiN54VizgfvLVB1nPdwXgj0xop47K5nTLb1JhVSvYDIctT9d3vhokWkbHBhzK7nwSDOInYcZ2Y/PSdezSrxorwkvCgE8mw/iqW5G2k631Ix2R+5+MB5uW86hHLY48pylSdY3X3d8cmkkBLvwnR3OceEZPReH/KRU3XV6l2IPujHhTKsw3sxYMj8Ido82VpuvdSkcTQaT+BGXMsbZ3sEieXhqHXspecLoc7rC7glXOSFxjA29zmtB6puNVuxZ3OnAb2nIkQkpsR2CnkcrgfNTjDsPqagkhuFimVs7SCAD2Pelv4EBBzmrvWtPspdPinmKteuEg8pIYnA/wA1/q7QRNLCbpw0bYOYn/X4fHHIzQ656ZKbxetjwy+fCfsG2VN1Lp0ItpG3/DT2L3iXGBsKJjj33eaouv7CZI2jsbljIq7BlOXIjJTv6CUV/rHSFn8KTxVzaW9ymEZyyXJCrwtT9ZaMmlnUYXlmQsURBG6szeGJfUcDZzmrHX9L1C2ubmzn8WOCQxuQpHmr77hVTthcmiHYk+5qLq3TDkSpNCwOGDLUfUmhzsVS+jz7HK02odM3Xwj3D20stuwMJPnZGyDlcfUUmm9JT3c03wsDyTurENHxvUk5GR3Jariz6N0+eK0ms7JJplCrGItzYZgvoDjlqfUumUa2QT2jmNUhiCYk2rMcBfLnAJSnt+jkgdzDprRmIqdgRyyRYYgBck4pdP0K7cTrb2krQlUDqFbYYTkL/wBtNa9MNAtqbS2MKurCPwsqGVBGCP4UYqeTSrezlgsIkQSvvYIm0E+5oHmjczEkr29K1C0t+pLKS608ql+g/Fi/XWm6ZJFGxlQiVjyD3X6Vp1iqSByO1QECTcewOa1Cx6d1G9N5cvdLIxjLIuNuYmVh/wCgodOdMGNEFzfbV2dmXzbC5GfL+80vTvSyI6pJeBWiWNxxyFiEI9PZa0saNpNrexWclxIbiUyt4vJ3bQtfLvweR2o/LUh2xuf2mlk8o/itO+Ii1OB7aVkbPJH6fUGvBeSRpHOSxyTUaBRxS+XNLcRTSFR8wrA+bBxSke9MSjkZpLgDkj0pHDrkVdttgk/ig3ArQtPkt7SN7gfjsg3fSsYoUoHc96a2jz4oQBveom+ZWxg1KI1YlSAPapRuYGktwyEh/Pzhat5SrbTWoXSFfCTli3NYocCs1uoNTSkxbPrmioPqaeL1DGhk7QaPA3KcGpSVcGr11imMh7MM0b+bJwhrNbj7Ux7c0XwB9TTHIoEYp3XHJFIVOcPRPHBqUbhhv71qKk2xbHmiOf6Gmujk8+tf/8QAIxEAAgICAgEEAwAAAAAAAAAAAAECERIhAxAxBCBBURMyYf/aAAgBAgEBPwD46aP1fcnvtoSaNll9cvK08Y+SHJO9sVNeyW5P+sj5pM4nar6MhGRTUnoVqRCOKMUY6Pxsfp5OTdoh6emnJmIr9sLVkNmCpmMvopiguuKLit9fBjpidMartCSJRPKR/8QAIREAAgIBBAMBAQAAAAAAAAAAAAECETEDEBIhIEFRBHH/2gAIAQMBAT8AQ1QjK8E/TGqEPaihfHg0dCLTlLHonpQrpUSTTrwgqiv4Tx2jXi4yT+lDOOBSVIbTTNSbnKy2cuxahH9KUUnE1P0tpqKosddV4yp0T4rFp+zk7Ra+locntrTUpdY29ljxtWz2UjDZ/9k=",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:12:01.423Z] [STORE] chats.update received: [
+  {
+    "id": "120363402759318233@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363402759318233@g.us",
+            "fromMe": false,
+            "id": "AC1D54FE7C8D1B5559AED3D7F451905F",
+            "participant": "129012311560339@lid",
+            "participantAlt": "5512996573221@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387438,
+          "pushName": "The Sin And The Sentence",
+          "broadcast": false,
+          "retryCount": 1,
+          "message": {
+            "conversation": "Vendi uma segunda feira, a mini eh top",
+            "senderKeyDistributionMessage": {
+              "groupId": "120363402759318233@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwj4yf30AhAfGiCgsnAC3tRPyfTx+jcz7m9u0Qvm3PGuMcLGchxfV+8ViCIhBQDnvgTLIjx+QPv/zd33MckWKS/usiZgF9uEkCtYjaZt"
+            },
+            "messageContextInfo": {
+              "deviceListMetadata": {
+                "senderKeyHash": "57N5WRYfe+xJGw==",
+                "senderTimestamp": "1774143615",
+                "recipientKeyHash": "WufeYBcSAWHcDg==",
+                "recipientTimestamp": "1775382673"
+              },
+              "deviceListMetadataVersion": 2,
+              "messageSecret": "UlIXVPh4npq8d78Ysk+lhP1DzwNM3qQ48kDgakp5H2o="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387438,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:12:01.426Z] [STORE] Updating chat 120363402759318233@g.us:
+[2026-04-05T11:12:01.426Z]   - Existing: archived=true, name=Mercado Minis
+[2026-04-05T11:12:01.426Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:12:01.426Z]   - Merged: archived=true, name=Mercado Minis
+[2026-04-05T11:12:01.428Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363402759318233@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363402759318233@g.us",
+            "fromMe": false,
+            "id": "AC1D54FE7C8D1B5559AED3D7F451905F",
+            "participant": "129012311560339@lid",
+            "participantAlt": "5512996573221@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387438,
+          "pushName": "The Sin And The Sentence",
+          "broadcast": false,
+          "retryCount": 1,
+          "message": {
+            "conversation": "Vendi uma segunda feira, a mini eh top",
+            "senderKeyDistributionMessage": {
+              "groupId": "120363402759318233@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwj4yf30AhAfGiCgsnAC3tRPyfTx+jcz7m9u0Qvm3PGuMcLGchxfV+8ViCIhBQDnvgTLIjx+QPv/zd33MckWKS/usiZgF9uEkCtYjaZt"
+            },
+            "messageContextInfo": {
+              "deviceListMetadata": {
+                "senderKeyHash": "57N5WRYfe+xJGw==",
+                "senderTimestamp": "1774143615",
+                "recipientKeyHash": "WufeYBcSAWHcDg==",
+                "recipientTimestamp": "1775382673"
+              },
+              "deviceListMetadataVersion": 2,
+              "messageSecret": "UlIXVPh4npq8d78Ysk+lhP1DzwNM3qQ48kDgakp5H2o="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387438,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:12:01.429Z] [SOCKET] Processing update for chat 120363402759318233@g.us
+[2026-04-05T11:12:01.429Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:12:01.429Z] [SOCKET] Before merge - archived=true, name=Mercado Minis, ts=1775387438
+[2026-04-05T11:12:01.430Z] [SOCKET] After merge - archived=true, name=Mercado Minis, ts=1775387438
+[2026-04-05T11:12:10.480Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:12:10.481Z] [STORE] msg from=120363402759318233@g.us, ts=1775387438, type=conversation,senderKeyDistributionMessage,messageContextInfo
+[2026-04-05T11:12:10.485Z] [STORE] duplicate msg skipped for 120363402759318233@g.us
+[2026-04-05T11:12:10.485Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:12:21.043Z] [SOCKET] Emitting chats-list after update: 4637 active chats
+[2026-04-05T11:12:21.131Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:12:21.132Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:12:25.950Z] Emitting chats: 4637
+[2026-04-05T11:12:25.976Z] Sample chat: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "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",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:12:26.338Z] [API-CHATS] Returning 4637 chats
+[2026-04-05T11:12:26.502Z] [STORE] chats.update received: [
+  {
+    "id": "558581958993-1586032642@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558581958993-1586032642@g.us",
+            "fromMe": false,
+            "id": "AC06D91AFA3F9E95D37950238E2CE0DC",
+            "participant": "272288545034477@lid",
+            "participantAlt": "559184265109@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387459,
+          "pushName": "Daniel Lavareda",
+          "broadcast": false,
+          "message": {
+            "conversation": "Lote mcfarlane mortal kombat, os 3 por 1000,00 ou separado os valores abaixo\nLiu kang 300,00\nScorpion 400,00\nKitana 400,00",
+            "senderKeyDistributionMessage": {
+              "groupId": "558581958993-1586032642@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiRtuAyECkaIP3xTT+CIVGIINiHI0B66ZkrBUw5CZ9lkfOnbtPH9YB4IiEFav1mKpSC9a05Yj0GtrN7dqm8edv9S0w6k0JvnbX2WyM="
+            },
+            "messageContextInfo": {
+              "messageSecret": "7ZM7M1IXCwBMTTfLj4+J5IYOXks+rZHntIVEjDu8+dc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387459,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:12:26.508Z] [STORE] Updating chat 558581958993-1586032642@g.us:
+[2026-04-05T11:12:26.508Z]   - Existing: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T11:12:26.508Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:12:26.508Z]   - Merged: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T11:12:26.509Z] [SOCKET] chats.update received: [
+  {
+    "id": "558581958993-1586032642@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558581958993-1586032642@g.us",
+            "fromMe": false,
+            "id": "AC06D91AFA3F9E95D37950238E2CE0DC",
+            "participant": "272288545034477@lid",
+            "participantAlt": "559184265109@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387459,
+          "pushName": "Daniel Lavareda",
+          "broadcast": false,
+          "message": {
+            "conversation": "Lote mcfarlane mortal kombat, os 3 por 1000,00 ou separado os valores abaixo\nLiu kang 300,00\nScorpion 400,00\nKitana 400,00",
+            "senderKeyDistributionMessage": {
+              "groupId": "558581958993-1586032642@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiRtuAyECkaIP3xTT+CIVGIINiHI0B66ZkrBUw5CZ9lkfOnbtPH9YB4IiEFav1mKpSC9a05Yj0GtrN7dqm8edv9S0w6k0JvnbX2WyM="
+            },
+            "messageContextInfo": {
+              "messageSecret": "7ZM7M1IXCwBMTTfLj4+J5IYOXks+rZHntIVEjDu8+dc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387459,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:12:26.509Z] [SOCKET] Processing update for chat 558581958993-1586032642@g.us
+[2026-04-05T11:12:26.509Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:12:26.509Z] [SOCKET] Before merge - archived=false, name=Mundo Geek & Nerd OFICIAL, ts=1775387459
+[2026-04-05T11:12:26.509Z] [SOCKET] After merge - archived=false, name=Mundo Geek & Nerd OFICIAL, ts=1775387459
+[2026-04-05T11:12:36.405Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:12:36.406Z] [STORE] msg from=558581958993-1586032642@g.us, ts=1775387459, type=senderKeyDistributionMessage,messageContextInfo,conversation
+[2026-04-05T11:12:36.406Z] [STORE] msg stored for 558581958993-1586032642@g.us, total=1980
+[2026-04-05T11:12:36.406Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:12:48.042Z] [SOCKET] Emitting chats-list after update: 4637 active chats
+[2026-04-05T11:12:48.102Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:12:48.102Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:12:58.037Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:12:58.353Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:12:58.354Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T11:12:58.362Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:13:09.586Z] [DELAYED-SYNC] Re-emitting 4637 chats with fresh timestamps
+[2026-04-05T11:13:09.622Z] [GET-CHATS] Resolved chats: 4637 Sample: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "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",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:13:09.646Z] Client disconnected from socket
+[2026-04-05T11:13:09.701Z] [API-CHATS] Returning 4637 chats
+[2026-04-05T11:13:09.745Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:13:09.747Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:13:15.917Z] Client connected to socket
+[2026-04-05T11:13:15.952Z] [GET-MESSAGES] Looking for messages for 558587808847@s.whatsapp.net
+[2026-04-05T11:13:15.960Z] [GET-MESSAGES] Store messages keys: ["558587808847@s.whatsapp.net"]
+[2026-04-05T11:13:15.963Z] [GET-MESSAGES] Found 794 messages in store for 558587808847@s.whatsapp.net
+[2026-04-05T11:13:15.966Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:13:18.145Z] [API-CHATS] Returning 4637 chats
+[2026-04-05T11:13:18.875Z] [GET-CHATS] Socket event received
+[2026-04-05T11:13:18.877Z] [GET-CHATS] Filtered active chats: 4637
+[2026-04-05T11:13:27.888Z] [GET-CHATS] Chats after sort: 4637
+[2026-04-05T11:13:28.962Z] [GET-CHATS] Resolved chats: 4637 Sample: {
+  "participant": [],
+  "id": "558581958993-1586032642@g.us",
+  "unreadCount": 1,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775387459,
+  "name": "Mundo Geek & Nerd OFICIAL",
+  "pHash": "1:SlZ3U3zR",
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "suspended": false,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558581958993-1586032642@g.us",
+          "fromMe": false,
+          "id": "AC06D91AFA3F9E95D37950238E2CE0DC",
+          "participant": "272288545034477@lid",
+          "participantAlt": "559184265109@s.whatsapp.net",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775387459,
+        "pushName": "Daniel Lavareda",
+        "broadcast": false,
+        "message": {
+          "conversation": "Lote mcfarlane mortal kombat, os 3 por 1000,00 ou separado os valores abaixo\nLiu kang 300,00\nScorpion 400,00\nKitana 400,00",
+          "senderKeyDistributionMessage": {
+            "groupId": "558581958993-1586032642@g.us",
+            "axolotlSenderKeyDistributionMessage": "MwiRtuAyECkaIP3xTT+CIVGIINiHI0B66ZkrBUw5CZ9lkfOnbtPH9YB4IiEFav1mKpSC9a05Yj0GtrN7dqm8edv9S0w6k0JvnbX2WyM="
+          },
+          "messageContextInfo": {
+            "messageSecret": "7ZM7M1IXCwBMTTfLj4+J5IYOXks+rZHntIVEjDu8+dc="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1767646054,
+  "displayName": "Mundo Geek & Nerd OFICIAL",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/118123693_3225239434232963_5833816862504307225_n.jpg?ccb=11-4&oh=01_Q5Aa4AGnwtwYURkfxZ5dPJbuH4bXYmfKpPVk6JEVek_NIrgQfQ&oe=69DF4EF7&_nc_sid=5e03e0&_nc_cat=100",
+  "lastMessage": "Lote mcfarlane mortal kombat, os 3 por 1000,00 ou separado os valores abaixo\nLiu kang 300,00\nScorpion 400,00\nKitana 400,00",
+  "lastMessageSender": "Daniel Lavareda",
+  "lastMessageTime": 1775387459
+}
+[2026-04-05T11:13:28.993Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:13:28.994Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:13:36.995Z] [SOCKET] Received messaging-history.set event: {"chats":74,"contacts":74,"messages":4992,"syncType":2}
+[2026-04-05T11:13:36.996Z] [SOCKET] History chat 120363402759318233@g.us: archived=true, name=Mercado Minis
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 559284313322-1565733287@g.us: archived=false, name=Marvel Legends BRASIL
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 558586878393@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 558587808847@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 63471748149338@lid: archived=false, name=undefined
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 558588088283-1596198609@g.us: archived=false, name=12/04 - PRÓXIMA AVENTURA
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 120363020599253391@g.us: archived=true, name=Emuelec
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 120363019990569731@g.us: archived=true, name=🫒 Oliver Toys - GiJoe e Action Figures
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 79259443925215@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.997Z] [SOCKET] History chat 120363418615479931@g.us: archived=false, name=MARVEL & DC
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 558587453829-1594156687@g.us: archived=false, name=Action Figures Nordeste
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 120363161570954772@g.us: archived=true, name=MARVEL LEGENDS BR ®️
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 120363370953781873@g.us: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 5691486031876@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 5521974300901-1559853430@g.us: archived=true, name=Colecionadores dos anos 90
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 558587453829-1605201998@g.us: archived=false, name=Universo X-men Marvel Legends
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 205634494558339@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 120363377496881783@g.us: archived=false, name=Mcfarlane Toys
+[2026-04-05T11:13:36.998Z] [SOCKET] History chat 556185994545-1582560420@g.us: archived=false, name=Marvel Legends Brasil 3
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 120363394328906857@g.us: archived=true, name=TEIA DO ARANHA
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 47274772160527@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 120363423657616021@g.us: archived=true, name=Colecionando na America Inscritos
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 171274722607117@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 94365397585950@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 140355269865484@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 558581958993-1586032642@g.us: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 222200804208799@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 120363160540094520@g.us: archived=false, name=Action Recife
+[2026-04-05T11:13:36.999Z] [SOCKET] History chat 135158510428254@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.000Z] [SOCKET] History chat 120363114280639025@g.us: archived=true, name=POWER RANGER-BRASIL ®️
+[2026-04-05T11:13:37.000Z] [SOCKET] History chat 559198107173-1629836772@g.us: archived=false, name=🤝🏻 SÓ TROCA 🤝🏻 🚫 S/ VENDA 🚫
+[2026-04-05T11:13:37.000Z] [SOCKET] History chat 270376865112075@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.001Z] [SOCKET] History chat 558599252998@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:13:37.001Z] [SOCKET] History chat 120363211900560110@g.us: archived=true, name=Wordpress ◈ Elementor - CSS & JS
+[2026-04-05T11:13:37.001Z] [SOCKET] History chat 213649339711672@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.001Z] [SOCKET] History chat 109019658211374@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 108881950834802@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 558599429282@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 197044660645933@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 37208039936116@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 80809826451507@lid: archived=false, name=undefined
+[2026-04-05T11:13:37.002Z] [SOCKET] History chat 175191984496801@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 5511988844130@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 267877580030134@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 120363022912698264@g.us: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 27312418472105@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 57789237981405@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 89279535570952@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.003Z] [SOCKET] History chat 88266426609744@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.004Z] [SOCKET] History chat 167461294997747@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.004Z] [SOCKET] History chat 234428643205360@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.004Z] [SOCKET] History chat 120363387777093318@g.us: archived=false, name=Street Fighter (escala 1/12 - 6")
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 6365309321463@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 50603472506935@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 73718919352325@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 221165465370739@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 20491305750634@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 207159207944348@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 107932628832290@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 199557182963735@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 47167465111785@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.005Z] [SOCKET] History chat 278941063471105@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 120542619271349@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 136893542989850@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 179834793803983@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 220800074420446@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 197405370794036@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 57264916435111@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 276836747620570@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 20968231698520@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 271652940173408@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 91551640322097@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.006Z] [SOCKET] History chat 232534042493120@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.007Z] [SOCKET] History chat 8715126190283@lid: archived=undefined, name=undefined
+[2026-04-05T11:13:37.007Z] [SOCKET] Processed 74 chats from history, 11 archived
+[2026-04-05T11:13:37.007Z] [SOCKET] Processed 74 contacts from history
+[2026-04-05T11:13:45.767Z] [SOCKET] Stored 4992 messages from history
+[2026-04-05T11:13:55.797Z] [SOCKET] After history sync: 4701 total, 20 archived, 4681 active to emit
+[2026-04-05T11:13:56.956Z] [STORE] messages.upsert fired: type=append, count=2
+[2026-04-05T11:13:56.957Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775384748, type=protocolMessage
+[2026-04-05T11:13:56.957Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=64
+[2026-04-05T11:13:56.957Z] [STORE] msg from=558581958993-1586032642@g.us, ts=1775387460, type=messageContextInfo,albumMessage
+[2026-04-05T11:13:56.958Z] [STORE] msg stored for 558581958993-1586032642@g.us, total=2045
+[2026-04-05T11:13:56.958Z] [SOCKET] messages.upsert: type=append, count=2
+[2026-04-05T11:14:08.878Z] [STORE] Saving 4701 chats to file...
+[2026-04-05T11:14:08.880Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:14:23.279Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":408,"payload":{"statusCode":408,"error":"Request Time-out","message":"Connection was lost"},"headers":{}}} , reconnecting  true
+[2026-04-05T11:14:23.282Z] [RECONNECT] Attempt 1/10 - waiting 5s before retry...
+[2026-04-05T11:14:23.283Z] Client disconnected from socket
+[2026-04-05T11:14:23.640Z] [STORE] Saving 4701 chats to file...
+[2026-04-05T11:14:23.641Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:14:28.865Z] [GET-MESSAGES] Resync error: {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":428,"payload":{"statusCode":428,"error":"Precondition Required","message":"Connection Closed"},"headers":{}}}
+[2026-04-05T11:14:28.870Z] [GET-MESSAGES] Emitting 794 messages for 558587808847@s.whatsapp.net
+[2026-04-05T11:14:28.908Z] Client connected to socket
+[2026-04-05T11:14:29.002Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558599010406-1594236701@g.us",
+      "id": "AC2464B30B5F4AB26E2C15F945CC8552",
+      "fromMe": true,
+      "participant": "102770027843609:58@lid"
+    },
+    "receipt": {
+      "userJid": "102770027843609@lid",
+      "receiptTimestamp": 1775387598
+    }
+  }
+]
+[2026-04-05T11:14:29.004Z] Receipt: AC2464B30B5F4AB26E2C15F945CC8552 from 558599010406-1594236701@g.us type: delivered
+[2026-04-05T11:14:29.008Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC405E7A1AA87394C531A719124E4762",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE7473855BDF95633E430940C8960AC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC30EC44B526B433F1F7B18ADB0907A2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACB3A95B04BBE4F111FB0534FF3FF0B9",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC58B450B2C40CF2D382A8B66631BC40",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC1554C0D3382797885E30824B8E755C",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC51F9B048656F466293EA6AD5A939C7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.009Z] Receipt: AC405E7A1AA87394C531A719124E4762 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.009Z] Receipt: ACE7473855BDF95633E430940C8960AC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.009Z] Receipt: AC30EC44B526B433F1F7B18ADB0907A2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.009Z] Receipt: ACB3A95B04BBE4F111FB0534FF3FF0B9 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.010Z] Receipt: AC58B450B2C40CF2D382A8B66631BC40 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.010Z] Receipt: AC1554C0D3382797885E30824B8E755C from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.010Z] Receipt: AC51F9B048656F466293EA6AD5A939C7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.011Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACC5AF261F1943B52AAFD77503D13933",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.012Z] Receipt: ACC5AF261F1943B52AAFD77503D13933 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.034Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC00B458CA7156E6C90B18D97DAD3CCD",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC984FCCFA2B3AD92F7933E073A47DAC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACB046DAD39A72469C829E75E341C4EE",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA3A383F54F09328089DC68E1194C50",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACD83A6C4F6467C94C333820B2BD858E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC4C1B5D8C99802771D28B6F3BBE3F37",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE271684E1E78B1FA382360D32711AB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC9251FF3C2E8A93B772FEA3153FE2DD",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC21EC210C7FD43B155475AC533FF7B3",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF92AB0B5766A4E26C702DACBC67010",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA3A03F11F821DE1716FF718A594631",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC51FEFA656ECF4CE93706D74E8F6C0B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC392E7341266224C8712D17C3CA14C7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC0DCEBD97B17530000F469CD67B6E71",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC028C609FBBF2C61E4946695F7EB347",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC83A94FB7B0D1F0D6678F5AEC39472F",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE127B5CBCFE30F8C8172BA99917106",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8F8D0394D7550D81C9CD594CE01CF2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE771E0E7BA6C7F90E133A32BB97D25",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC393D8CCD17773549BF2A26D8E9B9FB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC4560A929BAE95AD20E1DC6E2567C81",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF082F05CA274E3EFD03E65530F007A",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACDEFD5B70576C80A75F40F7821B84B0",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACCAD94109FF40158B4EE7E03677D1AA",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE5035913E5B008EB7899428F8F99D6",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC55A7092765DBCE5FA4DACD1ADB309E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACBE0BBE6E1A6C87FC25CAEC794518E3",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC94C9CC1AD43F2EE1931A102F17D640",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACC8A183FAC1FDD4AD4FC86639B16578",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAA7B00FF71409D6378E0DEB1E8E5D2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC23BF1367E801DDCE57B9F06318D377",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA849CF7DE25E228A3D84D64B30815D",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC6C5B9F7F73DCF216684E1EDCA2BA4F",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC653A9E7C3553AA58700FD2972A04BF",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC2D79F89B2331F72CDD3FE3D58FF6E3",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACBF7DE8A2DF50B07A64D70F222B08AB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC2B9A78E2E99C61F5F2BE36E63CD373",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC648478CFF8334F6A424456C51E546E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACC15AD566043CD1B1934DE3DFA4D05B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC00018778D43C99C2B4CC8ACD7FEE51",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA6C49CC3B3A18EBC7CBD4849B9BCAC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC627F4553E0CBBF6F078A4D94545B42",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC7BA7DC505F96FAA78D332B159EA41A",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC2FBA2C86597630624CE413767D6E17",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC2893EFFE0BC8260987A8DEC4F2994F",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACEC717B4E9A06D46580D70DBE2DDA63",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC859C479F966189FDB487CBBD79E1E5",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC69828BB26DB376D57F86E57F2D0421",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACBC4796DCE1CAD9B9180A25496A7D36",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC6DCB2C152E221B810B038FC5F694C1",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF86CC98BAAECDB4C233CC369F0E18C",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAFB746C42EA9E74F1A71809B3FBD0E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACFC255C01313D141D739E5DA1BF8519",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC441970FE3FE3ECCE5BABA905AE97DB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACEA895141C06ECCE5A9EC35695174AC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACFE631AE2181BC9DABF4243264FDBAE",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA69A3493AFE1CDF80E7F7720EC0C5A",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF4719C32CD6D0968B3881B6965AC03",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAD8A217029C08BC85A1E6F2646EA62",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACCF567EA9C3E2814A2BA86E7DF32DC0",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC57B4A4F79FDF8D30F8AB4C0DA1F210",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC30E90145326E7ABDD88EE1CE5FFB39",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE5FD7B405242F1315E791973774F01",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC6CE62F643B273E0B8B4F884B63EE3F",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC3955C4ECF537B30464D90C6EF2FA1E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC523C0F80711E55FD7B68C5B02B648B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACFB2329EADAA985379A2767E4C1DEF1",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC749E85C215E10638D8A84D19C74D50",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC1DC96E538393C455B4B04B3EEB42FB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAFA178F1E36F61EA36D87B75E8B243",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACBC65D2C4523B5130D3B767CD9ACC1C",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAE35662F5CCEF3B09B582B5230C43B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC9D26D9265DBBCE2FCAC76F83B455C0",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC017B30A4A754A80EA3C741074DC75E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF804B7E390C51CFD11F710BC192479",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC19A9EB419420F4159742484D6B6255",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC90B1831D24F9BFE9C273CF911FB3DC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC035E7CE63CB843F0ACA29C6DCF7F9B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC9AF60A6CAC5326825380A9CFBAA772",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACFCF8FE1B889A9A0A6EB77E39195B1B",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE1E2995AF6F207DC08862B0F43D67E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACACB6A9E2E0EEF1696B70C02FD5E528",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC6DD1A5D7FD73C99AE8592B12225720",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC2F748C5B16F8C8238E38E15BAF21F1",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE6D7243E1DBF644A80CF5057B96AA6",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8AA51670076ED9A3AE3E3E0D72E412",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC67349185166A1DC4E076B8298D12C3",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACD33973A7C13C6CF659104317559598",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACD13EEF133BC658637C445238725C58",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACF24F882D0908637F8FBD307262ABD7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAFBEE95CB36005C4C094303AF4D1D5",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC075217992B6C4D4459677F8F27DF44",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACEC59A17687F3CD27196C75C1D11042",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.037Z] Receipt: AC00B458CA7156E6C90B18D97DAD3CCD from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.038Z] Receipt: AC984FCCFA2B3AD92F7933E073A47DAC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.038Z] Receipt: ACB046DAD39A72469C829E75E341C4EE from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.038Z] Receipt: ACA3A383F54F09328089DC68E1194C50 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.038Z] Receipt: ACD83A6C4F6467C94C333820B2BD858E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.039Z] Receipt: AC4C1B5D8C99802771D28B6F3BBE3F37 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.039Z] Receipt: ACE271684E1E78B1FA382360D32711AB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.039Z] Receipt: AC9251FF3C2E8A93B772FEA3153FE2DD from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.039Z] Receipt: AC21EC210C7FD43B155475AC533FF7B3 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.039Z] Receipt: ACF92AB0B5766A4E26C702DACBC67010 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.040Z] Receipt: ACA3A03F11F821DE1716FF718A594631 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.040Z] Receipt: AC51FEFA656ECF4CE93706D74E8F6C0B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.040Z] Receipt: AC392E7341266224C8712D17C3CA14C7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.040Z] Receipt: AC0DCEBD97B17530000F469CD67B6E71 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.040Z] Receipt: AC028C609FBBF2C61E4946695F7EB347 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.041Z] Receipt: AC83A94FB7B0D1F0D6678F5AEC39472F from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.041Z] Receipt: ACE127B5CBCFE30F8C8172BA99917106 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.041Z] Receipt: AC8F8D0394D7550D81C9CD594CE01CF2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.041Z] Receipt: ACE771E0E7BA6C7F90E133A32BB97D25 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.041Z] Receipt: AC393D8CCD17773549BF2A26D8E9B9FB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: AC4560A929BAE95AD20E1DC6E2567C81 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: ACF082F05CA274E3EFD03E65530F007A from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: ACDEFD5B70576C80A75F40F7821B84B0 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: ACCAD94109FF40158B4EE7E03677D1AA from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: ACE5035913E5B008EB7899428F8F99D6 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: AC55A7092765DBCE5FA4DACD1ADB309E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.042Z] Receipt: ACBE0BBE6E1A6C87FC25CAEC794518E3 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC94C9CC1AD43F2EE1931A102F17D640 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: ACC8A183FAC1FDD4AD4FC86639B16578 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: ACAA7B00FF71409D6378E0DEB1E8E5D2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC23BF1367E801DDCE57B9F06318D377 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: ACA849CF7DE25E228A3D84D64B30815D from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC6C5B9F7F73DCF216684E1EDCA2BA4F from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC653A9E7C3553AA58700FD2972A04BF from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC2D79F89B2331F72CDD3FE3D58FF6E3 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: ACBF7DE8A2DF50B07A64D70F222B08AB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.043Z] Receipt: AC2B9A78E2E99C61F5F2BE36E63CD373 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC648478CFF8334F6A424456C51E546E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: ACC15AD566043CD1B1934DE3DFA4D05B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC00018778D43C99C2B4CC8ACD7FEE51 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: ACA6C49CC3B3A18EBC7CBD4849B9BCAC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC627F4553E0CBBF6F078A4D94545B42 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC7BA7DC505F96FAA78D332B159EA41A from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC2FBA2C86597630624CE413767D6E17 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC2893EFFE0BC8260987A8DEC4F2994F from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: ACEC717B4E9A06D46580D70DBE2DDA63 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC859C479F966189FDB487CBBD79E1E5 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.044Z] Receipt: AC69828BB26DB376D57F86E57F2D0421 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACBC4796DCE1CAD9B9180A25496A7D36 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: AC6DCB2C152E221B810B038FC5F694C1 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACF86CC98BAAECDB4C233CC369F0E18C from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACAFB746C42EA9E74F1A71809B3FBD0E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACFC255C01313D141D739E5DA1BF8519 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: AC441970FE3FE3ECCE5BABA905AE97DB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACEA895141C06ECCE5A9EC35695174AC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACFE631AE2181BC9DABF4243264FDBAE from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACA69A3493AFE1CDF80E7F7720EC0C5A from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACF4719C32CD6D0968B3881B6965AC03 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACAD8A217029C08BC85A1E6F2646EA62 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.045Z] Receipt: ACCF567EA9C3E2814A2BA86E7DF32DC0 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC57B4A4F79FDF8D30F8AB4C0DA1F210 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC30E90145326E7ABDD88EE1CE5FFB39 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: ACE5FD7B405242F1315E791973774F01 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC6CE62F643B273E0B8B4F884B63EE3F from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC3955C4ECF537B30464D90C6EF2FA1E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC523C0F80711E55FD7B68C5B02B648B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: ACFB2329EADAA985379A2767E4C1DEF1 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC749E85C215E10638D8A84D19C74D50 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC1DC96E538393C455B4B04B3EEB42FB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: ACAFA178F1E36F61EA36D87B75E8B243 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: ACBC65D2C4523B5130D3B767CD9ACC1C from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: ACAE35662F5CCEF3B09B582B5230C43B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.046Z] Receipt: AC9D26D9265DBBCE2FCAC76F83B455C0 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC017B30A4A754A80EA3C741074DC75E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: ACF804B7E390C51CFD11F710BC192479 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC19A9EB419420F4159742484D6B6255 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC90B1831D24F9BFE9C273CF911FB3DC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC035E7CE63CB843F0ACA29C6DCF7F9B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC9AF60A6CAC5326825380A9CFBAA772 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: ACFCF8FE1B889A9A0A6EB77E39195B1B from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: ACE1E2995AF6F207DC08862B0F43D67E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: ACACB6A9E2E0EEF1696B70C02FD5E528 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC6DD1A5D7FD73C99AE8592B12225720 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: AC2F748C5B16F8C8238E38E15BAF21F1 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.047Z] Receipt: ACE6D7243E1DBF644A80CF5057B96AA6 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: AC8AA51670076ED9A3AE3E3E0D72E412 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: AC67349185166A1DC4E076B8298D12C3 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: ACD33973A7C13C6CF659104317559598 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: ACD13EEF133BC658637C445238725C58 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: ACF24F882D0908637F8FBD307262ABD7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: ACAFBEE95CB36005C4C094303AF4D1D5 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: AC075217992B6C4D4459677F8F27DF44 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.048Z] Receipt: ACEC59A17687F3CD27196C75C1D11042 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.053Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAFC6E610B0F662C26FE19CF2FAB91D",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.053Z] Receipt: ACAFC6E610B0F662C26FE19CF2FAB91D from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.054Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8AEF2BD4627F79D10F94DA31B0BD29",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC6C578AAE6EF41E3CA4E55D878863A7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.054Z] Receipt: AC8AEF2BD4627F79D10F94DA31B0BD29 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.054Z] Receipt: AC6C578AAE6EF41E3CA4E55D878863A7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.056Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACCB5B24BECBFF36269F0C384A374E2A",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC5AD480927705B2C7CC4D553D89FB97",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC837059CA9208DBDDE88DB13EEBC9C5",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACCEA777276CC78DF99E78CE6A25FF16",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC731AFD0149FD485A555CBF461C3D89",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACC9FCB277FBAA196EFA95508690C07D",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACD02F27D8CCB213A2981BDE8CECADD2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC06D91AFA3F9E95D37950238E2CE0DC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.057Z] Receipt: ACCB5B24BECBFF36269F0C384A374E2A from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.057Z] Receipt: AC5AD480927705B2C7CC4D553D89FB97 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.057Z] Receipt: AC837059CA9208DBDDE88DB13EEBC9C5 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.057Z] Receipt: ACCEA777276CC78DF99E78CE6A25FF16 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.058Z] Receipt: AC731AFD0149FD485A555CBF461C3D89 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.058Z] Receipt: ACC9FCB277FBAA196EFA95508690C07D from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.058Z] Receipt: ACD02F27D8CCB213A2981BDE8CECADD2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.058Z] Receipt: AC06D91AFA3F9E95D37950238E2CE0DC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.060Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACE15F69BFE30E5256FA2EE6F366EEF2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC42A3C7C19AF114A307A68E7C40D610",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC7134FFD69CEADABBB91CBA1D94BFCC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC0DBBCEEAB01EC194C9081EDEE71A3C",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC0ACE968CA40B87465FABEE9046A491",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.060Z] Receipt: ACE15F69BFE30E5256FA2EE6F366EEF2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.061Z] Receipt: AC42A3C7C19AF114A307A68E7C40D610 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.061Z] Receipt: AC7134FFD69CEADABBB91CBA1D94BFCC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.061Z] Receipt: AC0DBBCEEAB01EC194C9081EDEE71A3C from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.061Z] Receipt: AC0ACE968CA40B87465FABEE9046A491 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.063Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC40D855BF007F4C5FD6300B4C9C88E1",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACBED1E3FC36A60769D225B377BF81AB",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC9D0FB43247FEBB5019B392C192B3D9",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8DD92DF9A1D0A0E38C0DD6AB4536C2",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACAC5EE6D0BBEE71A35EF50D2D6FF1CF",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.063Z] Receipt: AC40D855BF007F4C5FD6300B4C9C88E1 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.064Z] Receipt: ACBED1E3FC36A60769D225B377BF81AB from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.064Z] Receipt: AC9D0FB43247FEBB5019B392C192B3D9 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.064Z] Receipt: AC8DD92DF9A1D0A0E38C0DD6AB4536C2 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.064Z] Receipt: ACAC5EE6D0BBEE71A35EF50D2D6FF1CF from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.065Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8A5EB6DFB96405D3E75B947C017C04",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.065Z] Receipt: AC8A5EB6DFB96405D3E75B947C017C04 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.066Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACB16535EA4F30F3E035DE52F2E4CC36",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC296D0D467C5A79B8027DE056C34B82",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.066Z] Receipt: ACB16535EA4F30F3E035DE52F2E4CC36 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.066Z] Receipt: AC296D0D467C5A79B8027DE056C34B82 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.068Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC14A19D8FC5E36097947606002F08D7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACC561A3F18739230874BF9611DAF7A7",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC677EFCE11B58670A198D77EC9E3A9E",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC8AFB1B53BD40A6A4F72ADBCBFCCA83",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "ACA44C18EE5E19A408FF9C145907DF9A",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC1D62B2222A48E7247411B0285D1BCA",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC7BEA3748BBBAE443B0C1B140F8F4BC",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558581958993-1586032642@g.us",
+      "id": "AC95A4FB9BB847C8598FF11FE9124288",
+      "fromMe": false,
+      "participant": "125232690024584@lid"
+    },
+    "receipt": {
+      "userJid": "125232690024584@lid",
+      "readTimestamp": 1775387610
+    }
+  }
+]
+[2026-04-05T11:14:29.068Z] Receipt: AC14A19D8FC5E36097947606002F08D7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.069Z] Receipt: ACC561A3F18739230874BF9611DAF7A7 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.072Z] Receipt: AC677EFCE11B58670A198D77EC9E3A9E from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.072Z] Receipt: AC8AFB1B53BD40A6A4F72ADBCBFCCA83 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.072Z] Receipt: ACA44C18EE5E19A408FF9C145907DF9A from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.073Z] Receipt: AC1D62B2222A48E7247411B0285D1BCA from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.073Z] Receipt: AC7BEA3748BBBAE443B0C1B140F8F4BC from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:29.073Z] Receipt: AC95A4FB9BB847C8598FF11FE9124288 from 558581958993-1586032642@g.us type: delivered
+[2026-04-05T11:14:30.704Z] ERROR: Failed to decrypt message with any known session...
+[2026-04-05T11:14:30.706Z] ERROR: Session error:MessageCounterError: Key used already or never filled MessageCounterError: Key used already or never filled
+    at SessionCipher.doDecryptWhisperMessage (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:236:19)
+    at SessionCipher.decryptWithSessions (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:147:40)
+    at 125232690024584_1.0 [as awaitable] (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:171:39)
+    at async _asyncQueueExecutor (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\queue_job.js:20:29)
+[2026-04-05T11:14:31.278Z] [STORE] messages.upsert fired: type=append, count=2
+[2026-04-05T11:14:31.279Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775384775, type=none
+[2026-04-05T11:14:31.279Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=65
+[2026-04-05T11:14:31.279Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775384803, type=protocolMessage
+[2026-04-05T11:14:31.279Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=66
+[2026-04-05T11:14:31.280Z] [SOCKET] messages.upsert: type=append, count=2
+[2026-04-05T11:14:42.444Z] opened connection
+[2026-04-05T11:14:42.448Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:14:42.449Z] receivedPendingNotifications: undefined
+[2026-04-05T11:14:42.458Z] [STORE] Saving 4701 chats to file...
+[2026-04-05T11:14:42.459Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:14:49.034Z] [GET-CHATS] Socket event received
+[2026-04-05T11:14:49.036Z] [GET-CHATS] Filtered active chats: 4681
+[2026-04-05T11:14:59.544Z] [GET-CHATS] Chats after sort: 4681
+[2026-04-05T11:15:00.787Z] [GET-MESSAGES] Looking for messages for 558581958993-1586032642@g.us
+[2026-04-05T11:15:00.790Z] [GET-MESSAGES] Store messages keys: ["558581958993-1586032642@g.us"]
+[2026-04-05T11:15:00.792Z] [GET-MESSAGES] Found 2045 messages in store for 558581958993-1586032642@g.us
+[2026-04-05T11:15:00.806Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:15:00.810Z] Chats found: 4681
+[2026-04-05T11:15:00.811Z] All chats count: 4701
+[2026-04-05T11:15:00.811Z] Archived chats count: 20
+[2026-04-05T11:15:11.473Z] Emitting chats: 4681
+[2026-04-05T11:15:11.475Z] Sample chat: {
+  "participant": [],
+  "id": "558581958993-1586032642@g.us",
+  "unreadCount": 32,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775387460,
+  "name": "Mundo Geek & Nerd OFICIAL",
+  "pHash": "1:SlZ3U3zR",
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "suspended": false,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558581958993-1586032642@g.us",
+          "fromMe": false,
+          "id": "ACD02F27D8CCB213A2981BDE8CECADD2",
+          "participant": "272288545034477@lid",
+          "participantAlt": "559184265109@s.whatsapp.net",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775387460,
+        "pushName": "Daniel Lavareda",
+        "broadcast": false,
+        "message": {
+          "messageContextInfo": {
+            "messageSecret": "i4Pk4gcmPzIT+CTqfSlHJaLgQpDar1A2ImVpW5Up6I4="
+          },
+          "albumMessage": {
+            "expectedImageCount": 3,
+            "expectedVideoCount": 0
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1766964068,
+  "displayName": "Mundo Geek & Nerd OFICIAL",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/118123693_3225239434232963_5833816862504307225_n.jpg?ccb=11-4&oh=01_Q5Aa4AGnwtwYURkfxZ5dPJbuH4bXYmfKpPVk6JEVek_NIrgQfQ&oe=69DF4EF7&_nc_sid=5e03e0&_nc_cat=100",
+  "lastMessage": "📸 Álbum",
+  "lastMessageSender": "Daniel Lavareda",
+  "lastMessageTime": 1775387460
+}
+[2026-04-05T11:15:11.651Z] [STORE] Saving 4701 chats to file...
+[2026-04-05T11:15:11.662Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:15:16.615Z] [SOCKET] Emitting chats-list from history sync: 4681 active chats
+[2026-04-05T11:15:17.016Z] [GET-CHATS] Resolved chats: 4681 Sample: {
+  "participant": [],
+  "id": "558581958993-1586032642@g.us",
+  "unreadCount": 32,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775387460,
+  "name": "Mundo Geek & Nerd OFICIAL",
+  "pHash": "1:SlZ3U3zR",
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "suspended": false,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558581958993-1586032642@g.us",
+          "fromMe": false,
+          "id": "ACD02F27D8CCB213A2981BDE8CECADD2",
+          "participant": "272288545034477@lid",
+          "participantAlt": "559184265109@s.whatsapp.net",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775387460,
+        "pushName": "Daniel Lavareda",
+        "broadcast": false,
+        "message": {
+          "messageContextInfo": {
+            "messageSecret": "i4Pk4gcmPzIT+CTqfSlHJaLgQpDar1A2ImVpW5Up6I4="
+          },
+          "albumMessage": {
+            "expectedImageCount": 3,
+            "expectedVideoCount": 0
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1766964068,
+  "displayName": "Mundo Geek & Nerd OFICIAL",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/118123693_3225239434232963_5833816862504307225_n.jpg?ccb=11-4&oh=01_Q5Aa4AGnwtwYURkfxZ5dPJbuH4bXYmfKpPVk6JEVek_NIrgQfQ&oe=69DF4EF7&_nc_sid=5e03e0&_nc_cat=100",
+  "lastMessage": "📸 Álbum",
+  "lastMessageSender": "Daniel Lavareda",
+  "lastMessageTime": 1775387460
+}
+[2026-04-05T11:15:17.076Z] Client disconnected from socket
+[2026-04-05T11:15:17.084Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:15:18.199Z] [API-CHATS] Returning 4681 chats
+[2026-04-05T11:15:18.330Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:15:18.333Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:15:18.334Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T11:15:18.350Z] Client connected to socket
+[2026-04-05T11:15:18.595Z] [SOCKET] Received messaging-history.set event: {"chats":231,"contacts":231,"messages":4985,"syncType":2}
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 120363019990569731@g.us: archived=true, name=🫒 Oliver Toys - GiJoe e Action Figures
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 120363377496881783@g.us: archived=false, name=Mcfarlane Toys
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 558586878393@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 559284313322-1565733287@g.us: archived=false, name=Marvel Legends BRASIL
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 120363161570954772@g.us: archived=true, name=MARVEL LEGENDS BR ®️
+[2026-04-05T11:15:18.597Z] [SOCKET] History chat 120363418615479931@g.us: archived=false, name=MARVEL & DC
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 120363423657616021@g.us: archived=true, name=Colecionando na America Inscritos
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 120363394328906857@g.us: archived=true, name=TEIA DO ARANHA
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 120363211900560110@g.us: archived=true, name=Wordpress ◈ Elementor - CSS & JS
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 120363370953781873@g.us: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 197551349362746@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 5521974300901-1559853430@g.us: archived=true, name=Colecionadores dos anos 90
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 5094519107669@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 558587453829-1594156687@g.us: archived=false, name=Action Figures Nordeste
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 26710938534055@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.598Z] [SOCKET] History chat 556185994545-1582560420@g.us: archived=false, name=Marvel Legends Brasil 3
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 559198107173-1629836772@g.us: archived=false, name=🤝🏻 SÓ TROCA 🤝🏻 🚫 S/ VENDA 🚫
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 558594128581@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 140763442749443@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 558587453829-1605201998@g.us: archived=false, name=Universo X-men Marvel Legends
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 120363160540094520@g.us: archived=false, name=Action Recife
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 558597665601@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 120363114280639025@g.us: archived=true, name=POWER RANGER-BRASIL ®️
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 120363387777093318@g.us: archived=false, name=Street Fighter (escala 1/12 - 6")
+[2026-04-05T11:15:18.599Z] [SOCKET] History chat 120363020599253391@g.us: archived=true, name=Emuelec
+[2026-04-05T11:15:18.600Z] [SOCKET] History chat 558596162717@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.600Z] [SOCKET] History chat 5521993670964@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.600Z] [SOCKET] History chat 558584125417@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.600Z] [SOCKET] History chat 258110589546592@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 120363022912698264@g.us: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 226890287710273@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 220555496145030@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 558581958993-1586032642@g.us: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 98144431931456@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.601Z] [SOCKET] History chat 558896015636@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 76441861525712@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 175849013788896@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 47450932908095@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 91345549004963@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 92711751307328@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 558581472331@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 109276869722320@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.602Z] [SOCKET] History chat 108112983920822@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 29708406272004@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 78834158293241@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 232130164605030@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 64412144644120@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 259833089511617@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 148404525113513@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.603Z] [SOCKET] History chat 93755042439385@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.604Z] [SOCKET] History chat 127118281306119@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.604Z] [SOCKET] History chat 122857640226967@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.604Z] [SOCKET] History chat 267649527373929@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 271042853478425@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 205402583089387@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 204032958284016@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 164411415224382@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 68088250769642@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 190391722737765@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.607Z] [SOCKET] History chat 177051587899626@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 165283360727123@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 175037298553060@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 104505244954645@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 154868333445285@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 210921699958946@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 137606474010652@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 25387987947619@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 202013803585661@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 38788185219265@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 259046808518808@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.608Z] [SOCKET] History chat 37353431265367@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 225163677298863@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 195446865694880@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 237198259544139@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 148292436537565@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 185963661783172@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 126569062383629@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 91366906458240@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 219490059055296@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 47923345784961@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 126937792045100@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.609Z] [SOCKET] History chat 78069687660579@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 84417783554164@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 6846245036033@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 247308511895623@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 251217116680444@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 242657095868535@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 141364620718158@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 92384763363520@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 188257560219856@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 90387704213625@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 6579923509478@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.610Z] [SOCKET] History chat 19190081691844@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 169509507842154@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 149580943499307@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 126555858673801@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 120323693346865@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 123506113167454@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 26169353195595@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 93016257786105@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 60537631187107@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 278696183247074@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 192723856408622@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 256942173909229@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.611Z] [SOCKET] History chat 149602636456125@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 114564041596941@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 39784466649328@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 267752589799494@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 5192716124280@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 182699419545703@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 77773485945085@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 157530844094678@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 210590903574546@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 99072396550167@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 211389750710518@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 139152662241321@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 135768261566597@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 188205601153086@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.612Z] [SOCKET] History chat 244147583766671@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 243825679298578@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 208559350505618@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 106687272886362@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 56620704887010@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 130532797059130@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 177420971831442@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 31520882442271@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 235510270304278@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 157711283007508@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 71605795483775@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 270918064558301@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 241308476154035@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 240355144429586@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.613Z] [SOCKET] History chat 92539415740637@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 8246656020666@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 65983632904264@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 29729780400268@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 235858212958349@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 194948699795691@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 56521853513853@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 217986887643206@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 12648896806935@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 109410248597506@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 129166947148007@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 78426237046981@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 164626180382812@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 115732272701614@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.614Z] [SOCKET] History chat 215049616490710@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 158737746640987@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 85173748129887@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 202898717851675@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 194360289304755@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 171588322369675@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 144332392816808@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 267696805564595@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 68328701882497@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 88815830061252@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 144285299155015@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 209186482868427@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 188398790828147@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 64501936341095@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.615Z] [SOCKET] History chat 40626196336667@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 195880607080464@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 138727661789235@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 101876641058860@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 137993172037662@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 12897837162555@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 148936765505680@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 147248709148735@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 144800644907124@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 28849379221536@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 234475250254026@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 107073568289007@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 199140990525480@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 78786880090335@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.616Z] [SOCKET] History chat 167684549427435@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 144001831284975@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 88592340803822@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 86483528622193@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 184340281594005@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 63582712647690@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 229948321198307@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 247038247702672@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 185834779213982@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 6301170049175@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 280976827662380@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 181488154865791@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 149984603283696@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 259047093698694@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.617Z] [SOCKET] History chat 240002889957521@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.618Z] [SOCKET] History chat 558588088283@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 558588088283-1596198609@g.us: archived=false, name=12/04 - PRÓXIMA AVENTURA
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 262663053557773@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 173074515247178@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 120363199690155394@g.us: archived=false, name=INDEPENDENTES | ECOTURISMO, TRILHAS & AVENTURAS
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 120363180997982352@g.us: archived=false, name=INDEPENDENTES | ECOTURISMO, TRILHAS, REMADAS & AVENTURAS
+[2026-04-05T11:15:18.623Z] [SOCKET] History chat 130382859100211@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.624Z] [SOCKET] History chat 62620757401676@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.624Z] [SOCKET] History chat 558587808847@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.624Z] [SOCKET] History chat 26349725081836@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.624Z] [SOCKET] History chat 244727437889751@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.624Z] [SOCKET] History chat 5511993383885-1634903566@g.us: archived=true, name=Colecionáveis em Geral (OFICIAL)
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 215856550269121@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 558587453829@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 89520036909161@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 197152638791763@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 120363154779634095@g.us: archived=true, name=Colecionáveis e Geekices: Raditando!
+[2026-04-05T11:15:18.625Z] [SOCKET] History chat 3788362531055@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 31752861044779@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 184541943714000@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 124631528788017@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 275526598058172@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 147283706408973@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 88828631109715@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 148606019436631@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 102160226341012@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 7001451028643@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 558587711362@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 70893199999060@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 81093529178294@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 189640153813191@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.626Z] [SOCKET] History chat 59477445341439@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 558599010406-1600741150@g.us: archived=false, name=COLEÇÕES HASBRO
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 138736050425985@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 233530659442742@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 113336368812203@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 265317813071994@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 109040646516821@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 558596996107@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 24988824371295@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 83649001164952@lid: archived=false, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] History chat 17188492730425@lid: archived=undefined, name=undefined
+[2026-04-05T11:15:18.627Z] [SOCKET] Processed 231 chats from history, 12 archived
+[2026-04-05T11:15:18.628Z] [SOCKET] Processed 231 contacts from history
+[2026-04-05T11:15:23.652Z] [SOCKET] Stored 4985 messages from history
+[2026-04-05T11:15:34.207Z] [SOCKET] After history sync: 4893 total, 20 archived, 4873 active to emit
+[2026-04-05T11:15:35.965Z] [STORE] Saving 4893 chats to file...
+[2026-04-05T11:15:35.966Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:15:41.576Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:15:54.187Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:15:55.920Z] [GET-CHATS] Socket event received
+[2026-04-05T11:15:55.922Z] [GET-CHATS] Filtered active chats: 4873
+[2026-04-05T11:16:06.581Z] [GET-CHATS] Chats after sort: 4873
+[2026-04-05T11:16:07.829Z] Client disconnected from socket
+[2026-04-05T11:16:07.840Z] [STORE] Saving 4893 chats to file...
+[2026-04-05T11:16:07.840Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:16:17.569Z] Client connected to socket
+[2026-04-05T11:16:17.604Z] [GET-CHATS] Socket event received
+[2026-04-05T11:16:17.606Z] [GET-CHATS] Filtered active chats: 4873
+[2026-04-05T11:16:28.827Z] [GET-CHATS] Chats after sort: 4873
+[2026-04-05T11:16:30.288Z] [STORE] Saving 4893 chats to file...
+[2026-04-05T11:16:30.289Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:16:35.894Z] [SOCKET] Emitting chats-list from history sync: 4873 active chats
+[2026-04-05T11:16:36.312Z] [GET-CHATS] Resolved chats: 4873 Sample: {
+  "participant": [],
+  "id": "558581958993-1586032642@g.us",
+  "unreadCount": 31,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775387460,
+  "name": "Mundo Geek & Nerd OFICIAL",
+  "pHash": "1:SlZ3U3zR",
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "suspended": false,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558581958993-1586032642@g.us",
+          "fromMe": false,
+          "id": "AC37300D0271C954D291D7BAFCA2B5B5"
+        },
+        "message": {
+          "videoMessage": {
+            "url": "https://mmg.whatsapp.net/v/t62.7161-24/605773386_867589065650125_2009108778731852956_n.enc?ccb=11-4&oh=01_Q5Aa3QGmtS8QXSVyyJXdqP0HhOPej6toyqYFyM-EaER1RPUg5Q&oe=6970EF84&_nc_sid=5e03e0&mms3=true",
+            "mimetype": "video/mp4",
+            "fileSha256": "xf/4zxvnezsgyipuPAWH41FEWucGpUnwYfuNGygnc0Y=",
+            "fileLength": "1901679",
+            "seconds": 15,
+            "mediaKey": "oeKMpPAJkZNNIlp8Lr9O2Zcfwi/vcWme6ovu5p95PMY=",
+            "height": 1280,
+            "width": 720,
+            "fileEncSha256": "s0UtykIPryaQkhPlFD4Msgula/iZmBPsxCq18icLDMg=",
+            "directPath": "/v/t62.7161-24/605773386_867589065650125_2009108778731852956_n.enc?ccb=11-4&oh=01_Q5Aa3QGmtS8QXSVyyJXdqP0HhOPej6toyqYFyM-EaER1RPUg5Q&oe=6970EF84&_nc_sid=5e03e0&_nc_hot=1766431448",
+            "mediaKeyTimestamp": "1766431329",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA"
+            }
+          },
+          "messageContextInfo": {
+            "messageSecret": "LmArlw3S99j5KqfbRE/NShSzxfU6o4r8TNkSXaf8pIc=",
+            "messageAssociation": {
+              "associationType": "MEDIA_ALBUM",
+              "parentMessageKey": {
+                "remoteJid": "558581958993-1586032642@g.us",
+                "fromMe": false,
+                "id": "AC509A0921A9E80E93AEB3C3E51DA2EF",
+                "participant": "189305062473930@lid"
+              }
+            }
+          }
+        },
+        "messageTimestamp": "1766431453",
+        "participant": "189305062473930@lid",
+        "mediaData": {
+          "localPath": "Media/WhatsApp Video/VID-20251222-WA0507.mp4"
+        },
+        "messageSecret": "LmArlw3S99j5KqfbRE/NShSzxfU6o4r8TNkSXaf8pIc=",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1766431453,
+  "displayName": "Mundo Geek & Nerd OFICIAL",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/118123693_3225239434232963_5833816862504307225_n.jpg?ccb=11-4&oh=01_Q5Aa4AGnwtwYURkfxZ5dPJbuH4bXYmfKpPVk6JEVek_NIrgQfQ&oe=69DF4EF7&_nc_sid=5e03e0&_nc_cat=100",
+  "lastMessage": "📸 Álbum",
+  "lastMessageSender": "Daniel Lavareda",
+  "lastMessageTime": 1775387460
+}
+[2026-04-05T11:16:36.315Z] [DELAYED-SYNC] Re-emitting 4873 chats with fresh timestamps
+[2026-04-05T11:16:36.376Z] [API-CHATS] Returning 4873 chats
+[2026-04-05T11:16:36.407Z] [GET-CHATS] Resolved chats: 4873 Sample: {
+  "participant": [],
+  "id": "558581958993-1586032642@g.us",
+  "unreadCount": 31,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775387460,
+  "name": "Mundo Geek & Nerd OFICIAL",
+  "pHash": "1:SlZ3U3zR",
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "suspended": false,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558581958993-1586032642@g.us",
+          "fromMe": false,
+          "id": "AC37300D0271C954D291D7BAFCA2B5B5"
+        },
+        "message": {
+          "videoMessage": {
+            "url": "https://mmg.whatsapp.net/v/t62.7161-24/605773386_867589065650125_2009108778731852956_n.enc?ccb=11-4&oh=01_Q5Aa3QGmtS8QXSVyyJXdqP0HhOPej6toyqYFyM-EaER1RPUg5Q&oe=6970EF84&_nc_sid=5e03e0&mms3=true",
+            "mimetype": "video/mp4",
+            "fileSha256": "xf/4zxvnezsgyipuPAWH41FEWucGpUnwYfuNGygnc0Y=",
+            "fileLength": "1901679",
+            "seconds": 15,
+            "mediaKey": "oeKMpPAJkZNNIlp8Lr9O2Zcfwi/vcWme6ovu5p95PMY=",
+            "height": 1280,
+            "width": 720,
+            "fileEncSha256": "s0UtykIPryaQkhPlFD4Msgula/iZmBPsxCq18icLDMg=",
+            "directPath": "/v/t62.7161-24/605773386_867589065650125_2009108778731852956_n.enc?ccb=11-4&oh=01_Q5Aa3QGmtS8QXSVyyJXdqP0HhOPej6toyqYFyM-EaER1RPUg5Q&oe=6970EF84&_nc_sid=5e03e0&_nc_hot=1766431448",
+            "mediaKeyTimestamp": "1766431329",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA"
+            }
+          },
+          "messageContextInfo": {
+            "messageSecret": "LmArlw3S99j5KqfbRE/NShSzxfU6o4r8TNkSXaf8pIc=",
+            "messageAssociation": {
+              "associationType": "MEDIA_ALBUM",
+              "parentMessageKey": {
+                "remoteJid": "558581958993-1586032642@g.us",
+                "fromMe": false,
+                "id": "AC509A0921A9E80E93AEB3C3E51DA2EF",
+                "participant": "189305062473930@lid"
+              }
+            }
+          }
+        },
+        "messageTimestamp": "1766431453",
+        "participant": "189305062473930@lid",
+        "mediaData": {
+          "localPath": "Media/WhatsApp Video/VID-20251222-WA0507.mp4"
+        },
+        "messageSecret": "LmArlw3S99j5KqfbRE/NShSzxfU6o4r8TNkSXaf8pIc=",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1766431453,
+  "displayName": "Mundo Geek & Nerd OFICIAL",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/118123693_3225239434232963_5833816862504307225_n.jpg?ccb=11-4&oh=01_Q5Aa4AGnwtwYURkfxZ5dPJbuH4bXYmfKpPVk6JEVek_NIrgQfQ&oe=69DF4EF7&_nc_sid=5e03e0&_nc_cat=100",
+  "lastMessage": "📸 Álbum",
+  "lastMessageSender": "Daniel Lavareda",
+  "lastMessageTime": 1775387460
+}
+[2026-04-05T11:16:36.481Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:16:38.568Z] [API-CHATS] Returning 4873 chats
+[2026-04-05T11:16:39.431Z] Client disconnected from socket
+[2026-04-05T11:16:39.468Z] [GET-MESSAGES] Emitting 2045 messages for 558581958993-1586032642@g.us
+[2026-04-05T11:16:39.762Z] [SOCKET] Received messaging-history.set event: {"chats":106,"contacts":106,"messages":4994,"syncType":2}

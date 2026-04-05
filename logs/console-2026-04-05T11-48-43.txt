@@ -1,0 +1,752 @@
+[2026-04-05T11:48:43.606Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T11-48-43.txt
+[2026-04-05T11:48:43.613Z] [LID] Loaded 47 LID↔PN mappings from auth store
+[2026-04-05T11:48:44.146Z] Server running on http://localhost:3000
+[2026-04-05T11:48:46.885Z] opened connection
+[2026-04-05T11:48:46.886Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:48:46.886Z] receivedPendingNotifications: undefined
+[2026-04-05T11:48:46.944Z] Client connected to socket
+[2026-04-05T11:48:46.966Z] [GET-CHATS] Socket event received
+[2026-04-05T11:48:46.968Z] [GET-CHATS] Filtered active chats: 0
+[2026-04-05T11:48:46.968Z] [GET-CHATS] Chats after sort: 0
+[2026-04-05T11:48:47.002Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:48:47.003Z] [API-CHATS] Returning 0 chats
+[2026-04-05T11:48:48.193Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558597665601:26@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0C5A41430FFB7A00735"
+          },
+          "message": {
+            "extendedTextMessage": {
+              "text": "🔄"
+            }
+          },
+          "messageTimestamp": "1775389726",
+          "status": "PENDING"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389726
+  }
+]
+[2026-04-05T11:48:48.197Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558597665601:26@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0C5A41430FFB7A00735"
+          },
+          "message": {
+            "extendedTextMessage": {
+              "text": "🔄"
+            }
+          },
+          "messageTimestamp": "1775389726",
+          "status": "PENDING"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389726
+  }
+]
+[2026-04-05T11:48:48.197Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:48:48.197Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:48:48.198Z] [SOCKET] Created chat from update 558597665601@s.whatsapp.net: 558597665601
+[2026-04-05T11:48:48.218Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T11:48:48.219Z] [STORE] msg from=ME, ts=1775389726, type=extendedTextMessage
+[2026-04-05T11:48:48.219Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=1
+[2026-04-05T11:48:48.219Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T11:48:48.488Z] [SOCKET] Emitting chats-list after update: 1 active chats
+[2026-04-05T11:48:54.894Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:48:54.895Z] [STORE] Auto-save interval activated
+[2026-04-05T11:48:54.896Z] Chats found: 2
+[2026-04-05T11:48:54.896Z] All chats count: 2
+[2026-04-05T11:48:54.897Z] Archived chats count: 0
+[2026-04-05T11:48:54.898Z] Emitting chats: 2
+[2026-04-05T11:48:54.900Z] Sample chat: {
+  "id": "558597665601@s.whatsapp.net",
+  "name": "558597665601",
+  "archived": false,
+  "unreadCount": 0,
+  "conversationTimestamp": {
+    "low": 1775389726,
+    "high": 0,
+    "unsigned": true
+  },
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601:26@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C5A41430FFB7A00735"
+        },
+        "message": {
+          "extendedTextMessage": {
+            "text": "🔄"
+          }
+        },
+        "messageTimestamp": "1775389726",
+        "status": "PENDING"
+      }
+    }
+  ],
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AEvCdxWz1jte9JfOFE9SZ9TTcZ7vAhuKBnRt-hxR66OOg&oe=69DF6FBD&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🔄",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": {
+    "low": 1775389726,
+    "high": 0,
+    "unsigned": true
+  }
+}
+[2026-04-05T11:48:59.909Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:48:59.910Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:48:59.910Z] [GROUPS] Fetching metadata for 0 groups...
+[2026-04-05T11:48:59.911Z] [GROUPS] Updated metadata for 0/0 groups
+[2026-04-05T11:49:04.896Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:04.897Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:04.902Z] [STORE] Saved 414 bytes (compressed from 1282 bytes)
+[2026-04-05T11:49:09.906Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:49:09.908Z] [DELAYED-SYNC] Re-emitting 2 chats with fresh timestamps
+[2026-04-05T11:49:14.904Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:14.905Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:14.907Z] [STORE] Saved 414 bytes (compressed from 1282 bytes)
+[2026-04-05T11:49:24.903Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:24.904Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:24.905Z] [STORE] Saved 414 bytes (compressed from 1282 bytes)
+[2026-04-05T11:49:34.917Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:34.918Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:34.919Z] [STORE] Saved 414 bytes (compressed from 1282 bytes)
+[2026-04-05T11:49:35.185Z] Loading archived chats...
+[2026-04-05T11:49:35.187Z] Total chats in store: 2
+[2026-04-05T11:49:35.187Z] Direct archived chats in store: 0
+[2026-04-05T11:49:35.188Z] Chats with archived property (true/false): 1
+[2026-04-05T11:49:35.188Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:49:36.985Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:36.986Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:49:36.987Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:49:36.987Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:49:36.987Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:49:36.987Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:36.988Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:49:36.988Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:49:36.988Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:36.988Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:36.988Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:49:38.504Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:38.505Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:38.506Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:49:38.506Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:49:38.506Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:38.506Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:38.506Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:49:40.513Z] After sync attempt, archived chats: 0
+[2026-04-05T11:49:40.514Z] Archived chats found: 0
+[2026-04-05T11:49:42.616Z] Loading archived chats...
+[2026-04-05T11:49:42.617Z] Total chats in store: 2
+[2026-04-05T11:49:42.617Z] Direct archived chats in store: 0
+[2026-04-05T11:49:42.617Z] Chats with archived property (true/false): 2
+[2026-04-05T11:49:42.617Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:49:44.179Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:44.181Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:49:44.181Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:49:44.181Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:49:44.181Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:49:44.182Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:44.182Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:49:44.182Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:49:44.183Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:44.183Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:44.183Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:49:44.927Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:44.929Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:44.933Z] [STORE] Saved 417 bytes (compressed from 1307 bytes)
+[2026-04-05T11:49:45.924Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:45.926Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:49:45.926Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:49:45.927Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:49:45.927Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:45.927Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:49:45.928Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:49:47.933Z] After sync attempt, archived chats: 0
+[2026-04-05T11:49:47.934Z] Archived chats found: 0
+[2026-04-05T11:49:54.928Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:49:54.929Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:49:54.932Z] [STORE] Saved 417 bytes (compressed from 1307 bytes)
+[2026-04-05T11:50:04.931Z] [STORE] Saving 2 chats to file...
+[2026-04-05T11:50:04.932Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:04.934Z] [STORE] Saved 417 bytes (compressed from 1307 bytes)
+[2026-04-05T11:50:05.568Z] Loading archived chats...
+[2026-04-05T11:50:05.571Z] Total chats in store: 2
+[2026-04-05T11:50:05.572Z] Direct archived chats in store: 0
+[2026-04-05T11:50:05.573Z] Chats with archived property (true/false): 2
+[2026-04-05T11:50:05.573Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:50:07.080Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:07.081Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:50:07.081Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:50:07.081Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:07.082Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:50:07.082Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:07.082Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:50:07.082Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:07.083Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:07.083Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:07.083Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:50:08.727Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:08.728Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:08.728Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:50:08.729Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:08.729Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:08.729Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:08.730Z] [SOCKET] Emitting chats-list after update: 2 active chats
+[2026-04-05T11:50:10.739Z] After sync attempt, archived chats: 0
+[2026-04-05T11:50:10.740Z] Archived chats found: 0
+[2026-04-05T11:50:10.891Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "554797386565-1616674146@g.us",
+            "fromMe": false,
+            "id": "A53CE1B2D246580C598A2D01467AE299",
+            "participant": "259652549898449@lid",
+            "participantAlt": "554298358164@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389811,
+          "pushName": "marcellus Sanctorum",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "554797386565-1616674146@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwjW26TLBxAjGiCDHwGDQDH1VD4XXABTvonMk8SXbvEpU4b1Gj/S66ToMCIhBcWhlcHdSkJgLHdxWu4mG+g0Lfwdl3bIxAtvzWm08uFl"
+            },
+            "extendedTextMessage": {
+              "text": "Bom dia povo ❗ Feliz Domingo de Páscoa para todos nós‼️\n\nDomingou! Que essa Páscoa renove sua fé, sua esperança e vontade de recomeçar.\n\nDeixe pra trás o que pesa e abrace o que te faz bem!\n\nHoje pode: café com chocolate, almoço com chocolate e mais chocolate na sobremesa.\n\nE não se esqueça: a verdadeira Páscoa acontece dentro de você!",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 604800,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            },
+            "messageContextInfo": {
+              "messageSecret": "TzstmBHjlnANczmU5QiEP6MwA9kzuUmwhdL6EwTeZvM="
+            }
+          },
+          "verifiedBizName": "marcellus Sanctorum"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389811,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:50:10.897Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "554797386565-1616674146@g.us",
+            "fromMe": false,
+            "id": "A53CE1B2D246580C598A2D01467AE299",
+            "participant": "259652549898449@lid",
+            "participantAlt": "554298358164@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389811,
+          "pushName": "marcellus Sanctorum",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "554797386565-1616674146@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwjW26TLBxAjGiCDHwGDQDH1VD4XXABTvonMk8SXbvEpU4b1Gj/S66ToMCIhBcWhlcHdSkJgLHdxWu4mG+g0Lfwdl3bIxAtvzWm08uFl"
+            },
+            "extendedTextMessage": {
+              "text": "Bom dia povo ❗ Feliz Domingo de Páscoa para todos nós‼️\n\nDomingou! Que essa Páscoa renove sua fé, sua esperança e vontade de recomeçar.\n\nDeixe pra trás o que pesa e abrace o que te faz bem!\n\nHoje pode: café com chocolate, almoço com chocolate e mais chocolate na sobremesa.\n\nE não se esqueça: a verdadeira Páscoa acontece dentro de você!",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 604800,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            },
+            "messageContextInfo": {
+              "messageSecret": "TzstmBHjlnANczmU5QiEP6MwA9kzuUmwhdL6EwTeZvM="
+            }
+          },
+          "verifiedBizName": "marcellus Sanctorum"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389811,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:50:10.897Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:50:10.897Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:50:10.898Z] [SOCKET] Created chat from update 554797386565-1616674146@g.us: 554797386565-1616674146
+[2026-04-05T11:50:10.901Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:50:10.901Z] [STORE] msg from=554797386565-1616674146@g.us, ts=1775389811, type=senderKeyDistributionMessage,messageContextInfo,extendedTextMessage
+[2026-04-05T11:50:10.901Z] [STORE] msg stored for 554797386565-1616674146@g.us, total=1
+[2026-04-05T11:50:10.902Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:50:11.784Z] [SOCKET] Emitting chats-list after update: 3 active chats
+[2026-04-05T11:50:14.255Z] Loading archived chats...
+[2026-04-05T11:50:14.256Z] Total chats in store: 3
+[2026-04-05T11:50:14.256Z] Direct archived chats in store: 0
+[2026-04-05T11:50:14.256Z] Chats with archived property (true/false): 3
+[2026-04-05T11:50:14.256Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:50:14.936Z] [STORE] Saving 3 chats to file...
+[2026-04-05T11:50:14.938Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:14.947Z] [STORE] Saved 8255 bytes (compressed from 56226 bytes)
+[2026-04-05T11:50:15.877Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:15.878Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:50:15.879Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:50:15.879Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:15.879Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:50:15.879Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:15.879Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:50:15.880Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:15.880Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:15.880Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:15.881Z] [SOCKET] Emitting chats-list after update: 3 active chats
+[2026-04-05T11:50:17.482Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  },
+  {
+    "id": "5511993383885-1634903566@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "5511993383885-1634903566@g.us",
+            "fromMe": false,
+            "id": "A5E036285E3C02F181D4D42E8971B1DF",
+            "participant": "259652549898449@lid",
+            "participantAlt": "554298358164@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389817,
+          "pushName": "marcellus Sanctorum",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "5511993383885-1634903566@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiyscasBhAeGiAWlTRS8eKdkF4EucF/06Dj+urMqv4J+naSE/4Os8ADIyIhBbrNuJmbkRy/dyP4r+Abbo6RyvvgjtFMYsbwdSaj4zxL"
+            },
+            "extendedTextMessage": {
+              "text": "Bom dia povo ❗ Feliz Domingo de Páscoa para todos nós‼️\n\nDomingou! Que essa Páscoa renove sua fé, sua esperança e vontade de recomeçar.\n\nDeixe pra trás o que pesa e abrace o que te faz bem!\n\nHoje pode: café com chocolate, almoço com chocolate e mais chocolate na sobremesa.\n\nE não se esqueça: a verdadeira Páscoa acontece dentro de você!",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 7776000,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            },
+            "messageContextInfo": {
+              "messageSecret": "klxY1C0Iw1Vafu/2GtrX03mBVRtlh1jRN1anBmVl0/M="
+            }
+          },
+          "verifiedBizName": "marcellus Sanctorum"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389817,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:50:17.486Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  },
+  {
+    "id": "5511993383885-1634903566@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "5511993383885-1634903566@g.us",
+            "fromMe": false,
+            "id": "A5E036285E3C02F181D4D42E8971B1DF",
+            "participant": "259652549898449@lid",
+            "participantAlt": "554298358164@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389817,
+          "pushName": "marcellus Sanctorum",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "5511993383885-1634903566@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiyscasBhAeGiAWlTRS8eKdkF4EucF/06Dj+urMqv4J+naSE/4Os8ADIyIhBbrNuJmbkRy/dyP4r+Abbo6RyvvgjtFMYsbwdSaj4zxL"
+            },
+            "extendedTextMessage": {
+              "text": "Bom dia povo ❗ Feliz Domingo de Páscoa para todos nós‼️\n\nDomingou! Que essa Páscoa renove sua fé, sua esperança e vontade de recomeçar.\n\nDeixe pra trás o que pesa e abrace o que te faz bem!\n\nHoje pode: café com chocolate, almoço com chocolate e mais chocolate na sobremesa.\n\nE não se esqueça: a verdadeira Páscoa acontece dentro de você!",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 7776000,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            },
+            "messageContextInfo": {
+              "messageSecret": "klxY1C0Iw1Vafu/2GtrX03mBVRtlh1jRN1anBmVl0/M="
+            }
+          },
+          "verifiedBizName": "marcellus Sanctorum"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389817,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:50:17.486Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:50:17.486Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:17.486Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:17.486Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:17.486Z] [SOCKET] Processing update for chat 5511993383885-1634903566@g.us
+[2026-04-05T11:50:17.486Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:50:17.486Z] [SOCKET] Created chat from update 5511993383885-1634903566@g.us: 5511993383885-1634903566
+[2026-04-05T11:50:17.489Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:50:17.489Z] [STORE] msg from=5511993383885-1634903566@g.us, ts=1775389817, type=senderKeyDistributionMessage,messageContextInfo,extendedTextMessage
+[2026-04-05T11:50:17.489Z] [STORE] msg stored for 5511993383885-1634903566@g.us, total=1
+[2026-04-05T11:50:17.489Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:50:18.381Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:19.035Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:19.037Z] [STORE] Updating chat 554797386565-1616674146@g.us:
+[2026-04-05T11:50:19.037Z]   - Existing: archived=false, name=554797386565-1616674146
+[2026-04-05T11:50:19.038Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:19.038Z]   - Merged: archived=false, name=554797386565-1616674146
+[2026-04-05T11:50:19.039Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:19.039Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:50:19.039Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:19.039Z] [SOCKET] Before merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:50:19.039Z] [SOCKET] After merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:50:19.040Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:21.050Z] After sync attempt, archived chats: 0
+[2026-04-05T11:50:21.050Z] Archived chats found: 0
+[2026-04-05T11:50:24.949Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:50:24.950Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:24.954Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:50:30.398Z] Loading archived chats...
+[2026-04-05T11:50:30.399Z] Total chats in store: 4
+[2026-04-05T11:50:30.399Z] Direct archived chats in store: 0
+[2026-04-05T11:50:30.399Z] Chats with archived property (true/false): 4
+[2026-04-05T11:50:30.399Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:50:32.021Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:32.022Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:50:32.023Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:50:32.023Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:32.023Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:50:32.023Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:32.023Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:50:32.023Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:32.024Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:32.024Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:32.024Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:33.555Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:33.556Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:33.557Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:50:33.557Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:33.557Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:33.557Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:50:33.557Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:34.962Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:50:34.964Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:34.970Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:50:35.297Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:35.299Z] [STORE] Updating chat 554797386565-1616674146@g.us:
+[2026-04-05T11:50:35.299Z]   - Existing: archived=false, name=554797386565-1616674146
+[2026-04-05T11:50:35.299Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:35.300Z]   - Merged: archived=false, name=554797386565-1616674146
+[2026-04-05T11:50:35.300Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:35.300Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:50:35.301Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:35.301Z] [SOCKET] Before merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:50:35.301Z] [SOCKET] After merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:50:35.302Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:36.926Z] [STORE] chats.update received: [
+  {
+    "id": "5511993383885-1634903566@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:36.928Z] [STORE] Updating chat 5511993383885-1634903566@g.us:
+[2026-04-05T11:50:36.928Z]   - Existing: archived=false, name=5511993383885-1634903566
+[2026-04-05T11:50:36.928Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:50:36.929Z]   - Merged: archived=false, name=5511993383885-1634903566
+[2026-04-05T11:50:36.929Z] [SOCKET] chats.update received: [
+  {
+    "id": "5511993383885-1634903566@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:50:36.929Z] [SOCKET] Processing update for chat 5511993383885-1634903566@g.us
+[2026-04-05T11:50:36.929Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:50:36.929Z] [SOCKET] Before merge - archived=false, name=5511993383885-1634903566, ts=1775389817
+[2026-04-05T11:50:36.930Z] [SOCKET] After merge - archived=false, name=5511993383885-1634903566, ts=1775389817
+[2026-04-05T11:50:36.930Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:50:38.945Z] After sync attempt, archived chats: 0
+[2026-04-05T11:50:38.947Z] Archived chats found: 0
+[2026-04-05T11:50:44.964Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:50:44.965Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:44.971Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:50:54.971Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:50:54.972Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:50:54.979Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:04.972Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:04.973Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:04.978Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:14.973Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:14.975Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:14.987Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:24.985Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:24.987Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:24.995Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:34.995Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:34.996Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:35.006Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:45.006Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:45.008Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:45.014Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:51:55.007Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:51:55.008Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:51:55.011Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:05.023Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:05.024Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:05.037Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:15.037Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:15.038Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:15.052Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:25.037Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:25.040Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:25.062Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:35.045Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:35.046Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:35.056Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:45.054Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:45.056Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:45.063Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:52:55.069Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:52:55.070Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:52:55.080Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:05.083Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:53:05.084Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:53:05.088Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:15.083Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:53:15.084Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:53:15.091Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:25.097Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:53:25.099Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:53:25.107Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:35.109Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:53:35.110Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:53:35.113Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:43.467Z] Loading archived chats...
+[2026-04-05T11:53:43.469Z] Total chats in store: 4
+[2026-04-05T11:53:43.469Z] Direct archived chats in store: 0
+[2026-04-05T11:53:43.471Z] Chats with archived property (true/false): 4
+[2026-04-05T11:53:43.472Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:53:45.110Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:45.111Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:53:45.111Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:53:45.111Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:53:45.111Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:53:45.112Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:45.112Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:53:45.112Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:53:45.112Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:53:45.113Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:53:45.115Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:53:45.131Z] [STORE] Saving 4 chats to file...
+[2026-04-05T11:53:45.131Z] [STORE] Archived chats being saved: 0
+[2026-04-05T11:53:45.139Z] [STORE] Saved 22817 bytes (compressed from 170489 bytes)
+[2026-04-05T11:53:46.596Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:46.597Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:46.597Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:53:46.598Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:53:46.598Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:53:46.598Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389726
+[2026-04-05T11:53:46.598Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:53:48.279Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:48.280Z] [STORE] Updating chat 554797386565-1616674146@g.us:
+[2026-04-05T11:53:48.280Z]   - Existing: archived=false, name=554797386565-1616674146
+[2026-04-05T11:53:48.280Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:53:48.280Z]   - Merged: archived=false, name=554797386565-1616674146
+[2026-04-05T11:53:48.280Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:53:48.280Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:53:48.280Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:53:48.281Z] [SOCKET] Before merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:53:48.281Z] [SOCKET] After merge - archived=false, name=554797386565-1616674146, ts=1775389811
+[2026-04-05T11:53:48.281Z] [SOCKET] Emitting chats-list after update: 4 active chats

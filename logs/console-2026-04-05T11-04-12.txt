@@ -1,0 +1,849 @@
+[2026-04-05T11:04:12.765Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T11-04-12.txt
+[2026-04-05T11:04:12.777Z] [LID] Loaded 18 LID↔PN mappings from auth store
+[2026-04-05T11:04:18.506Z] [STORE] Loaded chats from store file: 4657
+[2026-04-05T11:04:18.513Z] [STORE] Loaded messages from store file, JIDs: 2548
+[2026-04-05T11:04:19.682Z] [STORE] Recalculated timestamps for individual chats from messages
+[2026-04-05T11:04:19.687Z] [STORE] Loaded contacts from store file: 4660
+[2026-04-05T11:04:19.687Z] [STORE] Loaded group metadata from store file: 46
+[2026-04-05T11:04:19.687Z] [STORE] Last cleanup: 2026-04-05T09:49:49.124Z
+[2026-04-05T11:04:20.510Z] Server running on http://localhost:3000
+[2026-04-05T11:04:22.051Z] [STORE] chats.update received: [
+  {
+    "id": "181707332440236@lid",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "181707332440236@lid",
+            "remoteJidAlt": "558586878393@s.whatsapp.net",
+            "fromMe": true,
+            "id": "AC36E195D8BA212425D80795DDD3C0A1",
+            "participant": "",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383614,
+          "pushName": "João Ellery",
+          "broadcast": false,
+          "status": 3,
+          "message": {
+            "extendedTextMessage": {
+              "text": "Eu não fiz nada e mesmo assim vc está me tratando mal",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 0,
+                "ephemeralSettingTimestamp": "1680130119",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383614
+  },
+  {
+    "id": "120363370953781873@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363370953781873@g.us",
+            "fromMe": false,
+            "id": "ACD29087B16A40765471BC53C62A6138",
+            "participant": "247480411250824@lid",
+            "participantAlt": "558596525802@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383702,
+          "pushName": "H〽️＼(^o^)／",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363370953781873@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwjJw7+GBRALGiCd4NJ2gQC1ZVg6N/+lAgXYUvk9MN4SLuhbYhmnQj7ioiIhBWI7+ysr8mhvKTQxQhfiQNzAKgu06LwME+A2J/47bqoN"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/v/t62.7118-24/616372463_1460780931819139_3378124444378564383_n.enc?ccb=11-4&oh=01_Q5Aa4AG5bUz8Dk1pgFHpuF4x0kX-qw4SLJdyfv-mzLFiF9l4lg&oe=69F99764&_nc_sid=5e03e0&mms3=true",
+              "mimetype": "image/jpeg",
+              "fileSha256": "XFHrJWbccJ5Cwb2CjD0HxzFjtHeVXupsDxgXL/HCro0=",
+              "fileLength": "89050",
+              "height": 1026,
+              "width": 735,
+              "mediaKey": "NqiAB+fqJVuAsTuCRyeB1as9Eec/UdWUKA8J3MRYmQI=",
+              "fileEncSha256": "1XYeYMXEj+BSUTxUHviRwNlb+jlDcg6Iz9DCMN00Dic=",
+              "directPath": "/v/t62.7118-24/616372463_1460780931819139_3378124444378564383_n.enc?ccb=11-4&oh=01_Q5Aa4AG5bUz8Dk1pgFHpuF4x0kX-qw4SLJdyfv-mzLFiF9l4lg&oe=69F99764&_nc_sid=5e03e0&_nc_hot=1775383701",
+              "mediaKeyTimestamp": "1775382754",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9VXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wgARCABIAEgDASIAAhEBAxEB/8QAGgAAAwEBAQEAAAAAAAAAAAAAAAQFAwECBv/EABcBAQEBAQAAAAAAAAAAAAAAAAECAwD/2gAMAwEAAhADEAAAAGXk6mWnZFGdZRnUlumd6306sjcKze+ZsS4r0YtxvUlvzTa2ylSHksVqR6WGu8G/B0zceXezuctUUQEhVbE7fuv/AD9mYDVHypKtJPWnYjoyr0A02CzuoDh0OFgMq//EABwRAAICAwEBAAAAAAAAAAAAAAABESECEEEgIv/aAAgBAgEBPwBPm5JHQhu4MY6fIxE2LJl9HaJ0lCJYl4zyadH/xAAdEQEBAAEEAwAAAAAAAAAAAAABABEQITFBAiBR/9oACAEDAQE/AExHGgaJNjbMrZbq6k2nxOoC4guWfliy+hf/xAAoEAACAgIBBAICAQUAAAAAAAABAgADBBEhEiIxQQUTUWEyFCOBkaH/2gAIAQEAAT8AoAfgiUVFZa310M34E+Pz+vOVAf5eZmo7KOiPXYPIlnPncx7G/iu9S2vrIA5aVKft2PcqHaNzIvr2am8EcwJTTd9qDkeJjZIyFIOuqX41rOTviNiWexMenoBBA2Y3ShOjMS+u7WuGj3pUnJG/xMhXYG3fkyy3t1uV5D12KynkSj5C27sCAmV/coP3Eb9AS64qYb1J3qKbKXAYFTKKDYQdkgz5UfTiKgmzMZA7HfqYXTXZsy+5TzsR3rPkz+2fHMuYX0CzXep5nxTkqo/U+aA+lSZ7mLWWQuvkSuoW09SHn2JkdVStxuUXFx065EbdVfUdAnxMRw4dSOSPE+LcB1/1PmgTQNQDu5nxx0D+olYSxrFOlPqW4/3bLt0rLDi4nFfc35lmWbWO/HqJYytsHTCYFysVccN7meA2IT5i198xKmRwQDoy3SoP1M7LCdoY7ltpdtwdW9gR6k2G9t6mGRXYJdlVNjlA43rxuB0rcM543zqVZNJrH161M7J0OBuZFhZtnyZh44vcljpV8yy6qnsrr/yYXO/JhyOkalNqCli57ieIDQNgOCPyTK7q67lAYdPTzz7gyq3XfVr9GW/09jjuBEVKa6ya2/7KaXvu6AdbPBn//gADAP/Z",
+              "contextInfo": {
+                "forwardingScore": 1,
+                "isForwarded": true,
+                "pairedMediaType": "NOT_PAIRED_MEDIA",
+                "forwardOrigin": "UNKNOWN"
+              },
+              "scansSidecar": "mXLSm2voaz2kEOoYlj06YuAc4m8yb/cAawRlKeI2Q04wO129VuFuHg==",
+              "scanLengths": [
+                9631,
+                41892,
+                22206,
+                15319
+              ],
+              "midQualityFileSha256": "ISIVqBCfYkHZDcROtiEid3jaFNhutKfliscqtmf+2/Y=",
+              "imageSourceType": "USER_IMAGE"
+            },
+            "messageContextInfo": {
+              "messageSecret": "f7tfTglQCwsTyd1t7XsC/h6TB9XOaQ6ovmvVrKJKgz0="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383702,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:04:22.055Z] [STORE] Updating chat 120363370953781873@g.us:
+[2026-04-05T11:04:22.056Z]   - Existing: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T11:04:22.056Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:04:22.056Z]   - Merged: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T11:04:22.059Z] [SOCKET] chats.update received: [
+  {
+    "id": "181707332440236@lid",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "181707332440236@lid",
+            "remoteJidAlt": "558586878393@s.whatsapp.net",
+            "fromMe": true,
+            "id": "AC36E195D8BA212425D80795DDD3C0A1",
+            "participant": "",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383614,
+          "pushName": "João Ellery",
+          "broadcast": false,
+          "status": 3,
+          "message": {
+            "extendedTextMessage": {
+              "text": "Eu não fiz nada e mesmo assim vc está me tratando mal",
+              "previewType": "NONE",
+              "contextInfo": {
+                "expiration": 0,
+                "ephemeralSettingTimestamp": "1680130119",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                }
+              },
+              "inviteLinkGroupTypeV2": "DEFAULT"
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383614
+  },
+  {
+    "id": "120363370953781873@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363370953781873@g.us",
+            "fromMe": false,
+            "id": "ACD29087B16A40765471BC53C62A6138",
+            "participant": "247480411250824@lid",
+            "participantAlt": "558596525802@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383702,
+          "pushName": "H〽️＼(^o^)／",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363370953781873@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwjJw7+GBRALGiCd4NJ2gQC1ZVg6N/+lAgXYUvk9MN4SLuhbYhmnQj7ioiIhBWI7+ysr8mhvKTQxQhfiQNzAKgu06LwME+A2J/47bqoN"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/v/t62.7118-24/616372463_1460780931819139_3378124444378564383_n.enc?ccb=11-4&oh=01_Q5Aa4AG5bUz8Dk1pgFHpuF4x0kX-qw4SLJdyfv-mzLFiF9l4lg&oe=69F99764&_nc_sid=5e03e0&mms3=true",
+              "mimetype": "image/jpeg",
+              "fileSha256": "XFHrJWbccJ5Cwb2CjD0HxzFjtHeVXupsDxgXL/HCro0=",
+              "fileLength": "89050",
+              "height": 1026,
+              "width": 735,
+              "mediaKey": "NqiAB+fqJVuAsTuCRyeB1as9Eec/UdWUKA8J3MRYmQI=",
+              "fileEncSha256": "1XYeYMXEj+BSUTxUHviRwNlb+jlDcg6Iz9DCMN00Dic=",
+              "directPath": "/v/t62.7118-24/616372463_1460780931819139_3378124444378564383_n.enc?ccb=11-4&oh=01_Q5Aa4AG5bUz8Dk1pgFHpuF4x0kX-qw4SLJdyfv-mzLFiF9l4lg&oe=69F99764&_nc_sid=5e03e0&_nc_hot=1775383701",
+              "mediaKeyTimestamp": "1775382754",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9VXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wgARCABIAEgDASIAAhEBAxEB/8QAGgAAAwEBAQEAAAAAAAAAAAAAAAQFAwECBv/EABcBAQEBAQAAAAAAAAAAAAAAAAECAwD/2gAMAwEAAhADEAAAAGXk6mWnZFGdZRnUlumd6306sjcKze+ZsS4r0YtxvUlvzTa2ylSHksVqR6WGu8G/B0zceXezuctUUQEhVbE7fuv/AD9mYDVHypKtJPWnYjoyr0A02CzuoDh0OFgMq//EABwRAAICAwEBAAAAAAAAAAAAAAABESECEEEgIv/aAAgBAgEBPwBPm5JHQhu4MY6fIxE2LJl9HaJ0lCJYl4zyadH/xAAdEQEBAAEEAwAAAAAAAAAAAAABABEQITFBAiBR/9oACAEDAQE/AExHGgaJNjbMrZbq6k2nxOoC4guWfliy+hf/xAAoEAACAgIBBAICAQUAAAAAAAABAgADBBEhEiIxQQUTUWEyFCOBkaH/2gAIAQEAAT8AoAfgiUVFZa310M34E+Pz+vOVAf5eZmo7KOiPXYPIlnPncx7G/iu9S2vrIA5aVKft2PcqHaNzIvr2am8EcwJTTd9qDkeJjZIyFIOuqX41rOTviNiWexMenoBBA2Y3ShOjMS+u7WuGj3pUnJG/xMhXYG3fkyy3t1uV5D12KynkSj5C27sCAmV/coP3Eb9AS64qYb1J3qKbKXAYFTKKDYQdkgz5UfTiKgmzMZA7HfqYXTXZsy+5TzsR3rPkz+2fHMuYX0CzXep5nxTkqo/U+aA+lSZ7mLWWQuvkSuoW09SHn2JkdVStxuUXFx065EbdVfUdAnxMRw4dSOSPE+LcB1/1PmgTQNQDu5nxx0D+olYSxrFOlPqW4/3bLt0rLDi4nFfc35lmWbWO/HqJYytsHTCYFysVccN7meA2IT5i198xKmRwQDoy3SoP1M7LCdoY7ltpdtwdW9gR6k2G9t6mGRXYJdlVNjlA43rxuB0rcM543zqVZNJrH161M7J0OBuZFhZtnyZh44vcljpV8yy6qnsrr/yYXO/JhyOkalNqCli57ieIDQNgOCPyTK7q67lAYdPTzz7gyq3XfVr9GW/09jjuBEVKa6ya2/7KaXvu6AdbPBn//gADAP/Z",
+              "contextInfo": {
+                "forwardingScore": 1,
+                "isForwarded": true,
+                "pairedMediaType": "NOT_PAIRED_MEDIA",
+                "forwardOrigin": "UNKNOWN"
+              },
+              "scansSidecar": "mXLSm2voaz2kEOoYlj06YuAc4m8yb/cAawRlKeI2Q04wO129VuFuHg==",
+              "scanLengths": [
+                9631,
+                41892,
+                22206,
+                15319
+              ],
+              "midQualityFileSha256": "ISIVqBCfYkHZDcROtiEid3jaFNhutKfliscqtmf+2/Y=",
+              "imageSourceType": "USER_IMAGE"
+            },
+            "messageContextInfo": {
+              "messageSecret": "f7tfTglQCwsTyd1t7XsC/h6TB9XOaQ6ovmvVrKJKgz0="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383702,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:04:22.059Z] [SOCKET] Processing update for chat 181707332440236@lid
+[2026-04-05T11:04:22.059Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:04:22.060Z] [SOCKET] Before merge - archived=false, name=181707332440236, ts=1775383208
+[2026-04-05T11:04:22.060Z] [SOCKET] After merge - archived=false, name=181707332440236, ts=1775383614
+[2026-04-05T11:04:22.060Z] [SOCKET] Processing update for chat 120363370953781873@g.us
+[2026-04-05T11:04:22.060Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:04:22.061Z] [SOCKET] Before merge - archived=true, name=🐻 Toca dos Ursos 🐻, ts=1775383702
+[2026-04-05T11:04:22.061Z] [SOCKET] After merge - archived=true, name=🐻 Toca dos Ursos 🐻, ts=1775383702
+[2026-04-05T11:04:33.363Z] [STORE] messages.upsert fired: type=append, count=3
+[2026-04-05T11:04:33.364Z] [STORE] msg from=ME, ts=1775383596, type=extendedTextMessage
+[2026-04-05T11:04:33.364Z] [STORE] msg stored for 181707332440236@lid, total=20
+[2026-04-05T11:04:33.364Z] [STORE] msg from=ME, ts=1775383614, type=extendedTextMessage
+[2026-04-05T11:04:33.364Z] [STORE] msg stored for 181707332440236@lid, total=21
+[2026-04-05T11:04:33.364Z] [STORE] msg from=120363370953781873@g.us, ts=1775383702, type=senderKeyDistributionMessage,messageContextInfo,imageMessage
+[2026-04-05T11:04:33.365Z] [STORE] msg stored for 120363370953781873@g.us, total=738
+[2026-04-05T11:04:33.365Z] [SOCKET] messages.upsert: type=append, count=3
+[2026-04-05T11:04:46.072Z] opened connection
+[2026-04-05T11:04:46.073Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:04:46.073Z] receivedPendingNotifications: undefined
+[2026-04-05T11:04:46.420Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:04:46.421Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:04:57.845Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:04:57.849Z] Chats found: 4637
+[2026-04-05T11:04:57.849Z] All chats count: 4657
+[2026-04-05T11:04:57.850Z] Archived chats count: 20
+[2026-04-05T11:05:08.333Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:05:08.334Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:05:18.931Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:05:18.932Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:05:30.126Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:05:30.127Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:05:38.330Z] [SOCKET] Emitting chats-list after update: 4637 active chats
+[2026-04-05T11:05:40.502Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:05:40.503Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:05:48.248Z] [STORE] chats.update received: [
+  {
+    "id": "120363022912698264@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363022912698264@g.us",
+            "fromMe": false,
+            "id": "A5FA5393F0497F56C811791E588A13FB",
+            "participant": "104810154053800@lid",
+            "participantAlt": "558598376358@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387122,
+          "pushName": "Israel Breno",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363022912698264@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwjuhu7uBBACGiAl9d4e5qyYT1Wapekaj33m2dVsdaLbjGqlhpSgEF3P+SIhBfRixvmD/hlWqdFPiNCvnXasi/2Vs0rY0f+yh/Oh0AoL"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/v/t62.7118-24/612955581_2023706508547584_3304620179095251431_n.enc?ccb=11-4&oh=01_Q5Aa4AFpbOQOM4YKvWNjU2Yj1uPwWz2my-jHStomlxzh_AdP5Q&oe=69F9B5F5&_nc_sid=5e03e0&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "Vendo Pc Completo Pra Acessos, Estudos e Jogos Leves Com As Seguintes Configurações:\n\nProcessador i5 2400\n16Gb De Memória Ram\nPlaca Mãe H61\nSsd De 480Gb Sata\nFonte De 500w\nGabinete 4 Fans \nMonitor 19 Polegadas Com HDMI e VGA\nTeclado e Mouse Gamer\nMouse Pad Gamer Com RGB\n\nValor: 1.450,00 R$",
+              "fileSha256": "euSIpOSJa8OlNb/kSLIYQjhOjs6MhjpTfkGMISVVyZ4=",
+              "fileLength": "116962",
+              "height": 1536,
+              "width": 1024,
+              "mediaKey": "3VlP75SH3WG+o2fq/2VAc73HhHXKYoJ/n7oUmSSf77w=",
+              "fileEncSha256": "I1f1LdsGZcwCk2+PQG6Jcv8n/Q7n5hpL85vssPKNXCE=",
+              "directPath": "/v/t62.7118-24/612955581_2023706508547584_3304620179095251431_n.enc?ccb=11-4&oh=01_Q5Aa4AFpbOQOM4YKvWNjU2Yj1uPwWz2my-jHStomlxzh_AdP5Q&oe=69F9B5F5&_nc_sid=5e03e0&_nc_hot=1775387062",
+              "mediaKeyTimestamp": "1775242231",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAEgAMAMBIgACEQEDEQH/xAAuAAACAwEAAAAAAAAAAAAAAAAABAECBQMBAQEBAQAAAAAAAAAAAAAAAAABAgP/2gAMAwEAAhADEAAAAJs10pIekQH4C+fWzUELic5/XV0UuK+Y91Voqr6ens7bNvzaAgGn1xGBOoRMAo6Fn//EACYQAAICAgEDBAIDAAAAAAAAAAECAAMREwQSUVIFFCEiI0ExM0L/2gAIAQEAAT8AFc1TVNU1TVFSBJrmua5rjW1VthmwYLqe83095ZYNJeuWepXVNhlEX1cf7rlzVG/DnBxAF62AvwFgtpRR12hg0vtSvjDpMLo96Gz+My6qnaio2ctHDi1j0BpyLUT4emUkOPrx8ic4P7YZTEoKi1C4+Mx9XuK+jyjc/lHOHjNbb9maJdcmCtgEv5l7goWnGytqOULLFXZyqytZxmaOL4rNPF8Vmji+KzRxfFYmmoYQKJtA/YgBzMGYMIPefuOv4VMcEtMN3mG7mYbvFDBhky/+hJ//xAAbEQADAQADAQAAAAAAAAAAAAAAARECEBIgIf/aAAgBAgEBPwDmER1zNfSsotTOlX7/AP/EABgRAAMBAQAAAAAAAAAAAAAAAAAQESAh/9oACAEDAQE/AHXwkJv/2Q==",
+              "contextInfo": {
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "ao2JT5MGrr4t9knh24B6TtbXzgtTowExQyan3+UeCX7pg0yHzInpbQ==",
+              "scanLengths": [
+                14242,
+                45252,
+                20522,
+                36946
+              ],
+              "midQualityFileSha256": "twFh5sePa+W40oLJzGYSb3w76pXAZd/B0t6u+4KbHkc="
+            },
+            "messageContextInfo": {
+              "messageSecret": "x9vEONq8CoCGMdjs9GaIBEwicRi8lnDQk6pUVSGL4Jo="
+            }
+          },
+          "verifiedBizName": "Israel Breno"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387122,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:05:48.251Z] [STORE] Updating chat 120363022912698264@g.us:
+[2026-04-05T11:05:48.251Z]   - Existing: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:05:48.251Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:05:48.251Z]   - Merged: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:05:48.252Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363022912698264@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363022912698264@g.us",
+            "fromMe": false,
+            "id": "A5FA5393F0497F56C811791E588A13FB",
+            "participant": "104810154053800@lid",
+            "participantAlt": "558598376358@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775387122,
+          "pushName": "Israel Breno",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363022912698264@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwjuhu7uBBACGiAl9d4e5qyYT1Wapekaj33m2dVsdaLbjGqlhpSgEF3P+SIhBfRixvmD/hlWqdFPiNCvnXasi/2Vs0rY0f+yh/Oh0AoL"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/v/t62.7118-24/612955581_2023706508547584_3304620179095251431_n.enc?ccb=11-4&oh=01_Q5Aa4AFpbOQOM4YKvWNjU2Yj1uPwWz2my-jHStomlxzh_AdP5Q&oe=69F9B5F5&_nc_sid=5e03e0&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "Vendo Pc Completo Pra Acessos, Estudos e Jogos Leves Com As Seguintes Configurações:\n\nProcessador i5 2400\n16Gb De Memória Ram\nPlaca Mãe H61\nSsd De 480Gb Sata\nFonte De 500w\nGabinete 4 Fans \nMonitor 19 Polegadas Com HDMI e VGA\nTeclado e Mouse Gamer\nMouse Pad Gamer Com RGB\n\nValor: 1.450,00 R$",
+              "fileSha256": "euSIpOSJa8OlNb/kSLIYQjhOjs6MhjpTfkGMISVVyZ4=",
+              "fileLength": "116962",
+              "height": 1536,
+              "width": 1024,
+              "mediaKey": "3VlP75SH3WG+o2fq/2VAc73HhHXKYoJ/n7oUmSSf77w=",
+              "fileEncSha256": "I1f1LdsGZcwCk2+PQG6Jcv8n/Q7n5hpL85vssPKNXCE=",
+              "directPath": "/v/t62.7118-24/612955581_2023706508547584_3304620179095251431_n.enc?ccb=11-4&oh=01_Q5Aa4AFpbOQOM4YKvWNjU2Yj1uPwWz2my-jHStomlxzh_AdP5Q&oe=69F9B5F5&_nc_sid=5e03e0&_nc_hot=1775387062",
+              "mediaKeyTimestamp": "1775242231",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAEgAMAMBIgACEQEDEQH/xAAuAAACAwEAAAAAAAAAAAAAAAAABAECBQMBAQEBAQAAAAAAAAAAAAAAAAABAgP/2gAMAwEAAhADEAAAAJs10pIekQH4C+fWzUELic5/XV0UuK+Y91Voqr6ens7bNvzaAgGn1xGBOoRMAo6Fn//EACYQAAICAgEDBAIDAAAAAAAAAAECAAMREwQSUVIFFCEiI0ExM0L/2gAIAQEAAT8AFc1TVNU1TVFSBJrmua5rjW1VthmwYLqe83095ZYNJeuWepXVNhlEX1cf7rlzVG/DnBxAF62AvwFgtpRR12hg0vtSvjDpMLo96Gz+My6qnaio2ctHDi1j0BpyLUT4emUkOPrx8ic4P7YZTEoKi1C4+Mx9XuK+jyjc/lHOHjNbb9maJdcmCtgEv5l7goWnGytqOULLFXZyqytZxmaOL4rNPF8Vmji+KzRxfFYmmoYQKJtA/YgBzMGYMIPefuOv4VMcEtMN3mG7mYbvFDBhky/+hJ//xAAbEQADAQADAQAAAAAAAAAAAAAAARECEBIgIf/aAAgBAgEBPwDmER1zNfSsotTOlX7/AP/EABgRAAMBAQAAAAAAAAAAAAAAAAAQESAh/9oACAEDAQE/AHXwkJv/2Q==",
+              "contextInfo": {
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "ao2JT5MGrr4t9knh24B6TtbXzgtTowExQyan3+UeCX7pg0yHzInpbQ==",
+              "scanLengths": [
+                14242,
+                45252,
+                20522,
+                36946
+              ],
+              "midQualityFileSha256": "twFh5sePa+W40oLJzGYSb3w76pXAZd/B0t6u+4KbHkc="
+            },
+            "messageContextInfo": {
+              "messageSecret": "x9vEONq8CoCGMdjs9GaIBEwicRi8lnDQk6pUVSGL4Jo="
+            }
+          },
+          "verifiedBizName": "Israel Breno"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775387122,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:05:48.252Z] [SOCKET] Processing update for chat 120363022912698264@g.us
+[2026-04-05T11:05:48.252Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:05:48.252Z] [SOCKET] Before merge - archived=true, name=OLX  VENDAS FORTALEZA, ts=1775387122
+[2026-04-05T11:05:48.252Z] [SOCKET] After merge - archived=true, name=OLX  VENDAS FORTALEZA, ts=1775387122
+[2026-04-05T11:05:57.993Z] [STORE] messages.upsert fired: type=append, count=2
+[2026-04-05T11:05:57.994Z] [STORE] msg from=120363019990569731@g.us, ts=1775383704, type=senderKeyDistributionMessage,messageContextInfo,reactionMessage
+[2026-04-05T11:05:57.995Z] [STORE] msg stored for 120363019990569731@g.us, total=6275
+[2026-04-05T11:05:57.995Z] [STORE] msg from=120363022912698264@g.us, ts=1775387122, type=senderKeyDistributionMessage,messageContextInfo,imageMessage
+[2026-04-05T11:05:57.996Z] [STORE] msg stored for 120363022912698264@g.us, total=759
+[2026-04-05T11:05:57.996Z] [SOCKET] messages.upsert: type=append, count=2
+[2026-04-05T11:06:09.341Z] Messages update received: [
+  {
+    "key": {
+      "remoteJid": "181707332440236@lid",
+      "id": "AC36E195D8BA212425D80795DDD3C0A1",
+      "fromMe": true
+    },
+    "update": {
+      "status": 4
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "181707332440236@lid",
+      "id": "AC40F92DCFBE9CAC6B2D4B95B76DB39C",
+      "fromMe": true
+    },
+    "update": {
+      "status": 4
+    }
+  }
+]
+[2026-04-05T11:06:18.324Z] Received reactions: [
+  {
+    "key": {
+      "remoteJid": "120363019990569731@g.us",
+      "fromMe": false,
+      "id": "3A1FB1161CCBBBEACCB3",
+      "participant": "80165581398158@lid"
+    },
+    "reaction": {
+      "key": {
+        "remoteJid": "120363019990569731@g.us",
+        "fromMe": false,
+        "id": "AC331BD3FB14D416AB5A1A2A245D527C",
+        "participant": "242193272991807@lid",
+        "participantAlt": "559181888459@s.whatsapp.net",
+        "addressingMode": "lid"
+      },
+      "text": "❤️",
+      "senderTimestampMs": {
+        "low": 1562210982,
+        "high": 413,
+        "unsigned": false
+      }
+    }
+  }
+]
+[2026-04-05T11:06:18.331Z] [SOCKET] Emitting chats-list after update: 4637 active chats
+[2026-04-05T11:06:18.418Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:06:18.420Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:06:23.840Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":408,"payload":{"statusCode":408,"error":"Request Time-out","message":"Connection was lost"},"headers":{}}} , reconnecting  true
+[2026-04-05T11:06:23.843Z] [RECONNECT] Attempt 1/10 - waiting 5s before retry...
+[2026-04-05T11:06:23.845Z] Emitting chats: 4637
+[2026-04-05T11:06:23.847Z] Sample chat: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "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",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:06:24.245Z] Client connected to socket
+[2026-04-05T11:06:28.422Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:06:28.424Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:06:33.911Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:06:33.926Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:06:33.927Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T11:06:33.978Z] [GROUPS] Updated metadata for 0/46 groups
+[2026-04-05T11:06:43.916Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:06:43.917Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:06:50.651Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:07:01.876Z] [DELAYED-SYNC] Re-emitting 4637 chats with fresh timestamps
+[2026-04-05T11:07:01.914Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:07:01.915Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:07:09.290Z] ERROR: Failed to decrypt message with any known session...
+[2026-04-05T11:07:09.292Z] ERROR: Session error:MessageCounterError: Key used already or never filled MessageCounterError: Key used already or never filled
+    at SessionCipher.doDecryptWhisperMessage (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:236:19)
+    at SessionCipher.decryptWithSessions (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:147:40)
+    at 125232690024584_1.0 [as awaitable] (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\session_cipher.js:171:39)
+    at async _asyncQueueExecutor (C:\Users\CCE\Documents\whatsapp-sales-ai-agent\node_modules\libsignal\src\queue_job.js:20:29)
+[2026-04-05T11:07:09.371Z] [STORE] chats.update received: [
+  {
+    "id": "120363022912698264@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363022912698264@g.us",
+            "fromMe": false,
+            "id": "AC7021DD1D78AF88885ECF1298C10A50",
+            "participant": "262113901674746@lid",
+            "participantAlt": "558584748593@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383774,
+          "pushName": "Fernando De Fé 😇",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363022912698264@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiH0OCPBxAHGiAQiTYNXDhYLdH7JnPtzwa4ltZOma+n0BwIqeofc7v7OyIhBXPQ6SOFCEKozyBL7yUdzt5aB0Fb8bBfoGIMUCjs9fNP"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m238/AQORp_80DakDp_4bmIt33bp8301rKrRbod3C6wQZoSkOBjwkH07X88a-3R8c4n98btDPNzQmhdf4oxc7vr3YXAc7cyBFdk3GTlh_rVjPOw?ccb=9-4&oh=01_Q5Aa4AE9YXOQUznDwGyhHx4IlvZZ3tVNVm7KxuzMwgi4-tE2iA&oe=69F9AA48&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "✨DOMINGO DE PÁSCOA.\n\n“ELE NÃO ESTÁ AQUI. ELE RESSUSCITOU.” \n\n“Por que vocês procuram entre os mortos… aquele que vive?” (Lucas 24:5)\n\n🙏🏻Essa foi a pergunta dos anjos para as mulheres no túmulo.\nMas é também a pergunta que o céu ainda faz hoje…\nPor que continuar buscando vida onde só existe morte?\nPor que continuar esperando salvação longe daquele que venceu a morte?\n\n🩸A cruz foi o pagamento. A ressurreição… foi o recibo.\n\n📖Depois, o próprio Jesus confirmou:\n“Assim está escrito: que o Cristo havia de padecer e ressuscitar ao terceiro dia…\ne que em seu nome se pregasse arrependimento para remissão de pecados a todas as nações.”\n(Lucas 24:46-47)\n\n✨O túmulo está vazio. Mas a decisão agora está nas mãos de cada um.\nA salvação foi concluída. O caminho está aberto.\nMas só quem crê, se arrepende, e vive uma nova vida… será salvo.\n\n✝️Essa é a mensagem central do Evangelho:\n\n“Jesus venceu a morte. E oferece salvação a todos.\nMas só será salvo… quem verdadeiramente crer.”\n\nAssista o vídeo da mensagem: 👇🏻\n\nhttps://youtube.com/shorts/612-UquOBDU?si=ZZEx9NnwQdrz7P4Z\n\n👉🏻Lembre-se: “O túmulo está vazio. Mas o céu está esperando sua decisão.”\n\n📌Ao compartilhar essa mensagem, você estará compartilhando vida.\n\nSiga o canal o pão nosso diário 👇🏻",
+              "fileSha256": "CpnySKaUidU+rOylUf/MrhWbTy9TFzr/kk0gIhm4bJU=",
+              "fileLength": "148433",
+              "height": 926,
+              "width": 1199,
+              "mediaKey": "857d4FqA98NdkmEhOXyKPjCqqpYOdZFJF/PmqGmd+9Q=",
+              "fileEncSha256": "BXS922h3LVf0s9CR/pDKBpA7Sqnpv4vlB2V+dktNV+4=",
+              "directPath": "/o1/v/t24/f2/m238/AQORp_80DakDp_4bmIt33bp8301rKrRbod3C6wQZoSkOBjwkH07X88a-3R8c4n98btDPNzQmhdf4oxc7vr3YXAc7cyBFdk3GTlh_rVjPOw?ccb=9-4&oh=01_Q5Aa4AE9YXOQUznDwGyhHx4IlvZZ3tVNVm7KxuzMwgi4-tE2iA&oe=69F9AA48&_nc_sid=e6ed6c&_nc_hot=1775383767",
+              "mediaKeyTimestamp": "1775383766",
+              "jpegThumbnail": "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",
+              "contextInfo": {
+                "forwardingScore": 1,
+                "isForwarded": true,
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "forwardedNewsletterMessageInfo": {
+                  "newsletterJid": "120363399768335718@newsletter",
+                  "serverMessageId": 735,
+                  "newsletterName": "🌾Pão Nosso Diário "
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA",
+                "forwardOrigin": "UNKNOWN"
+              },
+              "imageSourceType": "USER_IMAGE"
+            },
+            "messageContextInfo": {
+              "messageSecret": "yy118kdU/tzfO+0h8PaPmI+fEv1J6DpwIYOetpppEkc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383774,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:07:09.377Z] [STORE] Updating chat 120363022912698264@g.us:
+[2026-04-05T11:07:09.377Z]   - Existing: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:07:09.378Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:07:09.378Z]   - Merged: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T11:07:09.384Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363022912698264@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363022912698264@g.us",
+            "fromMe": false,
+            "id": "AC7021DD1D78AF88885ECF1298C10A50",
+            "participant": "262113901674746@lid",
+            "participantAlt": "558584748593@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775383774,
+          "pushName": "Fernando De Fé 😇",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363022912698264@g.us",
+              "axolotlSenderKeyDistributionMessage": "MwiH0OCPBxAHGiAQiTYNXDhYLdH7JnPtzwa4ltZOma+n0BwIqeofc7v7OyIhBXPQ6SOFCEKozyBL7yUdzt5aB0Fb8bBfoGIMUCjs9fNP"
+            },
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m238/AQORp_80DakDp_4bmIt33bp8301rKrRbod3C6wQZoSkOBjwkH07X88a-3R8c4n98btDPNzQmhdf4oxc7vr3YXAc7cyBFdk3GTlh_rVjPOw?ccb=9-4&oh=01_Q5Aa4AE9YXOQUznDwGyhHx4IlvZZ3tVNVm7KxuzMwgi4-tE2iA&oe=69F9AA48&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "✨DOMINGO DE PÁSCOA.\n\n“ELE NÃO ESTÁ AQUI. ELE RESSUSCITOU.” \n\n“Por que vocês procuram entre os mortos… aquele que vive?” (Lucas 24:5)\n\n🙏🏻Essa foi a pergunta dos anjos para as mulheres no túmulo.\nMas é também a pergunta que o céu ainda faz hoje…\nPor que continuar buscando vida onde só existe morte?\nPor que continuar esperando salvação longe daquele que venceu a morte?\n\n🩸A cruz foi o pagamento. A ressurreição… foi o recibo.\n\n📖Depois, o próprio Jesus confirmou:\n“Assim está escrito: que o Cristo havia de padecer e ressuscitar ao terceiro dia…\ne que em seu nome se pregasse arrependimento para remissão de pecados a todas as nações.”\n(Lucas 24:46-47)\n\n✨O túmulo está vazio. Mas a decisão agora está nas mãos de cada um.\nA salvação foi concluída. O caminho está aberto.\nMas só quem crê, se arrepende, e vive uma nova vida… será salvo.\n\n✝️Essa é a mensagem central do Evangelho:\n\n“Jesus venceu a morte. E oferece salvação a todos.\nMas só será salvo… quem verdadeiramente crer.”\n\nAssista o vídeo da mensagem: 👇🏻\n\nhttps://youtube.com/shorts/612-UquOBDU?si=ZZEx9NnwQdrz7P4Z\n\n👉🏻Lembre-se: “O túmulo está vazio. Mas o céu está esperando sua decisão.”\n\n📌Ao compartilhar essa mensagem, você estará compartilhando vida.\n\nSiga o canal o pão nosso diário 👇🏻",
+              "fileSha256": "CpnySKaUidU+rOylUf/MrhWbTy9TFzr/kk0gIhm4bJU=",
+              "fileLength": "148433",
+              "height": 926,
+              "width": 1199,
+              "mediaKey": "857d4FqA98NdkmEhOXyKPjCqqpYOdZFJF/PmqGmd+9Q=",
+              "fileEncSha256": "BXS922h3LVf0s9CR/pDKBpA7Sqnpv4vlB2V+dktNV+4=",
+              "directPath": "/o1/v/t24/f2/m238/AQORp_80DakDp_4bmIt33bp8301rKrRbod3C6wQZoSkOBjwkH07X88a-3R8c4n98btDPNzQmhdf4oxc7vr3YXAc7cyBFdk3GTlh_rVjPOw?ccb=9-4&oh=01_Q5Aa4AE9YXOQUznDwGyhHx4IlvZZ3tVNVm7KxuzMwgi4-tE2iA&oe=69F9AA48&_nc_sid=e6ed6c&_nc_hot=1775383767",
+              "mediaKeyTimestamp": "1775383766",
+              "jpegThumbnail": "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",
+              "contextInfo": {
+                "forwardingScore": 1,
+                "isForwarded": true,
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "forwardedNewsletterMessageInfo": {
+                  "newsletterJid": "120363399768335718@newsletter",
+                  "serverMessageId": 735,
+                  "newsletterName": "🌾Pão Nosso Diário "
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA",
+                "forwardOrigin": "UNKNOWN"
+              },
+              "imageSourceType": "USER_IMAGE"
+            },
+            "messageContextInfo": {
+              "messageSecret": "yy118kdU/tzfO+0h8PaPmI+fEv1J6DpwIYOetpppEkc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775383774,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:07:09.385Z] [SOCKET] Processing update for chat 120363022912698264@g.us
+[2026-04-05T11:07:09.385Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:07:09.385Z] [SOCKET] Before merge - archived=true, name=OLX  VENDAS FORTALEZA, ts=1775383774
+[2026-04-05T11:07:09.385Z] [SOCKET] After merge - archived=true, name=OLX  VENDAS FORTALEZA, ts=1775383774
+[2026-04-05T11:07:18.698Z] [STORE] messages.upsert fired: type=append, count=2
+[2026-04-05T11:07:18.699Z] [STORE] msg from=120363022912698264@g.us, ts=1775383774, type=senderKeyDistributionMessage,messageContextInfo,imageMessage
+[2026-04-05T11:07:18.700Z] [STORE] msg stored for 120363022912698264@g.us, total=760
+[2026-04-05T11:07:18.700Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775384701, type=none
+[2026-04-05T11:07:18.700Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=62
+[2026-04-05T11:07:18.702Z] [SOCKET] messages.upsert: type=append, count=2
+[2026-04-05T11:07:29.960Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "558587453829-1594156687@g.us",
+      "id": "AC8A14D0BCA3EE66AFB1C2A2088198EB",
+      "fromMe": true,
+      "participant": "237533216686246@lid"
+    },
+    "receipt": {
+      "userJid": "237533216686246@lid",
+      "readTimestamp": 1775384700
+    }
+  },
+  {
+    "key": {
+      "remoteJid": "558587453829-1594156687@g.us",
+      "id": "AC57F50F10B76BB07726D631284283B5",
+      "fromMe": true,
+      "participant": "237533216686246@lid"
+    },
+    "receipt": {
+      "userJid": "237533216686246@lid",
+      "readTimestamp": 1775384700
+    }
+  }
+]
+[2026-04-05T11:07:29.962Z] Receipt: AC8A14D0BCA3EE66AFB1C2A2088198EB from 558587453829-1594156687@g.us type: delivered
+[2026-04-05T11:07:29.963Z] Receipt: AC57F50F10B76BB07726D631284283B5 from 558587453829-1594156687@g.us type: delivered
+[2026-04-05T11:07:29.972Z] [SOCKET] Emitting chats-list after update: 4637 active chats
+[2026-04-05T11:07:30.040Z] opened connection
+[2026-04-05T11:07:30.041Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:07:30.041Z] receivedPendingNotifications: undefined
+[2026-04-05T11:07:30.045Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:07:30.045Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:07:39.598Z] [GET-CHATS] Socket event received
+[2026-04-05T11:07:39.600Z] [GET-CHATS] Filtered active chats: 4637
+[2026-04-05T11:07:49.955Z] [GET-CHATS] Chats after sort: 4637
+[2026-04-05T11:07:51.576Z] [GET-CHATS] Resolved chats: 4637 Sample: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "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",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "avatar": null,
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:07:51.621Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:07:53.394Z] [API-CHATS] Returning 4637 chats
+[2026-04-05T11:07:53.499Z] Client disconnected from socket
+[2026-04-05T11:07:53.527Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:07:53.550Z] Chats found: 4637
+[2026-04-05T11:07:53.565Z] All chats count: 4657
+[2026-04-05T11:07:53.583Z] Archived chats count: 20
+[2026-04-05T11:08:06.942Z] Emitting chats: 4637
+[2026-04-05T11:08:06.951Z] Sample chat: {
+  "participant": [],
+  "id": "status@broadcast",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "status@broadcast",
+          "remoteJidAlt": "553487217324@s.whatsapp.net",
+          "fromMe": false,
+          "id": "A56ADD6982A69B14831CE730085BE4C7",
+          "participant": "107730731835413@lid",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775386755,
+        "pushName": "Scorpion Colecionáveis",
+        "broadcast": true,
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "OtAX/LJb/RXpCofImuMNBAZRqUG90Gwk9UFUzuhdt+A=",
+            "fileLength": "67071",
+            "height": 1280,
+            "width": 720,
+            "mediaKey": "rXyEkm9b0ioCw4AQUTKK6Prw96r6h32P8a0srQv8AUI=",
+            "fileEncSha256": "+Hp+I1hteBqdqrlI9wvH73LaWsYor0f1Ep2nNKqnIbc=",
+            "directPath": "/o1/v/t24/f2/m237/AQMDtKelQe0qB4ANnrDav3kiOK91ONh8chCuOU26yHeBh1UTACwnkklCUorHg8j52ysLisQ3EHh35TuG3yY5VBnSsvMX49AW2-JAxp7faQ?ccb=9-4&oh=01_Q5Aa4AGIgYxJsr1Lc9icBVpOgMvCQZOBTFrjyVwVkHNkj_Acig&oe=69F9CAD7&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1775386753",
+            "jpegThumbnail": "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",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA",
+              "statusSourceType": "IMAGE"
+            },
+            "scansSidecar": "7hCwDehw2Raro2+BrHa1TX1Ml1TJyG8nLFbvWz5WOEeQ9KHqbt656Q==",
+            "scanLengths": [
+              7972,
+              21513,
+              12264,
+              25322
+            ],
+            "midQualityFileSha256": "PbzVnNC/VrNxt2XuwJ/veTHn8FFM+gIp/vfYyh/pcek=",
+            "accessibilityLabel": "Meu bebezinho trabalhando a quase 1400 km de distância"
+          },
+          "messageContextInfo": {
+            "messageSecret": "+G3vJ6mZde9ejuXije7t0/m795tkDyDNuumTP84TTzM="
+          }
+        }
+      }
+    }
+  ],
+  "lastMessageRecvTimestamp": 1775380260,
+  "conversationTimestamp": 1775386755,
+  "unreadCount": 1,
+  "displayName": "status",
+  "avatar": null,
+  "archived": false,
+  "lastMessage": "📷 Foto",
+  "lastMessageSender": "status",
+  "lastMessageTime": 1775386755
+}
+[2026-04-05T11:08:06.978Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:08:06.979Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:08:16.243Z] Client connected to socket
+[2026-04-05T11:08:16.254Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:08:17.274Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:08:17.275Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T11:08:17.309Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:08:17.310Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:08:31.263Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:08:46.603Z] [DELAYED-SYNC] Re-emitting 4637 chats with fresh timestamps
+[2026-04-05T11:08:46.672Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:08:46.673Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:08:57.843Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:09:00.405Z] [API-CHATS] Returning 4637 chats
+[2026-04-05T11:09:00.663Z] Client disconnected from socket
+[2026-04-05T11:09:00.664Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:09:00.665Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:09:21.140Z] Client connected to socket
+[2026-04-05T11:09:21.176Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:09:21.192Z] [STORE] Archived chats being saved: 20
+[2026-04-05T11:09:33.217Z] [STORE] Saving 4657 chats to file...
+[2026-04-05T11:09:33.218Z] [STORE] Archived chats being saved: 20

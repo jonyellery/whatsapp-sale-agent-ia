@@ -1,0 +1,37 @@
+[2026-04-05T10:29:46.146Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T10-29-46.txt
+[2026-04-05T10:29:46.152Z] [LID] Loaded 8 LID↔PN mappings from auth store
+[2026-04-05T10:29:50.662Z] [STORE] Loaded chats from store file: 4271
+[2026-04-05T10:29:50.670Z] [STORE] Loaded messages from store file, JIDs: 2162
+[2026-04-05T10:29:51.572Z] [STORE] Recalculated timestamps for individual chats from messages
+[2026-04-05T10:29:51.579Z] [STORE] Loaded contacts from store file: 4271
+[2026-04-05T10:29:51.580Z] [STORE] Loaded group metadata from store file: 46
+[2026-04-05T10:29:51.581Z] [STORE] Last cleanup: 2026-04-05T09:49:49.124Z
+[2026-04-05T10:29:51.774Z] ERROR: [31mfailed to load config from C:\Users\CCE\Documents\whatsapp-sales-ai-agent\vite.config.ts[39m
+[2026-04-05T10:29:51.774Z] Vite middleware failed to start, serving static files instead: Build failed with 1 error:
+vite.config.ts:31:3: ERROR: Expected "}" but found ";"
+[2026-04-05T10:29:51.778Z] Server running on http://localhost:3000
+[2026-04-05T10:29:52.820Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T10:29:52.821Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775383284, type=protocolMessage
+[2026-04-05T10:29:52.825Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=45
+[2026-04-05T10:29:52.825Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T10:30:03.056Z] opened connection
+[2026-04-05T10:30:03.058Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T10:30:03.061Z] receivedPendingNotifications: undefined
+[2026-04-05T10:30:03.201Z] [STORE] Saving 4271 chats to file...
+[2026-04-05T10:30:03.202Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:30:10.634Z] Client connected to socket
+[2026-04-05T10:30:10.649Z] [GET-CHATS] Socket event received
+[2026-04-05T10:30:10.652Z] [GET-CHATS] Filtered active chats: 4251
+[2026-04-05T10:30:17.969Z] [GET-CHATS] Chats after sort: 4251
+[2026-04-05T10:30:18.926Z] [SYNC] Checking for chats after connection...
+[2026-04-05T10:30:18.928Z] Chats found: 4251
+[2026-04-05T10:30:18.928Z] All chats count: 4271
+[2026-04-05T10:30:18.929Z] Archived chats count: 20
+[2026-04-05T10:30:27.982Z] [STORE] Saving 4271 chats to file...
+[2026-04-05T10:30:27.984Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:30:33.563Z] Loading archived chats...
+[2026-04-05T10:30:33.565Z] Total chats in store: 4271
+[2026-04-05T10:30:33.570Z] Direct archived chats in store: 20
+[2026-04-05T10:30:33.571Z] Chats with archived property (true/false): 1832
+[2026-04-05T10:30:34.109Z] Archived chats found: 20
+[2026-04-05T10:30:34.481Z] [SOCKET] Received messaging-history.set event: {"chats":129,"contacts":129,"messages":4998,"syncType":3}

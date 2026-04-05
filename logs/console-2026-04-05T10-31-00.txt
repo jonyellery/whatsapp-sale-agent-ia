@@ -1,0 +1,856 @@
+[2026-04-05T10:31:00.838Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T10-31-00.txt
+[2026-04-05T10:31:00.844Z] [LID] Loaded 8 LID↔PN mappings from auth store
+[2026-04-05T10:31:07.461Z] [STORE] Loaded chats from store file: 4271
+[2026-04-05T10:31:07.473Z] [STORE] Loaded messages from store file, JIDs: 2162
+[2026-04-05T10:31:09.204Z] [STORE] Recalculated timestamps for individual chats from messages
+[2026-04-05T10:31:09.209Z] [STORE] Loaded contacts from store file: 4271
+[2026-04-05T10:31:09.210Z] [STORE] Loaded group metadata from store file: 46
+[2026-04-05T10:31:09.210Z] [STORE] Last cleanup: 2026-04-05T09:49:49.124Z
+[2026-04-05T10:31:09.923Z] Server running on http://localhost:3000
+[2026-04-05T10:31:10.210Z] Client connected to socket
+[2026-04-05T10:31:10.670Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T10:31:10.672Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775383308, type=protocolMessage
+[2026-04-05T10:31:10.674Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=46
+[2026-04-05T10:31:10.675Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T10:31:21.588Z] opened connection
+[2026-04-05T10:31:21.589Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T10:31:21.593Z] receivedPendingNotifications: undefined
+[2026-04-05T10:31:21.742Z] [STORE] Saving 4271 chats to file...
+[2026-04-05T10:31:21.744Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:31:26.032Z] [GET-CHATS] Socket event received
+[2026-04-05T10:31:26.034Z] [GET-CHATS] Filtered active chats: 4251
+[2026-04-05T10:31:33.239Z] [GET-CHATS] Chats after sort: 4251
+[2026-04-05T10:31:37.937Z] [SYNC] Checking for chats after connection...
+[2026-04-05T10:31:37.939Z] Chats found: 4251
+[2026-04-05T10:31:37.941Z] All chats count: 4271
+[2026-04-05T10:31:37.942Z] Archived chats count: 20
+[2026-04-05T10:31:46.434Z] [STORE] Saving 4271 chats to file...
+[2026-04-05T10:31:46.435Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:31:53.577Z] [SOCKET] Received messaging-history.set event: {"chats":65,"contacts":65,"messages":4998,"syncType":3}
+[2026-04-05T10:31:53.579Z] [SOCKET] History chat 120363377496881783@g.us: archived=false, name=Mcfarlane Toys
+[2026-04-05T10:31:53.583Z] [SOCKET] History chat 120363402759318233@g.us: archived=true, name=Mercado Minis
+[2026-04-05T10:31:53.586Z] [SOCKET] History chat 558587453829-1594156687@g.us: archived=false, name=Action Figures Nordeste
+[2026-04-05T10:31:53.587Z] [SOCKET] History chat 120363423657616021@g.us: archived=true, name=Colecionando na America Inscritos
+[2026-04-05T10:31:53.588Z] [SOCKET] History chat 558596996107@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.591Z] [SOCKET] History chat 559284313322-1565733287@g.us: archived=false, name=Marvel Legends BRASIL
+[2026-04-05T10:31:53.592Z] [SOCKET] History chat 120363161570954772@g.us: archived=true, name=MARVEL LEGENDS BR ®️
+[2026-04-05T10:31:53.596Z] [SOCKET] History chat 559198107173-1629836772@g.us: archived=false, name=🤝🏻 SÓ TROCA 🤝🏻 🚫 S/ VENDA 🚫
+[2026-04-05T10:31:53.598Z] [SOCKET] History chat 5511993383885-1634903566@g.us: archived=true, name=Colecionáveis em Geral (OFICIAL)
+[2026-04-05T10:31:53.601Z] [SOCKET] History chat 120363418615479931@g.us: archived=false, name=MARVEL & DC
+[2026-04-05T10:31:53.604Z] [SOCKET] History chat 120363211900560110@g.us: archived=true, name=Wordpress ◈ Elementor - CSS & JS
+[2026-04-05T10:31:53.606Z] [SOCKET] History chat 177794734674148@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.608Z] [SOCKET] History chat 120363394328906857@g.us: archived=true, name=TEIA DO ARANHA
+[2026-04-05T10:31:53.610Z] [SOCKET] History chat 159927754592343@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.611Z] [SOCKET] History chat 120363020599253391@g.us: archived=true, name=Emuelec
+[2026-04-05T10:31:53.612Z] [SOCKET] History chat 558586878393@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.613Z] [SOCKET] History chat 120363022912698264@g.us: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T10:31:53.613Z] [SOCKET] History chat 5521974300901-1559853430@g.us: archived=true, name=Colecionadores dos anos 90
+[2026-04-05T10:31:53.614Z] [SOCKET] History chat 120363019990569731@g.us: archived=true, name=🫒 Oliver Toys - GiJoe e Action Figures
+[2026-04-05T10:31:53.618Z] [SOCKET] History chat 558596275676@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.618Z] [SOCKET] History chat 558588088283-1596198609@g.us: archived=false, name=12/04 - PRÓXIMA AVENTURA
+[2026-04-05T10:31:53.621Z] [SOCKET] History chat 252720422338561@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.622Z] [SOCKET] History chat 120363160540094520@g.us: archived=false, name=Action Recife
+[2026-04-05T10:31:53.623Z] [SOCKET] History chat 97955906326781@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.623Z] [SOCKET] History chat 558587453829-1605201998@g.us: archived=false, name=Universo X-men Marvel Legends
+[2026-04-05T10:31:53.624Z] [SOCKET] History chat 558599429282@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.625Z] [SOCKET] History chat 95086364913870@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.625Z] [SOCKET] History chat 223518906122281@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.626Z] [SOCKET] History chat 120070273540135@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.626Z] [SOCKET] History chat 144079342026903@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.627Z] [SOCKET] History chat 558581958993-1586032642@g.us: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T10:31:53.627Z] [SOCKET] History chat 558597665601@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.627Z] [SOCKET] History chat 120363370953781873@g.us: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T10:31:53.628Z] [SOCKET] History chat 120363114280639025@g.us: archived=true, name=POWER RANGER-BRASIL ®️
+[2026-04-05T10:31:53.628Z] [SOCKET] History chat 558896015636@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.629Z] [SOCKET] History chat 556185994545-1582560420@g.us: archived=false, name=Marvel Legends Brasil 3
+[2026-04-05T10:31:53.629Z] [SOCKET] History chat 224764832559119@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.630Z] [SOCKET] History chat 251952109744249@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.630Z] [SOCKET] History chat 261808405385245@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.630Z] [SOCKET] History chat 15139860402398@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.631Z] [SOCKET] History chat 558596162717@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.635Z] [SOCKET] History chat 553140427299@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.636Z] [SOCKET] History chat 57978132635663@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.637Z] [SOCKET] History chat 914828050587@lid: archived=false, name=undefined
+[2026-04-05T10:31:53.638Z] [SOCKET] History chat 8619357117085@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.638Z] [SOCKET] History chat 243043710013669@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.639Z] [SOCKET] History chat 86518274195540@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.639Z] [SOCKET] History chat 92990655721615@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.640Z] [SOCKET] History chat 120363387777093318@g.us: archived=false, name=Street Fighter (escala 1/12 - 6")
+[2026-04-05T10:31:53.640Z] [SOCKET] History chat 93535898443808@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.640Z] [SOCKET] History chat 558498006163@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.641Z] [SOCKET] History chat 120363402912084146@g.us: archived=true, name=Clube Arena Vip
+[2026-04-05T10:31:53.641Z] [SOCKET] History chat 558599010406-1600741150@g.us: archived=false, name=COLEÇÕES HASBRO
+[2026-04-05T10:31:53.642Z] [SOCKET] History chat 558599010406@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.642Z] [SOCKET] History chat 139870056018076@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.643Z] [SOCKET] History chat 56432212840651@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.643Z] [SOCKET] History chat 68530900856991@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.644Z] [SOCKET] History chat 5521984313059@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.644Z] [SOCKET] History chat 207928594272461@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.645Z] [SOCKET] History chat 73057544716491@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.645Z] [SOCKET] History chat 189408242307211@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.645Z] [SOCKET] History chat 558587711362@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.646Z] [SOCKET] History chat 45208993570952@lid: archived=false, name=undefined
+[2026-04-05T10:31:53.646Z] [SOCKET] History chat 132250666545386@lid: archived=undefined, name=undefined
+[2026-04-05T10:31:53.648Z] [SOCKET] History chat 18188586314@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:31:53.652Z] [SOCKET] Processed 65 chats from history, 13 archived
+[2026-04-05T10:31:53.653Z] [SOCKET] Processed 65 contacts from history
+[2026-04-05T10:31:58.919Z] [SOCKET] Stored 4998 messages from history
+[2026-04-05T10:32:06.493Z] [SOCKET] After history sync: 4295 total, 20 archived, 4275 active to emit
+[2026-04-05T10:32:07.535Z] [STORE] Saving 4295 chats to file...
+[2026-04-05T10:32:07.537Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:32:12.237Z] Loading archived chats...
+[2026-04-05T10:32:12.310Z] Total chats in store: 4295
+[2026-04-05T10:32:12.390Z] Direct archived chats in store: 20
+[2026-04-05T10:32:12.419Z] Chats with archived property (true/false): 1832
+[2026-04-05T10:32:12.778Z] Archived chats found: 20
+[2026-04-05T10:32:13.267Z] [SOCKET] Received messaging-history.set event: {"chats":64,"contacts":64,"messages":4997,"syncType":2}
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 559284313322-1565733287@g.us: archived=false, name=Marvel Legends BRASIL
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 120363161570954772@g.us: archived=true, name=MARVEL LEGENDS BR ®️
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 120363377496881783@g.us: archived=false, name=Mcfarlane Toys
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 120363394328906857@g.us: archived=true, name=TEIA DO ARANHA
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 551151073741@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.267Z] [SOCKET] History chat 558586878393@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 120363160540094520@g.us: archived=false, name=Action Recife
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 120363019990569731@g.us: archived=true, name=🫒 Oliver Toys - GiJoe e Action Figures
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 120363387777093318@g.us: archived=false, name=Street Fighter (escala 1/12 - 6")
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 558587453829-1594156687@g.us: archived=false, name=Action Figures Nordeste
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 558581958993-1586032642@g.us: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 5521974300901-1559853430@g.us: archived=true, name=Colecionadores dos anos 90
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 131039536140509@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 120363020599253391@g.us: archived=true, name=Emuelec
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 558584125417@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.268Z] [SOCKET] History chat 120363114280639025@g.us: archived=true, name=POWER RANGER-BRASIL ®️
+[2026-04-05T10:32:13.269Z] [SOCKET] History chat 120363022912698264@g.us: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T10:32:13.270Z] [SOCKET] History chat 8619357117085@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.270Z] [SOCKET] History chat 558594086567@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.271Z] [SOCKET] History chat 558587453829-1605201998@g.us: archived=false, name=Universo X-men Marvel Legends
+[2026-04-05T10:32:13.272Z] [SOCKET] History chat 558596162717@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.272Z] [SOCKET] History chat 558587808847@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.273Z] [SOCKET] History chat 120363418615479931@g.us: archived=false, name=MARVEL & DC
+[2026-04-05T10:32:13.273Z] [SOCKET] History chat 5511980569413@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.274Z] [SOCKET] History chat 120363211900560110@g.us: archived=true, name=Wordpress ◈ Elementor - CSS & JS
+[2026-04-05T10:32:13.274Z] [SOCKET] History chat 120363370953781873@g.us: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T10:32:13.275Z] [SOCKET] History chat 120363402912084146@g.us: archived=true, name=Clube Arena Vip
+[2026-04-05T10:32:13.275Z] [SOCKET] History chat 8619106779112@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.276Z] [SOCKET] History chat 5511913024047@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.276Z] [SOCKET] History chat 556185994545-1582560420@g.us: archived=false, name=Marvel Legends Brasil 3
+[2026-04-05T10:32:13.277Z] [SOCKET] History chat 558596275676@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.277Z] [SOCKET] History chat 252960772731066@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.278Z] [SOCKET] History chat 62633642356968@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.278Z] [SOCKET] History chat 559198107173-1629836772@g.us: archived=false, name=🤝🏻 SÓ TROCA 🤝🏻 🚫 S/ VENDA 🚫
+[2026-04-05T10:32:13.279Z] [SOCKET] History chat 95301331320916@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.279Z] [SOCKET] History chat 558599010406-1600741150@g.us: archived=false, name=COLEÇÕES HASBRO
+[2026-04-05T10:32:13.280Z] [SOCKET] History chat 215264213868574@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.280Z] [SOCKET] History chat 26706123423752@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.280Z] [SOCKET] History chat 558596996107@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.281Z] [SOCKET] History chat 558699303399@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.281Z] [SOCKET] History chat 559282161319@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.282Z] [SOCKET] History chat 224060004896947@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.282Z] [SOCKET] History chat 135223454994546@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.283Z] [SOCKET] History chat 55156691476606@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.283Z] [SOCKET] History chat 558587729885@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.284Z] [SOCKET] History chat 5519988117806-1632614664@g.us: archived=true, name=MUNDO🌍MARVEL LEGENDS
+[2026-04-05T10:32:13.284Z] [SOCKET] History chat 5511993383885-1634903566@g.us: archived=true, name=Colecionáveis em Geral (OFICIAL)
+[2026-04-05T10:32:13.284Z] [SOCKET] History chat 120363154779634095@g.us: archived=true, name=Colecionáveis e Geekices: Raditando!
+[2026-04-05T10:32:13.285Z] [SOCKET] History chat 204878748069912@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.285Z] [SOCKET] History chat 216162046627972@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.286Z] [SOCKET] History chat 107885451309108@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.286Z] [SOCKET] History chat 222372032434417@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.287Z] [SOCKET] History chat 29386199826477@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.287Z] [SOCKET] History chat 25593760493647@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.289Z] [SOCKET] History chat 135218556076089@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.292Z] [SOCKET] History chat 65348044861511@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.293Z] [SOCKET] History chat 556140040001@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.294Z] [SOCKET] History chat 558587711362@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.295Z] [SOCKET] History chat 558599010406-1594236701@g.us: archived=false, name=Bonequinhos de Fortaleza
+[2026-04-05T10:32:13.295Z] [SOCKET] History chat 109379948937422@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:13.296Z] [SOCKET] History chat 558586745952@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.296Z] [SOCKET] History chat 558599429282@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.297Z] [SOCKET] History chat 558192134575@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.297Z] [SOCKET] History chat 558599252998@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:13.298Z] [SOCKET] Processed 64 chats from history, 13 archived
+[2026-04-05T10:32:13.298Z] [SOCKET] Processed 64 contacts from history
+[2026-04-05T10:32:16.045Z] [SOCKET] Stored 4997 messages from history
+[2026-04-05T10:32:23.775Z] [SOCKET] After history sync: 4313 total, 20 archived, 4293 active to emit
+[2026-04-05T10:32:24.767Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T10:32:24.772Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775385071, type=protocolMessage
+[2026-04-05T10:32:24.773Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=49
+[2026-04-05T10:32:24.773Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T10:32:34.393Z] Message receipts update received: [
+  {
+    "key": {
+      "remoteJid": "5511993383885-1634903566@g.us",
+      "id": "AC3EF72B90017AFDD74668242A8599DD",
+      "fromMe": true,
+      "participant": "232331994497056@lid"
+    },
+    "receipt": {
+      "userJid": "232331994497056@lid",
+      "readTimestamp": 1775385086
+    }
+  }
+]
+[2026-04-05T10:32:34.395Z] Receipt: AC3EF72B90017AFDD74668242A8599DD from 5511993383885-1634903566@g.us type: delivered
+[2026-04-05T10:32:34.403Z] [STORE] Saving 4313 chats to file...
+[2026-04-05T10:32:34.404Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:32:39.401Z] [GET-CHATS] Resolved chats: 4251 Sample: {
+  "participant": [],
+  "id": "558597665601@s.whatsapp.net",
+  "unreadCount": 0,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775383308,
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "tcToken": {
+    "type": "Buffer",
+    "data": [
+      4,
+      1,
+      39,
+      133,
+      19,
+      118,
+      39,
+      191,
+      227,
+      124,
+      151
+    ]
+  },
+  "tcTokenTimestamp": {
+    "low": 1775359933,
+    "high": 0,
+    "unsigned": true
+  },
+  "tcTokenSenderTimestamp": {
+    "low": 1774521262,
+    "high": 0,
+    "unsigned": true
+  },
+  "accountLid": "125232690024584@lid",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601@s.whatsapp.net",
+          "fromMe": true,
+          "id": "ACFFE2A2BD71FCCF3AFB919551A496D8"
+        },
+        "message": {
+          "conversation": "https://amzn.to/4bhDOwF\n\n*R$294,00* 🔥🔥🔥",
+          "messageContextInfo": {
+            "messageSecret": "nrsYRc+EsaVHv2hkCvphm3ytim/AXxMoZopB+A6pYpw="
+          }
+        },
+        "messageTimestamp": "1769544794",
+        "status": "READ",
+        "messageC2STimestamp": "1769544795",
+        "messageSecret": "nrsYRc+EsaVHv2hkCvphm3ytim/AXxMoZopB+A6pYpw=",
+        "originalSelfAuthorUserJidString": "558597665601@s.whatsapp.net",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "name": "558597665601",
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AGeclVd6PSRjbV1Lz_HAVbcmS4TOe0fUJuR2NrHoU1tBg&oe=69DF377D&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🚫 Mensagem apagada",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": 1775383308
+}
+[2026-04-05T10:32:39.508Z] Client connected to socket
+[2026-04-05T10:32:39.554Z] Client disconnected from socket
+[2026-04-05T10:32:39.561Z] [GET-CHATS] Socket event received
+[2026-04-05T10:32:39.568Z] [GET-CHATS] Filtered active chats: 4293
+[2026-04-05T10:32:49.125Z] [GET-CHATS] Chats after sort: 4293
+[2026-04-05T10:32:50.366Z] [GET-CHATS] Resolved chats: 4293 Sample: {
+  "participant": [],
+  "id": "558597665601@s.whatsapp.net",
+  "unreadCount": 0,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775385071,
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "tcToken": {
+    "type": "Buffer",
+    "data": [
+      4,
+      1,
+      39,
+      133,
+      19,
+      118,
+      39,
+      191,
+      227,
+      124,
+      151
+    ]
+  },
+  "tcTokenTimestamp": {
+    "low": 1775359933,
+    "high": 0,
+    "unsigned": true
+  },
+  "tcTokenSenderTimestamp": {
+    "low": 1774521262,
+    "high": 0,
+    "unsigned": true
+  },
+  "accountLid": "125232690024584@lid",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601@s.whatsapp.net",
+          "fromMe": true,
+          "id": "ACF9C74B2EA81D453FFF53E54EEE90AB"
+        },
+        "message": {
+          "documentMessage": {
+            "url": "https://mmg.whatsapp.net/v/t62.7119-24/567982849_1561928798346339_7319677430708174372_n.enc?ccb=11-4&oh=01_Q5Aa3gEgu9hL_S9z2M1nSKzKYUonCg5ITWHfxMyg8YgOrktOtA&oe=6996BF1B&_nc_sid=5e03e0&mms3=true",
+            "mimetype": "application/pdf",
+            "fileSha256": "vXtdc+gofGazPR1qvJX6Gqepan7XB+vqsgxUz9wzixU=",
+            "fileLength": "413248",
+            "pageCount": 2,
+            "mediaKey": "PGHSt6hbZGM26GrJiyLGKH3D43Ks+8jUxunFvsI+IoA=",
+            "fileName": "documento.pdf",
+            "fileEncSha256": "3NiXvNp3ETk+iKRbDNuflZ5N9kZsSZkjMwZZK9LNAfU=",
+            "directPath": "/v/t62.7119-24/567982849_1561928798346339_7319677430708174372_n.enc?ccb=11-4&oh=01_Q5Aa3gEgu9hL_S9z2M1nSKzKYUonCg5ITWHfxMyg8YgOrktOtA&oe=6996BF1B&_nc_sid=5e03e0",
+            "mediaKeyTimestamp": "1768904252"
+          },
+          "messageContextInfo": {
+            "messageSecret": "58jDPqflKYWZ5hzKfpWft41DPGIpF0qqNPSy83lPqOc="
+          }
+        },
+        "messageTimestamp": "1768904252",
+        "status": "READ",
+        "messageC2STimestamp": "1768904254",
+        "mediaData": {
+          "localPath": "Media/WhatsApp Documents/Sent/DOC-20260120-WA0113."
+        },
+        "messageSecret": "58jDPqflKYWZ5hzKfpWft41DPGIpF0qqNPSy83lPqOc=",
+        "originalSelfAuthorUserJidString": "558597665601@s.whatsapp.net",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "name": "558597665601",
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AGeclVd6PSRjbV1Lz_HAVbcmS4TOe0fUJuR2NrHoU1tBg&oe=69DF377D&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🚫 Mensagem apagada",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": 1775385071
+}
+[2026-04-05T10:32:50.431Z] [STORE] Saving 4313 chats to file...
+[2026-04-05T10:32:50.433Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:32:56.755Z] Emitting chats: 4251
+[2026-04-05T10:32:56.756Z] Sample chat: {
+  "participant": [],
+  "id": "558597665601@s.whatsapp.net",
+  "unreadCount": 0,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775383308,
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "tcToken": {
+    "type": "Buffer",
+    "data": [
+      4,
+      1,
+      39,
+      133,
+      19,
+      118,
+      39,
+      191,
+      227,
+      124,
+      151
+    ]
+  },
+  "tcTokenTimestamp": {
+    "low": 1775359933,
+    "high": 0,
+    "unsigned": true
+  },
+  "tcTokenSenderTimestamp": {
+    "low": 1774521262,
+    "high": 0,
+    "unsigned": true
+  },
+  "accountLid": "125232690024584@lid",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601@s.whatsapp.net",
+          "fromMe": true,
+          "id": "ACFFE2A2BD71FCCF3AFB919551A496D8"
+        },
+        "message": {
+          "conversation": "https://amzn.to/4bhDOwF\n\n*R$294,00* 🔥🔥🔥",
+          "messageContextInfo": {
+            "messageSecret": "nrsYRc+EsaVHv2hkCvphm3ytim/AXxMoZopB+A6pYpw="
+          }
+        },
+        "messageTimestamp": "1769544794",
+        "status": "READ",
+        "messageC2STimestamp": "1769544795",
+        "messageSecret": "nrsYRc+EsaVHv2hkCvphm3ytim/AXxMoZopB+A6pYpw=",
+        "originalSelfAuthorUserJidString": "558597665601@s.whatsapp.net",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "name": "558597665601",
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AGeclVd6PSRjbV1Lz_HAVbcmS4TOe0fUJuR2NrHoU1tBg&oe=69DF377D&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🚫 Mensagem apagada",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": 1775383308
+}
+[2026-04-05T10:32:57.535Z] Client disconnected from socket
+[2026-04-05T10:32:58.140Z] [SOCKET] Received messaging-history.set event: {"chats":20,"contacts":40,"messages":4998,"syncType":2}
+[2026-04-05T10:32:58.147Z] [SOCKET] History chat 558597665601@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.151Z] [SOCKET] History chat 57793633603819@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.152Z] [SOCKET] History chat 26014801498281@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.153Z] [SOCKET] History chat 219816627597511@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.153Z] [SOCKET] History chat 24159459528753@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.154Z] [SOCKET] History chat 558599850802@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.155Z] [SOCKET] History chat 238964044742768@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.155Z] [SOCKET] History chat 54580511551583@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.156Z] [SOCKET] History chat 558496926127@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.156Z] [SOCKET] History chat 5512997321888@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.157Z] [SOCKET] History chat 558587022256@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.162Z] [SOCKET] History chat 557599876559@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.165Z] [SOCKET] History chat 555581166180@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.165Z] [SOCKET] History chat 559294791687@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.169Z] [SOCKET] History chat 20930046746682@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.170Z] [SOCKET] History chat 558585905193@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.170Z] [SOCKET] History chat 69493359411204@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.171Z] [SOCKET] History chat 224803101347967@lid: archived=undefined, name=undefined
+[2026-04-05T10:32:58.172Z] [SOCKET] History chat 553191622422-1590927178@g.us: archived=false, name=🇧🇷 MCFARLANE TOYS
+[2026-04-05T10:32:58.172Z] [SOCKET] History chat 558499314503@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:32:58.173Z] [SOCKET] Processed 20 chats from history, 0 archived
+[2026-04-05T10:32:58.178Z] [SOCKET] Processed 40 contacts from history
+[2026-04-05T10:33:03.892Z] [SOCKET] Stored 4998 messages from history
+[2026-04-05T10:33:14.726Z] [SOCKET] After history sync: 4322 total, 20 archived, 4302 active to emit
+[2026-04-05T10:33:15.897Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T10:33:15.898Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775385095, type=protocolMessage
+[2026-04-05T10:33:15.901Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=51
+[2026-04-05T10:33:15.902Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T10:33:29.527Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:33:29.529Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:33:35.936Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T10:33:36.475Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T10:33:36.479Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T10:33:36.516Z] [SOCKET] Emitting chats-list from history sync: 4275 active chats
+[2026-04-05T10:33:36.624Z] [SOCKET] Emitting chats-list from history sync: 4293 active chats
+[2026-04-05T10:33:36.836Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":408,"payload":{"statusCode":408,"error":"Request Time-out","message":"Connection was lost"},"headers":{}}} , reconnecting  true
+[2026-04-05T10:33:36.844Z] [RECONNECT] Attempt 1/10 - waiting 5s before retry...
+[2026-04-05T10:33:36.846Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T10:33:48.179Z] [DELAYED-SYNC] Re-emitting 4302 chats with fresh timestamps
+[2026-04-05T10:33:48.287Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:33:48.288Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:33:55.586Z] Client connected to socket
+[2026-04-05T10:33:55.804Z] Messages update received: [
+  {
+    "key": {
+      "remoteJid": "181707332440236@lid",
+      "id": "ACA01DD478B4D4BE160F8A10AA199C27",
+      "fromMe": false
+    },
+    "update": {
+      "status": 4
+    }
+  }
+]
+[2026-04-05T10:34:07.058Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:34:07.060Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:34:14.428Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":428,"payload":{"statusCode":428,"error":"Precondition Required","message":"Connection Terminated"},"headers":{}}} , reconnecting  true
+[2026-04-05T10:34:14.432Z] [RECONNECT] Attempt 2/10 - waiting 10s before retry...
+[2026-04-05T10:34:14.434Z] Client disconnected from socket
+[2026-04-05T10:34:14.456Z] Client connected to socket
+[2026-04-05T10:34:14.881Z] [SOCKET] Emitting chats-list from history sync: 4302 active chats
+[2026-04-05T10:34:15.037Z] Client disconnected from socket
+[2026-04-05T10:34:16.245Z] Client connected to socket
+[2026-04-05T10:34:17.063Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:34:17.065Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:34:28.962Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:34:28.963Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:34:37.481Z] [GROUPS] Updated metadata for 0/46 groups
+[2026-04-05T10:34:49.185Z] Client disconnected from socket
+[2026-04-05T10:34:49.220Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:34:49.222Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:34:57.791Z] Client connected to socket
+[2026-04-05T10:34:59.220Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:34:59.223Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:35:10.525Z] Messages update received: [
+  {
+    "key": {
+      "remoteJid": "181707332440236@lid",
+      "id": "ACA01DD478B4D4BE160F8A10AA199C27",
+      "fromMe": false
+    },
+    "update": {
+      "status": 4
+    }
+  }
+]
+[2026-04-05T10:35:19.062Z] opened connection
+[2026-04-05T10:35:19.063Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T10:35:19.066Z] receivedPendingNotifications: undefined
+[2026-04-05T10:35:19.069Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:35:19.070Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:35:24.808Z] Client disconnected from socket
+[2026-04-05T10:35:24.814Z] Client connected to socket
+[2026-04-05T10:35:24.825Z] [GET-CHATS] Socket event received
+[2026-04-05T10:35:24.826Z] [GET-CHATS] Filtered active chats: 4302
+[2026-04-05T10:35:32.403Z] [GET-CHATS] Chats after sort: 4302
+[2026-04-05T10:35:33.338Z] [GET-CHATS] Resolved chats: 4302 Sample: {
+  "participant": [],
+  "id": "558597665601@s.whatsapp.net",
+  "unreadCount": 0,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775385095,
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "tcToken": {
+    "type": "Buffer",
+    "data": [
+      4,
+      1,
+      39,
+      133,
+      19,
+      118,
+      39,
+      191,
+      227,
+      124,
+      151
+    ]
+  },
+  "tcTokenTimestamp": {
+    "low": 1775359933,
+    "high": 0,
+    "unsigned": true
+  },
+  "tcTokenSenderTimestamp": {
+    "low": 1774521262,
+    "high": 0,
+    "unsigned": true
+  },
+  "accountLid": "125232690024584@lid",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601@s.whatsapp.net",
+          "fromMe": true,
+          "id": "AC67E4BF5DD7AAD3E59BEC87E0C67F26"
+        },
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m239/AQNIGC9SBH0IvIiaTHE0OjmdPPZGsz49DQOw3t_JMKRYo2tBHbz6tvPHHAiJIan0V69N_HHlZ7V0cgDF2gl0S6Xmz3tu8VW1MNZG9dVn-Q?ccb=9-4&oh=01_Q5Aa3AHg8TwEv6ie6012GnNa5RqrEmjAnP7bQURiq_IG5iroUA&oe=693FE6B8&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "8Yxqtk5HBHndWPAzbDcoFieVu9DIFqXLReQ0y5/NKR0=",
+            "fileLength": "93172",
+            "height": 1600,
+            "width": 1200,
+            "mediaKey": "HiOXDGW1mAZQmKUBeXoVjitjl+W8VbyOhQsyLNIbfRQ=",
+            "fileEncSha256": "tQY9+hYdi+wFdveRxFf0u+KpEVqURP06XQl83p7t7hU=",
+            "directPath": "/o1/v/t24/f2/m239/AQNIGC9SBH0IvIiaTHE0OjmdPPZGsz49DQOw3t_JMKRYo2tBHbz6tvPHHAiJIan0V69N_HHlZ7V0cgDF2gl0S6Xmz3tu8VW1MNZG9dVn-Q?ccb=9-4&oh=01_Q5Aa3AHg8TwEv6ie6012GnNa5RqrEmjAnP7bQURiq_IG5iroUA&oe=693FE6B8&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1763214161",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA"
+            }
+          },
+          "messageContextInfo": {
+            "messageSecret": "o8qY5wSAv8lkAMYEhuySXhuXvAQi13l6PQwBuuYjz3Y="
+          }
+        },
+        "messageTimestamp": "1763214160",
+        "status": "READ",
+        "messageC2STimestamp": "1763214162",
+        "mediaData": {
+          "localPath": "Media/WhatsApp Images/Sent/IMG-20251115-WA0212.jpg"
+        },
+        "messageSecret": "o8qY5wSAv8lkAMYEhuySXhuXvAQi13l6PQwBuuYjz3Y=",
+        "originalSelfAuthorUserJidString": "558597665601@s.whatsapp.net",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "name": "558597665601",
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AGeclVd6PSRjbV1Lz_HAVbcmS4TOe0fUJuR2NrHoU1tBg&oe=69DF377D&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🚫 Mensagem apagada",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": 1775385095
+}
+[2026-04-05T10:35:33.386Z] [SYNC] Checking for chats after connection...
+[2026-04-05T10:35:33.388Z] Chats found: 4302
+[2026-04-05T10:35:33.391Z] All chats count: 4322
+[2026-04-05T10:35:33.392Z] Archived chats count: 20
+[2026-04-05T10:35:41.784Z] Emitting chats: 4302
+[2026-04-05T10:35:42.035Z] Sample chat: {
+  "participant": [],
+  "id": "558597665601@s.whatsapp.net",
+  "unreadCount": 0,
+  "readOnly": false,
+  "ephemeralExpiration": 0,
+  "ephemeralSettingTimestamp": {
+    "low": 0,
+    "high": 0,
+    "unsigned": false
+  },
+  "conversationTimestamp": 1775385095,
+  "notSpam": true,
+  "archived": false,
+  "unreadMentionCount": 0,
+  "markedAsUnread": false,
+  "tcToken": {
+    "type": "Buffer",
+    "data": [
+      4,
+      1,
+      39,
+      133,
+      19,
+      118,
+      39,
+      191,
+      227,
+      124,
+      151
+    ]
+  },
+  "tcTokenTimestamp": {
+    "low": 1775359933,
+    "high": 0,
+    "unsigned": true
+  },
+  "tcTokenSenderTimestamp": {
+    "low": 1774521262,
+    "high": 0,
+    "unsigned": true
+  },
+  "accountLid": "125232690024584@lid",
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601@s.whatsapp.net",
+          "fromMe": true,
+          "id": "AC67E4BF5DD7AAD3E59BEC87E0C67F26"
+        },
+        "message": {
+          "imageMessage": {
+            "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m239/AQNIGC9SBH0IvIiaTHE0OjmdPPZGsz49DQOw3t_JMKRYo2tBHbz6tvPHHAiJIan0V69N_HHlZ7V0cgDF2gl0S6Xmz3tu8VW1MNZG9dVn-Q?ccb=9-4&oh=01_Q5Aa3AHg8TwEv6ie6012GnNa5RqrEmjAnP7bQURiq_IG5iroUA&oe=693FE6B8&_nc_sid=e6ed6c&mms3=true",
+            "mimetype": "image/jpeg",
+            "fileSha256": "8Yxqtk5HBHndWPAzbDcoFieVu9DIFqXLReQ0y5/NKR0=",
+            "fileLength": "93172",
+            "height": 1600,
+            "width": 1200,
+            "mediaKey": "HiOXDGW1mAZQmKUBeXoVjitjl+W8VbyOhQsyLNIbfRQ=",
+            "fileEncSha256": "tQY9+hYdi+wFdveRxFf0u+KpEVqURP06XQl83p7t7hU=",
+            "directPath": "/o1/v/t24/f2/m239/AQNIGC9SBH0IvIiaTHE0OjmdPPZGsz49DQOw3t_JMKRYo2tBHbz6tvPHHAiJIan0V69N_HHlZ7V0cgDF2gl0S6Xmz3tu8VW1MNZG9dVn-Q?ccb=9-4&oh=01_Q5Aa3AHg8TwEv6ie6012GnNa5RqrEmjAnP7bQURiq_IG5iroUA&oe=693FE6B8&_nc_sid=e6ed6c",
+            "mediaKeyTimestamp": "1763214161",
+            "contextInfo": {
+              "pairedMediaType": "NOT_PAIRED_MEDIA"
+            }
+          },
+          "messageContextInfo": {
+            "messageSecret": "o8qY5wSAv8lkAMYEhuySXhuXvAQi13l6PQwBuuYjz3Y="
+          }
+        },
+        "messageTimestamp": "1763214160",
+        "status": "READ",
+        "messageC2STimestamp": "1763214162",
+        "mediaData": {
+          "localPath": "Media/WhatsApp Images/Sent/IMG-20251115-WA0212.jpg"
+        },
+        "messageSecret": "o8qY5wSAv8lkAMYEhuySXhuXvAQi13l6PQwBuuYjz3Y=",
+        "originalSelfAuthorUserJidString": "558597665601@s.whatsapp.net",
+        "isMentionedInStatus": false
+      }
+    }
+  ],
+  "name": "558597665601",
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AGeclVd6PSRjbV1Lz_HAVbcmS4TOe0fUJuR2NrHoU1tBg&oe=69DF377D&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🚫 Mensagem apagada",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": 1775385095
+}
+[2026-04-05T10:35:42.087Z] [STORE] Saving 4322 chats to file...
+[2026-04-05T10:35:42.089Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:35:46.908Z] Client disconnected from socket
+[2026-04-05T10:35:47.260Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T10:35:47.267Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T10:35:47.269Z] [GROUPS] Fetching metadata for 46 groups...
+[2026-04-05T10:35:47.657Z] [SOCKET] Received messaging-history.set event: {"chats":74,"contacts":74,"messages":4998,"syncType":3}
+[2026-04-05T10:35:47.659Z] [SOCKET] History chat 558586878393@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.662Z] [SOCKET] History chat 558587453829-1594156687@g.us: archived=false, name=Action Figures Nordeste
+[2026-04-05T10:35:47.663Z] [SOCKET] History chat 120363387777093318@g.us: archived=false, name=Street Fighter (escala 1/12 - 6")
+[2026-04-05T10:35:47.663Z] [SOCKET] History chat 120363022912698264@g.us: archived=true, name=OLX  VENDAS FORTALEZA
+[2026-04-05T10:35:47.663Z] [SOCKET] History chat 5511993383885-1634903566@g.us: archived=true, name=Colecionáveis em Geral (OFICIAL)
+[2026-04-05T10:35:47.664Z] [SOCKET] History chat 120363377496881783@g.us: archived=false, name=Mcfarlane Toys
+[2026-04-05T10:35:47.664Z] [SOCKET] History chat 120363402759318233@g.us: archived=true, name=Mercado Minis
+[2026-04-05T10:35:47.665Z] [SOCKET] History chat 559284313322-1565733287@g.us: archived=false, name=Marvel Legends BRASIL
+[2026-04-05T10:35:47.665Z] [SOCKET] History chat 173370683486426@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.666Z] [SOCKET] History chat 98741298192622@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.667Z] [SOCKET] History chat 558498006163@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.667Z] [SOCKET] History chat 120363161570954772@g.us: archived=true, name=MARVEL LEGENDS BR ®️
+[2026-04-05T10:35:47.667Z] [SOCKET] History chat 190078760542442@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.668Z] [SOCKET] History chat 18188586314@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.670Z] [SOCKET] History chat 120363423657616021@g.us: archived=true, name=Colecionando na America Inscritos
+[2026-04-05T10:35:47.671Z] [SOCKET] History chat 120363160540094520@g.us: archived=false, name=Action Recife
+[2026-04-05T10:35:47.674Z] [SOCKET] History chat 120363418615479931@g.us: archived=false, name=MARVEL & DC
+[2026-04-05T10:35:47.675Z] [SOCKET] History chat 114924936237247@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.675Z] [SOCKET] History chat 120363020599253391@g.us: archived=true, name=Emuelec
+[2026-04-05T10:35:47.676Z] [SOCKET] History chat 559198107173-1629836772@g.us: archived=false, name=🤝🏻 SÓ TROCA 🤝🏻 🚫 S/ VENDA 🚫
+[2026-04-05T10:35:47.676Z] [SOCKET] History chat 5521974300901-1559853430@g.us: archived=true, name=Colecionadores dos anos 90
+[2026-04-05T10:35:47.677Z] [SOCKET] History chat 120363019990569731@g.us: archived=true, name=🫒 Oliver Toys - GiJoe e Action Figures
+[2026-04-05T10:35:47.677Z] [SOCKET] History chat 175900519854287@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.677Z] [SOCKET] History chat 95803876061235@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.678Z] [SOCKET] History chat 558587122501@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.678Z] [SOCKET] History chat 558587453829-1605201998@g.us: archived=false, name=Universo X-men Marvel Legends
+[2026-04-05T10:35:47.679Z] [SOCKET] History chat 120363394328906857@g.us: archived=true, name=TEIA DO ARANHA
+[2026-04-05T10:35:47.679Z] [SOCKET] History chat 120363211900560110@g.us: archived=true, name=Wordpress ◈ Elementor - CSS & JS
+[2026-04-05T10:35:47.679Z] [SOCKET] History chat 11179816677479@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.680Z] [SOCKET] History chat 558896015636@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.680Z] [SOCKET] History chat 72902858821843@lid: archived=false, name=undefined
+[2026-04-05T10:35:47.681Z] [SOCKET] History chat 149779048878305@lid: archived=false, name=undefined
+[2026-04-05T10:35:47.681Z] [SOCKET] History chat 222496989171783@lid: archived=false, name=undefined
+[2026-04-05T10:35:47.681Z] [SOCKET] History chat 120363114280639025@g.us: archived=true, name=POWER RANGER-BRASIL ®️
+[2026-04-05T10:35:47.682Z] [SOCKET] History chat 119258373701735@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.682Z] [SOCKET] History chat 217742091223244@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.683Z] [SOCKET] History chat 2297958506621@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.683Z] [SOCKET] History chat 196615029690461@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.683Z] [SOCKET] History chat 556185994545-1582560420@g.us: archived=false, name=Marvel Legends Brasil 3
+[2026-04-05T10:35:47.684Z] [SOCKET] History chat 8619357117085@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.684Z] [SOCKET] History chat 558588088283-1596198609@g.us: archived=false, name=12/04 - PRÓXIMA AVENTURA
+[2026-04-05T10:35:47.685Z] [SOCKET] History chat 558587808847@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.685Z] [SOCKET] History chat 232357831385112@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.685Z] [SOCKET] History chat 169729088061579@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.686Z] [SOCKET] History chat 40458608742654@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.686Z] [SOCKET] History chat 558581958993-1586032642@g.us: archived=false, name=Mundo Geek & Nerd OFICIAL
+[2026-04-05T10:35:47.687Z] [SOCKET] History chat 558192134575@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.687Z] [SOCKET] History chat 558599010406@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.692Z] [SOCKET] History chat 36048230940768@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.693Z] [SOCKET] History chat 558599010406-1600741150@g.us: archived=false, name=COLEÇÕES HASBRO
+[2026-04-05T10:35:47.694Z] [SOCKET] History chat 914828050587@lid: archived=false, name=undefined
+[2026-04-05T10:35:47.695Z] [SOCKET] History chat 108881950834802@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.695Z] [SOCKET] History chat 236781698031799@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.695Z] [SOCKET] History chat 104891808804936@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.696Z] [SOCKET] History chat 558587711362@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.696Z] [SOCKET] History chat 194291569836038@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.697Z] [SOCKET] History chat 26856917102771@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.697Z] [SOCKET] History chat 109105154908192@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.697Z] [SOCKET] History chat 38500506280037@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.698Z] [SOCKET] History chat 19271602151487@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.698Z] [SOCKET] History chat 5519999121199@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.699Z] [SOCKET] History chat 120363370953781873@g.us: archived=true, name=🐻 Toca dos Ursos 🐻
+[2026-04-05T10:35:47.699Z] [SOCKET] History chat 558599010406-1594236701@g.us: archived=false, name=Bonequinhos de Fortaleza
+[2026-04-05T10:35:47.699Z] [SOCKET] History chat 217544556327118@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.700Z] [SOCKET] History chat 558699303399@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.700Z] [SOCKET] History chat 142919516311556@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.701Z] [SOCKET] History chat 251526572409085@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.701Z] [SOCKET] History chat 558585045520@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.702Z] [SOCKET] History chat 118687797383203@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.702Z] [SOCKET] History chat 51062966870122@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.702Z] [SOCKET] History chat 101382719832097@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.703Z] [SOCKET] History chat 558587453829@s.whatsapp.net: archived=false, name=undefined
+[2026-04-05T10:35:47.703Z] [SOCKET] History chat 115135205093619@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.704Z] [SOCKET] History chat 92698430185680@lid: archived=undefined, name=undefined
+[2026-04-05T10:35:47.704Z] [SOCKET] Processed 74 chats from history, 12 archived
+[2026-04-05T10:35:47.709Z] [SOCKET] Processed 74 contacts from history
+[2026-04-05T10:35:53.629Z] [SOCKET] Stored 4998 messages from history
+[2026-04-05T10:36:01.558Z] [SOCKET] After history sync: 4353 total, 20 archived, 4333 active to emit
+[2026-04-05T10:36:02.574Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T10:36:02.575Z] [STORE] msg from=558597665601@s.whatsapp.net, ts=1775383328, type=protocolMessage
+[2026-04-05T10:36:02.579Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=52
+[2026-04-05T10:36:02.580Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T10:36:12.233Z] Messages update received: [
+  {
+    "key": {
+      "remoteJid": "167959142072499@lid",
+      "id": "AC74D4B19F08B7898F04A856E6986DE9",
+      "fromMe": true
+    },
+    "update": {
+      "status": 3
+    }
+  }
+]
+[2026-04-05T10:36:20.145Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:36:20.146Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:36:26.188Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":408,"payload":{"statusCode":408,"error":"Request Time-out","message":"Connection was lost"},"headers":{}}} , reconnecting  true
+[2026-04-05T10:36:26.191Z] [RECONNECT] Attempt 1/10 - waiting 5s before retry...
+[2026-04-05T10:36:26.193Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T10:36:41.784Z] [DELAYED-SYNC] Re-emitting 4334 chats with fresh timestamps
+[2026-04-05T10:36:41.876Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:36:41.877Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:36:48.718Z] Client connected to socket
+[2026-04-05T10:36:48.825Z] [GROUPS] Updated metadata for 0/46 groups
+[2026-04-05T10:37:00.108Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:37:00.110Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:37:06.860Z] [SOCKET] Emitting chats-list from history sync: 4333 active chats
+[2026-04-05T10:37:07.583Z] Messages update received: [
+  {
+    "key": {
+      "remoteJid": "167959142072499@lid",
+      "id": "AC9660FB53451BA9C0B5501A0670F5EF",
+      "fromMe": true
+    },
+    "update": {
+      "status": 3
+    }
+  }
+]
+[2026-04-05T10:37:28.027Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:37:28.029Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:37:35.515Z] Client disconnected from socket
+[2026-04-05T10:37:35.559Z] connection closed due to  {"data":null,"isBoom":true,"isServer":false,"output":{"statusCode":428,"payload":{"statusCode":428,"error":"Precondition Required","message":"Connection Terminated"},"headers":{}}} , reconnecting  true
+[2026-04-05T10:37:35.563Z] [RECONNECT] Attempt 2/10 - waiting 10s before retry...
+[2026-04-05T10:37:35.659Z] Client connected to socket
+[2026-04-05T10:37:39.126Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:37:39.127Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:37:53.676Z] [STORE] Saving 4354 chats to file...
+[2026-04-05T10:37:53.713Z] [STORE] Archived chats being saved: 20
+[2026-04-05T10:38:04.002Z] [STORE] Saving 4354 chats to file...
