@@ -155,7 +155,7 @@ console.log(`[LID] Loaded ${lidToPhoneMap.size} LID↔PN mappings from auth stor
 // Limited to 500 entries to prevent memory bloat
 const MAX_AVATAR_CACHE_SIZE = 500;
 const avatarCache = new Map<string, { url: string | null; expires: number }>();
-const AVATAR_CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
+const AVATAR_CACHE_TTL = 30 * 60 * 1000; // 30 minutes TTL
 
 const getCachedAvatar = (jid: string): string | null | undefined => {
     const cached = avatarCache.get(jid);
@@ -220,7 +220,7 @@ class SimpleStore {
         get: (jid: string) => any;
         set: (jid: string, data: any) => void;
     };
-    messages: { [jid: string]: { all: () => any[]; getArray?: () => any[] } };
+    messages: { [jid: string]: { all: () => any[]; map?: Map<string, any>; getArray?: () => any[] } };
     contacts: { [jid: string]: any };
     groupMetadata: { [jid: string]: any };
     
@@ -239,8 +239,10 @@ class SimpleStore {
         this.messages = {};
         const getMessagesObj = (jid: string) => {
             if (!this.messages[jid]) {
+                const map = new Map();
                 this.messages[jid] = {
-                    all: () => messagesMap.get(jid) || []
+                    all: () => Array.from(map.values()),
+                    map
                 };
             }
             return this.messages[jid];
@@ -335,17 +337,16 @@ class SimpleStore {
                 const jid = normalizeJid(msg.key.remoteJid!);
                 console.log(`[STORE] msg from=${msg.key.fromMe ? 'ME' : jid}, ts=${msg.messageTimestamp}, type=${Object.keys(msg.message || {}).join(',') || 'none'}`);
                 if (!this.messages[jid]) {
-                    const arr: any[] = [];
-                    this.messages[jid] = { 
-                        all: () => arr,
-                        getArray: () => arr
+                    const map = new Map();
+                    this.messages[jid] = {
+                        all: () => Array.from(map.values()),
+                        map
                     };
                 }
-                const msgs = this.messages[jid].getArray ? this.messages[jid].getArray() : this.messages[jid].all();
-                // Avoid duplicates
-                if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
-                    msgs.push(msg);
-                    console.log(`[STORE] msg stored for ${jid}, total=${msgs.length}`);
+                const msgMap = this.messages[jid].map;
+                if (!msgMap.has(msg.key.id)) {
+                    msgMap.set(msg.key.id, msg);
+                    console.log(`[STORE] msg stored for ${jid}, total=${msgMap.size}`);
                 } else {
                     console.log(`[STORE] duplicate msg skipped for ${jid}`);
                 }
@@ -468,8 +469,8 @@ const saveStore = () => {
         lastStoreCleanup
     };
     
-    // Serialize and compress if data is large (> 1MB)
-    const jsonStr = JSON.stringify(data, null, 2);
+    // Serialize compactly to avoid string length limits
+    const jsonStr = JSON.stringify(data);
     const jsonSize = Buffer.byteLength(jsonStr, 'utf8');
     
     if (jsonSize > 1024 * 1024) {
@@ -508,7 +509,9 @@ if (fs.existsSync(storePath)) {
 
         if (data.messages) {
             for (const [jid, msgs] of Object.entries(data.messages)) {
-                store.messages[jid] = { all: () => msgs as any[] };
+                const msgArray = msgs as any[];
+                const map = new Map(msgArray.map(m => [m.key.id, m]));
+                store.messages[jid] = { all: () => msgArray, map };
                 if (!store.chats.get(jid)) {
                     store.chats.set(jid, {
                         id: jid,
@@ -713,6 +716,134 @@ async function startServer() {
     let connectionStatus: "connecting" | "open" | "close" | "qr" = "connecting";
     const reconnectAttempts = { current: 0 };
 
+    // Helper function to process array in batches with concurrency limit
+    const processInBatches = async <T, R>(items: T[], fn: (item: T) => Promise<R>, batchSize: number = 5): Promise<R[]> => {
+        const results: R[] = [];
+        for (let i = 0; i < items.length; i += batchSize) {
+            const batch = items.slice(i, i + batchSize);
+            const batchResults = await Promise.all(batch.map(fn));
+            results.push(...batchResults);
+        }
+        return results;
+    };
+
+    // Helper function to get chat with avatar from cache only (no fetching)
+    const getChatWithAvatarCachedOnly = (chat: any): any => {
+        let displayName = chat.name || chat.subject || resolveContactName(chat.id, store.contacts);
+        let avatar = null;
+
+        // Check for archived status
+        const isArchived = chat.archive === true || chat.archived === true;
+
+        // Try to get name from contacts (including LID resolution)
+        const contact = store.contacts[chat.id];
+        if (contact) {
+            displayName = contact.notify || contact.name || displayName;
+        }
+        // If still showing a LID number or just the ID, try to resolve it
+        if (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@lid')) {
+            displayName = resolveContactName(chat.id, store.contacts) || displayName;
+        }
+
+        // For groups, try to get from group metadata
+        if (chat.id.endsWith('@g.us')) {
+            if (store.groupMetadata[chat.id]) {
+                displayName = store.groupMetadata[chat.id].subject || displayName;
+            } else if (sock) {
+                try {
+                    const groupMeta = sock.groupMetadata(chat.id);
+                    store.groupMetadata[chat.id] = groupMeta;
+                    displayName = groupMeta.subject || displayName;
+                } catch (e) {}
+            }
+        }
+
+        // Get cached avatar only
+        avatar = getCachedAvatar(chat.id);
+        if (avatar === undefined) avatar = null;
+
+        // Get last message for this chat
+        let lastMessageText = '';
+        let lastMessageSender = displayName; // Default to chat display name
+        let lastMessageTime = chat.conversationTimestamp || chat.lastMessageRecvTimestamp || 0;
+        let chatMessages = store.messages[chat.id]?.all() || [];
+
+        // For individual contacts, also check device-specific JID variants
+        if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+            const baseJid = chat.id.replace('@s.whatsapp.net', '');
+            for (const key of Object.keys(store.messages)) {
+                if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                    chatMessages = chatMessages.concat(store.messages[key]?.all() || []);
+                }
+            }
+        }
+
+        // For @lid, also check the corresponding @s.whatsapp.net JID
+        if (chat.id.endsWith('@lid')) {
+            const lidPart = chat.id.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                const pnJid = `${pnUser}@s.whatsapp.net`;
+                chatMessages = chatMessages.concat(store.messages[pnJid]?.all() || []);
+            }
+        }
+        if (chatMessages.length > 0) {
+            // Sort by timestamp descending to get the most recent
+            // Filter out reactions - they should not appear as last message preview (matches WhatsApp Web behavior)
+            const sortedMessages = [...chatMessages]
+                .filter((m: any) => !m.message?.reactionMessage)
+                .sort((a: any, b: any) =>
+                    (b.messageTimestamp || 0) - (a.messageTimestamp || 0)
+                );
+            const lastMsg = sortedMessages[0];
+
+            if (lastMsg) {
+                // Use the actual timestamp from the last message
+                lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
+
+                // For groups, try to get the sender's name from the message
+                if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
+                    // Get sender name from pushName, contacts store, LID mapping, or phone number
+                    const participantJid = lastMsg.key?.participant;
+                    const resolvedName = participantJid ? resolveContactName(participantJid, store.contacts) : null;
+                    const senderName = lastMsg.pushName || resolvedName || 'Membro';
+                    lastMessageSender = senderName;
+                }
+
+                // Extract message text based on type (simplified for performance)
+                if (lastMsg.message?.conversation) {
+                    lastMessageText = lastMsg.message.conversation;
+                } else if (lastMsg.message?.extendedTextMessage?.text) {
+                    lastMessageText = lastMsg.message.extendedTextMessage.text;
+                } else if (lastMsg.message?.imageMessage) {
+                    lastMessageText = lastMsg.message.imageMessage.caption || '📷 Foto';
+                } else if (lastMsg.message?.videoMessage) {
+                    lastMessageText = lastMsg.message.videoMessage.caption || '🎥 Vídeo';
+                } else if (lastMsg.message?.audioMessage) {
+                    lastMessageText = lastMsg.message.audioMessage.ptt ? '🎤 Mensagem de voz' : '🎵 Áudio';
+                } else {
+                    lastMessageText = '[Mensagem]';
+                }
+            }
+        }
+
+        return {
+            ...chat,
+            id: chat.id,
+            displayName,
+            avatar,
+            archived: isArchived,
+            pinnedAt: chat.pinnedAt,
+            muted: chat.muted,
+            ephemeralExpiration: chat.ephemeralExpiration,
+            unreadCount: chat.unreadCount || 0,
+            lastMessage: lastMessageText,
+            lastMessageSender: lastMessageSender,
+            lastMessageTime: lastMessageTime,
+            conversationTimestamp: lastMessageTime
+        };
+    };
+
     // Helper function to get chat with avatar (defined at function scope so it can be used by API endpoints)
     const getChatWithAvatarFromStore = async (chat: any): Promise<any> => {
         let displayName = chat.name || chat.subject || resolveContactName(chat.id, store.contacts);
@@ -751,7 +882,13 @@ async function startServer() {
                 avatar = cachedAvatar;
             } else {
                 try {
-                    avatar = await sock.profilePictureUrl(chat.id, 'image');
+                    // Add timeout to prevent hanging on avatar fetches
+                    avatar = await Promise.race([
+                        sock.profilePictureUrl(chat.id, 'image'),
+                        new Promise<null>((_, reject) =>
+                            setTimeout(() => reject(new Error('Avatar fetch timeout')), 5000)
+                        )
+                    ]);
                     setCachedAvatar(chat.id, avatar || null);
                 } catch (e) {
                     setCachedAvatar(chat.id, null);
@@ -981,6 +1118,78 @@ async function startServer() {
         });
     };
 
+    // Helpers
+    const getOrCreateMessages = (jid: string) => {
+        if (!store.messages[jid]) {
+            const map = new Map();
+            store.messages[jid] = {
+                all: () => Array.from(map.values()),
+                map
+            };
+        } else if (!store.messages[jid].map) {
+            // If exists but no map, create it from all()
+            const msgs = store.messages[jid].all();
+            const map = new Map(msgs.map(m => [m.key.id, m]));
+            store.messages[jid].map = map;
+            // Update all to use map
+            store.messages[jid].all = () => Array.from(map.values());
+        }
+        return store.messages[jid].map!;
+    };
+
+    const updateChatTimestamp = (jid: string, timestamp: number) => {
+        const chat = store.chats.get(jid);
+        if (!chat) return;
+
+        if (!chat.conversationTimestamp || timestamp > chat.conversationTimestamp) {
+            chat.conversationTimestamp = timestamp;
+            store.chats.set(jid, chat);
+        }
+    };
+
+    const syncLidAndPhoneTimestamp = (jid: string, timestamp: number) => {
+        if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+            const base = jid.replace('@s.whatsapp.net', '');
+            const lid = phoneToLidMap.get(base);
+            if (lid) updateChatTimestamp(`${lid}@lid`, timestamp);
+        }
+
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pn = lidToPhoneMap.get(lidPart);
+            if (pn) updateChatTimestamp(`${pn}@s.whatsapp.net`, timestamp);
+        }
+    };
+
+    const upsertContact = (jid: string, pushName: string, msg: any) => {
+        const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
+
+        if (!contactJid || contactJid.includes('@g.us')) return;
+
+        let contact = store.contacts[contactJid];
+
+        if (!contact) {
+            store.contacts[contactJid] = {
+                id: contactJid,
+                name: pushName,
+                notify: pushName,
+                imgUrl: null
+            };
+        } else if (!contact.name && !contact.notify) {
+            contact.name = pushName;
+            contact.notify = pushName;
+        }
+
+        if (!contactJid.includes('@lid') && !store.chats.get(contactJid)) {
+            store.chats.set(contactJid, {
+                id: contactJid,
+                name: pushName,
+                unreadCount: 0,
+                conversationTimestamp: Math.floor(Date.now() / 1000)
+            });
+        }
+    };
+
     const connectToWhatsApp = async () => {
         sock = makeWASocket({
             version,
@@ -1129,33 +1338,7 @@ async function startServer() {
                     console.log("Emitting chats:", chatsWithAvatars.length);
                     io.emit("chats-list", chatsWithAvatars);
                     
-                    // Delayed re-emit after history sync has had time to complete
-                    // This catches updates from messaging-history.set that arrive after the initial emit
-                    setTimeout(async () => {
-                        console.log("[DELAYED-SYNC] Re-emitting chats-list after history sync settle...");
-                        let allChats = store.chats.all().filter((c: any) => 
-                            isValidChatJid(c.id) && c.archived !== true
-                        );
-                        // Recalculate timestamps one more time
-                        for (const chat of allChats) {
-                            const chatMessages = getAllChatMessages(chat.id);
-                            if (chatMessages.length > 0) {
-                                const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
-                                chat.conversationTimestamp = latestMsgTs;
-                                store.chats.set(chat.id, chat);
-                            } else {
-                                chat.conversationTimestamp = 0;
-                                store.chats.set(chat.id, chat);
-                            }
-                        }
-                        allChats = store.chats.all().filter((c: any) => 
-                            isValidChatJid(c.id) && c.archived !== true
-                        );
-                        allChats = sortChatsByRecent(allChats);
-                        const refreshedWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-                        console.log(`[DELAYED-SYNC] Re-emitting ${refreshedWithAvatars.length} chats with fresh timestamps`);
-                        io.emit("chats-list", refreshedWithAvatars);
-                    }, 15000);
+                    
                     
                     // Safety sync: after another delay, ensure all contacts have chat entries
                     // This catches contacts that arrived via contacts.upsert after the initial emit
@@ -1187,12 +1370,12 @@ async function startServer() {
                             io.emit("chats-list", allWithAvatars);
                         }
 
-                        // Update group metadata on every startup - PARALLEL FETCH
+                        // Update group metadata on every startup - BATCHED FETCH
                         const groupChats = store.chats.all().filter((c: any) => c.id.endsWith('@g.us'));
-                        console.log(`[GROUPS] Fetching metadata for ${groupChats.length} groups in parallel...`);
-                        
-                        // Fetch all group metadata in parallel
-                        const groupFetchPromises = groupChats.map(async (group: any) => {
+                        console.log(`[GROUPS] Fetching metadata for ${groupChats.length} groups in batches...`);
+
+                        // Fetch all group metadata in batches to avoid rate limits
+                        const results = await processInBatches(groupChats, async (group: any) => {
                             try {
                                 const meta = await sock.groupMetadata(group.id);
                                 store.groupMetadata[group.id] = meta;
@@ -1209,8 +1392,6 @@ async function startServer() {
                                 return false;
                             }
                         });
-                        
-                        const results = await Promise.all(groupFetchPromises);
                         const groupsUpdated = results.filter(r => r).length;
                         console.log(`[GROUPS] Updated metadata for ${groupsUpdated}/${groupChats.length} groups`);
                         
@@ -1441,166 +1622,96 @@ async function startServer() {
         });
 
         sock.ev.on("messages.upsert", async (m: any) => {
-            // Process ALL message types: "notify" (new incoming), "append" (history/sent from other devices)
-            console.log(`[SOCKET] messages.upsert: type=${m.type}, count=${m.messages?.length || 0}`);
+            console.log(`[SOCKET] upsert: ${m.type} (${m.messages?.length || 0})`);
+
+            const newMessages: any[] = [];
+
             for (const msg of m.messages) {
                 const jid = normalizeJid(msg.key.remoteJid);
                 if (!jid) continue;
-                
-                // Ensure chat exists for this message (won't overwrite archived)
+
                 ensureChatExists(jid);
-                
-                // Store the message - use persistent array to avoid losing messages
-                if (!store.messages[jid]) {
-                    const arr: any[] = [];
-                    store.messages[jid] = { all: () => arr };
+
+                const msgMap = getOrCreateMessages(jid);
+
+                if (!msgMap.has(msg.key.id)) {
+                    msgMap.set(msg.key.id, msg);
+                    newMessages.push(msg);
                 }
-                const msgs = store.messages[jid].all();
-                if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
-                    msgs.push(msg);
+
+                if (msg.messageTimestamp) {
+                    updateChatTimestamp(jid, msg.messageTimestamp);
+                    syncLidAndPhoneTimestamp(jid, msg.messageTimestamp);
                 }
-                
-                // Update chat timestamp - handle LID variants too
-                const chat = store.chats.get(jid);
-                if (chat && msg.messageTimestamp) {
-                    if (!chat.conversationTimestamp || msg.messageTimestamp > chat.conversationTimestamp) {
-                        chat.conversationTimestamp = msg.messageTimestamp;
-                        store.chats.set(jid, chat);
-                    }
-                    // Also update LID variant if exists
-                    if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
-                        const baseJid = jid.replace('@s.whatsapp.net', '');
-                        const lid = phoneToLidMap.get(baseJid);
-                        if (lid) {
-                            const lidChat = store.chats.get(`${lid}@lid`);
-                            if (lidChat && (!lidChat.conversationTimestamp || msg.messageTimestamp > lidChat.conversationTimestamp)) {
-                                lidChat.conversationTimestamp = msg.messageTimestamp;
-                                store.chats.set(`${lid}@lid`, lidChat);
-                            }
-                        }
-                    }
-                    // Also update @s.whatsapp.net variant if this is @lid
-                    if (jid.endsWith('@lid')) {
-                        const lidPart = jid.replace('@lid', '');
-                        const pnUser = lidToPhoneMap.get(lidPart);
-                        if (pnUser) {
-                            const pnChat = store.chats.get(`${pnUser}@s.whatsapp.net`);
-                            if (pnChat && (!pnChat.conversationTimestamp || msg.messageTimestamp > pnChat.conversationTimestamp)) {
-                                pnChat.conversationTimestamp = msg.messageTimestamp;
-                                store.chats.set(`${pnUser}@s.whatsapp.net`, pnChat);
-                            }
-                        }
-                    }
-                }
-                
-                // Extract pushName from message and store as contact
+
                 const pushName = msg.pushName || msg.key?.pushName;
-                if (pushName && jid) {
-                    const contactJid = msg.key.fromMe ? jid : (msg.key.participant || jid);
-                    if (contactJid && !contactJid.includes('@g.us')) {
-                        const existingContact = store.contacts[contactJid];
-                        if (!existingContact) {
-                            store.contacts[contactJid] = {
-                                id: contactJid,
-                                name: pushName,
-                                notify: pushName,
-                                imgUrl: null
-                            };
-                        } else if (!existingContact.name && !existingContact.notify) {
-                            existingContact.name = pushName;
-                            existingContact.notify = pushName;
-                        }
-                        // Ensure chat entry exists for this contact (only for regular contacts, not LIDs)
-                        if (!contactJid.includes('@lid')) {
-                            const existingChat = store.chats.get(contactJid);
-                            if (!existingChat) {
-                                store.chats.set(contactJid, {
-                                    id: contactJid,
-                                    name: pushName,
-                                    unreadCount: 0,
-                                    conversationTimestamp: msg.messageTimestamp || Math.floor(Date.now() / 1000)
-                                });
-                            }
-                        }
-                    }
-                }
-                
-                // Emit ALL new messages (including fromMe) for real-time sync
-                // Frontend handles deduplication
-                io.emit("new-message", msg);
+                if (pushName) upsertContact(jid, pushName, msg);
             }
-            
-            // Update chat list after processing messages
+
+            // Emit em lote (melhor performance)
+            if (newMessages.length) {
+                io.emit("new-message-batch", newMessages);
+            }
+
             emitChats();
         });
 
         // Sincronização em tempo real: mensagens editadas ou excluídas
         sock.ev.on("messages.update", async (updates: any[]) => {
-            console.log("Messages update received:", JSON.stringify(updates, null, 2));
-            
-            for (const update of updates) {
-                const { key, update: msgUpdate } = update;
-                const jid = normalizeJid(key.remoteJid);
-                
-                // Ensure chat exists
-                ensureChatExists(jid);
-                
-                // Get messages for this chat
-                const messages = store.messages[jid]?.all() || [];
-                const msgIndex = messages.findIndex((m: any) => m.key?.id === key.id);
-                
-                if (msgIndex !== -1) {
-                    const msg = messages[msgIndex];
-                    
-                    // Handle different update types
-                    if (msgUpdate.update === 'delete') {
-                        // Message was deleted
-                        console.log("Message deleted:", key.id);
-                        io.emit("message-deleted", { jid, messageId: key.id });
-                    } else if (msgUpdate.update === 'message') {
-                        // Message was edited
-                        console.log("Message edited:", key.id);
-                        msg.message = msgUpdate.message;
-                        io.emit("message-updated", msg);
-                    } else if (msgUpdate.update === 'status') {
-                        // Status update (e.g., read, delivered)
-                        console.log("Message status update:", key.id, msgUpdate.update);
-                        io.emit("message-status-update", { jid, messageId: key.id, status: msgUpdate.status });
-                    }
-                }
-                
+            console.log("Messages update:", updates.length);
 
+            const updated: any[] = [];
+            const deleted: any[] = [];
+
+            for (const { key, update } of updates) {
+                const jid = normalizeJid(key.remoteJid);
+                if (!jid) continue;
+
+                const msgMap = store.messages[jid]?.map;
+                if (!msgMap) continue;
+
+                const msg = msgMap.get(key.id);
+                if (!msg) continue;
+
+                switch (update.update) {
+                    case 'delete':
+                        msgMap.delete(key.id);
+                        deleted.push({ jid, messageId: key.id });
+                        break;
+
+                    case 'message':
+                        msg.message = update.message;
+                        updated.push(msg);
+                        break;
+
+                    case 'status':
+                        updated.push({
+                            jid,
+                            messageId: key.id,
+                            status: update.status
+                        });
+                        break;
+                }
             }
-            
-            // Update chat list with recent messages - FILTER archived
+
+            if (updated.length) io.emit("message-updated-batch", updated);
+            if (deleted.length) io.emit("message-deleted-batch", deleted);
+
             emitChats();
         });
 
         // Sincronização em tempo real: recibos de mensagem (leitura, entrega)
         sock.ev.on("message-receipt.update", async (receipts: any[]) => {
-            console.log("Message receipts update received:", JSON.stringify(receipts, null, 2));
-            
-            for (const receiptData of receipts) {
-                const { key, receipt: receiptInfo } = receiptData;
-                const jid = key.remoteJid;
-                const messageId = key.id;
-                
-                // Different receipt types:
-                // - 'read' = mensagem foi lida
-                // - 'delivered' = mensagem foi entregue
-                // - 'played' = áudio foi reproduzido
-                const receiptType = receiptInfo.type || 'delivered';
-                
-                console.log("Receipt:", messageId, "from", jid, "type:", receiptType);
-                
-                // Emit receipt update to frontend
-                io.emit("message-receipt", {
-                    jid,
-                    messageId,
-                    type: receiptType,
-                    timestamp: receiptInfo.timestamp
-                });
-            }
+            console.log("Receipts:", receipts.length);
+
+            const payload = receipts.map(({ key, receipt }) => ({
+                jid: key.remoteJid,
+                messageId: key.id,
+                type: receipt.type || 'delivered',
+                timestamp: receipt.timestamp
+            }));
+
+            io.emit("message-receipt-batch", payload);
         });
 
         sock.ev.on("contacts.update", (contacts: Contact[]) => {
@@ -1770,9 +1881,11 @@ async function startServer() {
                         // Store the actual message - use persistent array to avoid losing messages
                 if (!store.messages[jid]) {
                     const arr: any[] = [];
-                    store.messages[jid] = { 
+                    const map = new Map();
+                    store.messages[jid] = {
                         all: () => arr,
-                        getArray: () => arr
+                        getArray: () => arr,
+                        map
                     };
                 }
                 const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
@@ -1855,12 +1968,27 @@ async function startServer() {
             );
             const totalArchivedCount = totalChats.filter((c: any) => c.archived === true).length;
             console.log(`[SOCKET] After history sync: ${totalChats.length} total, ${totalArchivedCount} archived, ${allChats.length} active to emit`);
-            
-            const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-            console.log(`[SOCKET] Emitting chats-list from history sync: ${chatsWithAvatars.length} active chats`);
-            // Reset diff cache and force full list emit for initial load
-            lastEmittedChatsMap = new Map();
-            emitChatsDebounced(true);
+
+            // Emit chats with cached avatars first for faster initial load
+            const chatsWithCachedAvatars = allChats.map(getChatWithAvatarCachedOnly);
+            console.log(`[SOCKET] Emitting chats-list from history sync (cached avatars): ${chatsWithCachedAvatars.length} active chats`);
+            ioInstance?.emit('chats-list', {
+                chats: chatsWithCachedAvatars,
+                isInitialLoad: true,
+                forceFullList: true
+            });
+            lastEmittedChatsMap = new Map(chatsWithCachedAvatars.map(chat => [chat.id, chat]));
+
+            // Fetch missing avatars in background without blocking (no re-emit to avoid duplication)
+            setImmediate(async () => {
+                try {
+                    console.log(`[SOCKET] Fetching missing avatars in background for ${allChats.length} chats`);
+                    await processInBatches(allChats, getChatWithAvatarFromStore, 5);
+                    console.log(`[SOCKET] Background avatar fetch completed (no re-emit)`);
+                } catch (e) {
+                    console.error('[SOCKET] Error fetching avatars in background:', e);
+                }
+            });
         });
     };
 
@@ -2549,9 +2677,11 @@ async function startServer() {
                     
                     if (!store.messages[msgJid]) {
                         const arr: any[] = [];
-                        store.messages[msgJid] = { 
+                        const map = new Map();
+                        store.messages[msgJid] = {
                             all: () => arr,
-                            getArray: () => arr
+                            getArray: () => arr,
+                            map
                         };
                         (store as any)._messagesMap?.set?.(msgJid, arr);
                     }
@@ -4651,9 +4781,11 @@ async function startServer() {
                             // Armazena no store
                             if (!store.messages[jid]) {
                                 const arr: any[] = [];
-                                store.messages[jid] = { 
+                                const map = new Map();
+                                store.messages[jid] = {
                                     all: () => arr,
-                                    getArray: () => arr
+                                    getArray: () => arr,
+                                    map
                                 };
                             }
                             const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
