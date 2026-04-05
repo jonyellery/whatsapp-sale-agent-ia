@@ -1,0 +1,1338 @@
+[2026-04-05T11:44:46.116Z] [LOG] Console output being saved to: C:\Users\CCE\Documents\whatsapp-sales-ai-agent\logs\console-2026-04-05T11-44-46.txt
+[2026-04-05T11:44:46.124Z] [LID] Loaded 46 LID↔PN mappings from auth store
+[2026-04-05T11:44:46.699Z] Server running on http://localhost:3000
+[2026-04-05T11:44:47.266Z] Client connected to socket
+[2026-04-05T11:44:47.396Z] Client disconnected from socket
+[2026-04-05T11:44:49.514Z] opened connection
+[2026-04-05T11:44:49.515Z] User JID: 558597665601:26@s.whatsapp.net
+[2026-04-05T11:44:49.516Z] receivedPendingNotifications: undefined
+[2026-04-05T11:44:50.360Z] Client connected to socket
+[2026-04-05T11:44:50.383Z] [GET-CHATS] Socket event received
+[2026-04-05T11:44:50.384Z] [GET-CHATS] Filtered active chats: 0
+[2026-04-05T11:44:50.393Z] [GET-CHATS] Chats after sort: 0
+[2026-04-05T11:44:50.430Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:44:50.431Z] [API-CHATS] Returning 0 chats
+[2026-04-05T11:44:51.034Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558597665601:26@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB034F81D922BCF6A53AB"
+          },
+          "message": {
+            "extendedTextMessage": {
+              "text": "🔄"
+            }
+          },
+          "messageTimestamp": "1775389490",
+          "status": "PENDING"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389490
+  }
+]
+[2026-04-05T11:44:51.039Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "558597665601:26@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB034F81D922BCF6A53AB"
+          },
+          "message": {
+            "extendedTextMessage": {
+              "text": "🔄"
+            }
+          },
+          "messageTimestamp": "1775389490",
+          "status": "PENDING"
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389490
+  }
+]
+[2026-04-05T11:44:51.039Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:44:51.039Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:44:51.040Z] [SOCKET] Created chat from update 558597665601@s.whatsapp.net: 558597665601
+[2026-04-05T11:44:51.058Z] [STORE] messages.upsert fired: type=append, count=1
+[2026-04-05T11:44:51.058Z] [STORE] msg from=ME, ts=1775389490, type=extendedTextMessage
+[2026-04-05T11:44:51.058Z] [STORE] msg stored for 558597665601@s.whatsapp.net, total=1
+[2026-04-05T11:44:51.059Z] [SOCKET] messages.upsert: type=append, count=1
+[2026-04-05T11:44:51.145Z] [SOCKET] Emitting chats-list after update: 1 active chats
+[2026-04-05T11:44:57.522Z] [SYNC] Checking for chats after connection...
+[2026-04-05T11:44:57.523Z] Chats found: 2
+[2026-04-05T11:44:57.523Z] All chats count: 2
+[2026-04-05T11:44:57.524Z] Archived chats count: 0
+[2026-04-05T11:44:57.525Z] Emitting chats: 2
+[2026-04-05T11:44:57.527Z] Sample chat: {
+  "id": "558597665601@s.whatsapp.net",
+  "name": "558597665601",
+  "archived": false,
+  "unreadCount": 0,
+  "conversationTimestamp": {
+    "low": 1775389490,
+    "high": 0,
+    "unsigned": true
+  },
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "558597665601:26@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB034F81D922BCF6A53AB"
+        },
+        "message": {
+          "extendedTextMessage": {
+            "text": "🔄"
+          }
+        },
+        "messageTimestamp": "1775389490",
+        "status": "PENDING"
+      }
+    }
+  ],
+  "displayName": "558597665601",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/636752493_2136070450502683_8824099105422275814_n.jpg?ccb=11-4&oh=01_Q5Aa4AEvCdxWz1jte9JfOFE9SZ9TTcZ7vAhuKBnRt-hxR66OOg&oe=69DF6FBD&_nc_sid=5e03e0&_nc_cat=105",
+  "lastMessage": "🔄",
+  "lastMessageSender": "558597665601",
+  "lastMessageTime": {
+    "low": 1775389490,
+    "high": 0,
+    "unsigned": true
+  }
+}
+[2026-04-05T11:45:02.532Z] [SAFETY] Running delayed contact-to-chat sync...
+[2026-04-05T11:45:02.533Z] [SAFETY] Created 0 chats from contacts
+[2026-04-05T11:45:02.533Z] [GROUPS] Fetching metadata for 0 groups...
+[2026-04-05T11:45:02.533Z] [GROUPS] Updated metadata for 0/0 groups
+[2026-04-05T11:45:12.337Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC3E662F8B28C4575016D7DE9A7ECBF8",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389512,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Quando eu lembro do que é Castlevania e o lixo de série que a Netflix fez, chega a dar raiva.",
+            "messageContextInfo": {
+              "messageSecret": "h9HSfpVjVPkpb8ZpJrSJDCEeh4jowZPt52NrnCmUS1g="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389512,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:12.341Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC3E662F8B28C4575016D7DE9A7ECBF8",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389512,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Quando eu lembro do que é Castlevania e o lixo de série que a Netflix fez, chega a dar raiva.",
+            "messageContextInfo": {
+              "messageSecret": "h9HSfpVjVPkpb8ZpJrSJDCEeh4jowZPt52NrnCmUS1g="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389512,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:12.341Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:45:12.341Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:45:12.342Z] [SOCKET] Created chat from update 120363020599253391@g.us: 120363020599253391
+[2026-04-05T11:45:12.351Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:45:12.353Z] [STORE] msg from=120363020599253391@g.us, ts=1775389512, type=conversation,messageContextInfo
+[2026-04-05T11:45:12.353Z] [STORE] msg stored for 120363020599253391@g.us, total=1
+[2026-04-05T11:45:12.354Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:45:12.530Z] [DELAYED-SYNC] Re-emitting chats-list after history sync settle...
+[2026-04-05T11:45:12.620Z] [SOCKET] Emitting chats-list after update: 3 active chats
+[2026-04-05T11:45:12.625Z] [DELAYED-SYNC] Re-emitting 3 chats with fresh timestamps
+[2026-04-05T11:45:19.114Z] [STORE] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363154779634095@g.us",
+            "fromMe": false,
+            "id": "3A91CE19349C6F9F40F6",
+            "participant": "5708061904967@lid",
+            "participantAlt": "5522999096109@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389519,
+          "pushName": "Victorugo Petrucci",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363154779634095@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwiin+yGBxAAGiBBxheV6iPxtSd8/RAH3coYHyUAqvY0XPyROOpSKOytliIhBWC3BHXwpjtiCeVuzmKWIDeHRn+y97zpzBQt1ppiVMlM"
+            },
+            "extendedTextMessage": {
+              "text": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02\nhttps://youtube.com/live/X7_di6oPqCQ?feature=share",
+              "matchedText": "https://youtube.com/live/X7_di6oPqCQ?feature=share",
+              "description": "Aproveite vídeos e músicas que você ama, envie e compartilhe conteúdo original com amigos, parentes e o mundo no YouTube.",
+              "title": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02",
+              "font": "SYSTEM",
+              "previewType": "VIDEO",
+              "jpegThumbnail": "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",
+              "contextInfo": {
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "CHAT_SETTING",
+                  "initiatedByMe": false
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "thumbnailDirectPath": "/v/t62.36144-24/556142455_1137321448509825_1487453709207916306_n.enc?ccb=11-4&oh=01_Q5Aa4AF-SnngHNdGNgoOf098sx60iahIlqklNFRTlR8-0wleLQ&oe=69F9BC85&_nc_sid=5e03e0",
+              "thumbnailSha256": "Rc3Zm9DMhvNr0Ky9zZ/VWdNa87lUCXUgoxUS/0PDkew=",
+              "thumbnailEncSha256": "KmuxWwQqgDpxa1N7ckEq8vCwjakbD+Yb/lljdiAJyRg=",
+              "thumbnailHeight": 360,
+              "thumbnailWidth": 480,
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "videoHeight": 720,
+              "videoWidth": 1280,
+              "faviconMMSMetadata": {
+                "thumbnailDirectPath": "/v/t62.36144-24/561219812_27720742230859331_7879893878621299339_n.enc?ccb=11-4&oh=01_Q5Aa4AGaad6t7P5Mhx_p-J7IQAZ1Fmtb8CU1QgWQr0X2wwKRmw&oe=69F9B262&_nc_sid=5e03e0",
+                "thumbnailSha256": "ks62Z+eR7jqRnHiHRhflf193+f8JAECcq5uKHsGGtTA=",
+                "thumbnailEncSha256": "acBQKgnozBPtrtlZR1OHlk6UsX7Dd44wB1J6+2FtSbE=",
+                "mediaKey": "mYnIVa5JpvduznXLHw4wCuv9cNm1Tyb4fmEH1+qjqZU="
+              },
+              "linkPreviewMetadata": {
+                "fbExperimentId": 0,
+                "linkMediaDuration": 0,
+                "socialMediaPostType": "NONE",
+                "linkInlineVideoMuted": false,
+                "videoContentUrl": "https://www.youtube.com/embed/X7_di6oPqCQ",
+                "videoContentCaption": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02\nhttps://youtube.com/live/X7_di6oPqCQ?feature=share"
+              }
+            },
+            "messageContextInfo": {
+              "messageSecret": "kknLIi4Y50Rw69XqaSARMT+UyasLqmqS/0Wxr5GLy+0="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389519,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:19.117Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363154779634095@g.us",
+            "fromMe": false,
+            "id": "3A91CE19349C6F9F40F6",
+            "participant": "5708061904967@lid",
+            "participantAlt": "5522999096109@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389519,
+          "pushName": "Victorugo Petrucci",
+          "broadcast": false,
+          "message": {
+            "senderKeyDistributionMessage": {
+              "groupId": "120363154779634095@g.us",
+              "axolotlSenderKeyDistributionMessage": "Mwiin+yGBxAAGiBBxheV6iPxtSd8/RAH3coYHyUAqvY0XPyROOpSKOytliIhBWC3BHXwpjtiCeVuzmKWIDeHRn+y97zpzBQt1ppiVMlM"
+            },
+            "extendedTextMessage": {
+              "text": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02\nhttps://youtube.com/live/X7_di6oPqCQ?feature=share",
+              "matchedText": "https://youtube.com/live/X7_di6oPqCQ?feature=share",
+              "description": "Aproveite vídeos e músicas que você ama, envie e compartilhe conteúdo original com amigos, parentes e o mundo no YouTube.",
+              "title": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02",
+              "font": "SYSTEM",
+              "previewType": "VIDEO",
+              "jpegThumbnail": "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",
+              "contextInfo": {
+                "expiration": 86400,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "CHAT_SETTING",
+                  "initiatedByMe": false
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "thumbnailDirectPath": "/v/t62.36144-24/556142455_1137321448509825_1487453709207916306_n.enc?ccb=11-4&oh=01_Q5Aa4AF-SnngHNdGNgoOf098sx60iahIlqklNFRTlR8-0wleLQ&oe=69F9BC85&_nc_sid=5e03e0",
+              "thumbnailSha256": "Rc3Zm9DMhvNr0Ky9zZ/VWdNa87lUCXUgoxUS/0PDkew=",
+              "thumbnailEncSha256": "KmuxWwQqgDpxa1N7ckEq8vCwjakbD+Yb/lljdiAJyRg=",
+              "thumbnailHeight": 360,
+              "thumbnailWidth": 480,
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "videoHeight": 720,
+              "videoWidth": 1280,
+              "faviconMMSMetadata": {
+                "thumbnailDirectPath": "/v/t62.36144-24/561219812_27720742230859331_7879893878621299339_n.enc?ccb=11-4&oh=01_Q5Aa4AGaad6t7P5Mhx_p-J7IQAZ1Fmtb8CU1QgWQr0X2wwKRmw&oe=69F9B262&_nc_sid=5e03e0",
+                "thumbnailSha256": "ks62Z+eR7jqRnHiHRhflf193+f8JAECcq5uKHsGGtTA=",
+                "thumbnailEncSha256": "acBQKgnozBPtrtlZR1OHlk6UsX7Dd44wB1J6+2FtSbE=",
+                "mediaKey": "mYnIVa5JpvduznXLHw4wCuv9cNm1Tyb4fmEH1+qjqZU="
+              },
+              "linkPreviewMetadata": {
+                "fbExperimentId": 0,
+                "linkMediaDuration": 0,
+                "socialMediaPostType": "NONE",
+                "linkInlineVideoMuted": false,
+                "videoContentUrl": "https://www.youtube.com/embed/X7_di6oPqCQ",
+                "videoContentCaption": "Gameplay Walkthrough - PlayStation 5 -  Assassins Creed - Mirage - Parte 02\nhttps://youtube.com/live/X7_di6oPqCQ?feature=share"
+              }
+            },
+            "messageContextInfo": {
+              "messageSecret": "kknLIi4Y50Rw69XqaSARMT+UyasLqmqS/0Wxr5GLy+0="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389519,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:19.117Z] [SOCKET] Processing update for chat 120363154779634095@g.us
+[2026-04-05T11:45:19.118Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:45:19.118Z] [SOCKET] Created chat from update 120363154779634095@g.us: 120363154779634095
+[2026-04-05T11:45:19.119Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:45:19.120Z] [STORE] msg from=120363154779634095@g.us, ts=1775389519, type=senderKeyDistributionMessage,messageContextInfo,extendedTextMessage
+[2026-04-05T11:45:19.120Z] [STORE] msg stored for 120363154779634095@g.us, total=1
+[2026-04-05T11:45:19.120Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:45:19.544Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:45:29.549Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC10C003676B6902315C67F1A3A41B4C",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389530,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "O mesmo com DMC",
+            "messageContextInfo": {
+              "messageSecret": "6PZz+Ad1SQ9AvNxGArX1nmbCHCCXcX4sZeHyjg6irNY="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389530,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:29.553Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:45:29.553Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:45:29.553Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:45:29.553Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:45:29.554Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC10C003676B6902315C67F1A3A41B4C",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389530,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "O mesmo com DMC",
+            "messageContextInfo": {
+              "messageSecret": "6PZz+Ad1SQ9AvNxGArX1nmbCHCCXcX4sZeHyjg6irNY="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389530,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:29.554Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:45:29.554Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:45:29.554Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389530
+[2026-04-05T11:45:29.554Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389530
+[2026-04-05T11:45:29.555Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:45:29.555Z] [STORE] msg from=120363020599253391@g.us, ts=1775389530, type=conversation,messageContextInfo
+[2026-04-05T11:45:29.555Z] [STORE] msg stored for 120363020599253391@g.us, total=2
+[2026-04-05T11:45:29.555Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:45:29.558Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:45:45.980Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC83076036EE0ED45B138D6A2E9AE8E7",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389546,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Cagaram com a história dos jogos",
+            "messageContextInfo": {
+              "messageSecret": "ZBj4cdy+Fb6YUVGwe/ALv68kjuJ4tPgrgZxkylTcgXU="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389546,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:45.984Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:45:45.984Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:45:45.984Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:45:45.984Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:45:45.985Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC83076036EE0ED45B138D6A2E9AE8E7",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389546,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Cagaram com a história dos jogos",
+            "messageContextInfo": {
+              "messageSecret": "ZBj4cdy+Fb6YUVGwe/ALv68kjuJ4tPgrgZxkylTcgXU="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389546,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:45:45.986Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:45:45.986Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:45:45.986Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389546
+[2026-04-05T11:45:45.986Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389546
+[2026-04-05T11:45:45.986Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:45:45.986Z] [STORE] msg from=120363020599253391@g.us, ts=1775389546, type=conversation,messageContextInfo
+[2026-04-05T11:45:45.987Z] [STORE] msg stored for 120363020599253391@g.us, total=3
+[2026-04-05T11:45:45.987Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:45:45.988Z] [SOCKET] Emitting chats-list after update: 4 active chats
+[2026-04-05T11:47:00.388Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "554797386565-1616674146@g.us",
+            "fromMe": false,
+            "id": "AC26A9EA3B92D659566586B700116939",
+            "participant": "3311537250466@lid",
+            "participantAlt": "554791314057@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389620,
+          "pushName": "André",
+          "broadcast": false,
+          "message": {
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m235/AQPHao7hylZ7pECZalUaY2INBrYiUIz4RX4RNY_-tscTUYx3YP0bBbnBpgQL65o_zs5G5FEMpx_EkqGVXwZGBDXwXJ1qj46GGAIzwudh3w?ccb=9-4&oh=01_Q5Aa4AG96JbHrNYreatMhrSO-4zIMS3bbGFY5f3QgYx7nlyZHA&oe=69F9A2CD&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "R$ 120 cada...\nVersão anos 80/90",
+              "fileSha256": "IT6FB9dSXQ4O/9wrUbBcdMcYNXQHk6eQVdp6utdZTOk=",
+              "fileLength": "247852",
+              "height": 1200,
+              "width": 1600,
+              "mediaKey": "CLhmU39HC0XjBCguxHKfi2Ev0nXpe06jEOZV+t5Fkdc=",
+              "fileEncSha256": "eJ+njI0L3kh08DHTQC9ztVV1JETTMs18LMN3B70W3ss=",
+              "directPath": "/o1/v/t24/f2/m235/AQPHao7hylZ7pECZalUaY2INBrYiUIz4RX4RNY_-tscTUYx3YP0bBbnBpgQL65o_zs5G5FEMpx_EkqGVXwZGBDXwXJ1qj46GGAIzwudh3w?ccb=9-4&oh=01_Q5Aa4AG96JbHrNYreatMhrSO-4zIMS3bbGFY5f3QgYx7nlyZHA&oe=69F9A2CD&_nc_sid=e6ed6c",
+              "mediaKeyTimestamp": "1775389619",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAC8APwMBIgACEQEDEQH/xAAvAAADAQEBAAAAAAAAAAAAAAADBAUCAQYBAQEBAQEAAAAAAAAAAAAAAAMCAAEE/9oADAMBAAIQAxAAAABMyz0YZCE0i1tm+SWUrmrzlaXR8757rcowLuaGfakWHjzLK+TSp2cQ+tbQ6kHqQaCH/8QAJRAAAgICAQIHAQEAAAAAAAAAAQIAEQMSIQQxEyIjQUJRYTJS/9oACAEBAAE/AEJZ6mv+gwgJL0NqjeT5XAe3IlGPl9TQjgRwfjiEwH1mg3O3l4MUBjRsCoBhHY3E8E8niFsNGiJno9RYMvyAfk6XlrgBmUkvQgRlon3MVMdDyiOi7dqEzqqZgR2IiUyIT9To1A5ubqD3irZsHkzJ8R+wuEBBm1jUzq1JKTA3ppf1On4FwPjRpiz69luO4Z0BnUvyAOREzrqqsKInU5NsII9jOncNhQ/kWlAEYbGxMbeH73PF2NkwbE8GFMhH8xgddZ0/UDFiVSpuf//EAB0RAAICAgMBAAAAAAAAAAAAAAABAhEDEiFBYRP/2gAIAQIBAT8Aat9iXrEvSKuzJk1dUfVyaSXBvIxOyUNhY5J+GnGtEEoNro//xAAdEQEAAgIDAQEAAAAAAAAAAAABAAIREgMhQWFx/9oACAEDAQE/AGufZatx6juezk2OOjskoZI9VxAe2cuGh+yl6kbV8Zrxi22cxFp9zP/Z",
+              "contextInfo": {
+                "expiration": 604800,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "xFEsFGOOfz5PsRI1bxSCSeJEoA1V4jx7bBcE+mcd6rMucQTafBExFQ==",
+              "scanLengths": [
+                24964,
+                106272,
+                43796,
+                72820
+              ],
+              "midQualityFileSha256": "7YwBMlQiIUPZXyhlCoJnQbZj/zhThHMuBkCYLA2+TQA="
+            },
+            "messageContextInfo": {
+              "messageSecret": "cu4CTZWcrabYSJZdSHjmelKjhI9oXiuf0/sO8AY0HbI="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389620,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:00.392Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "554797386565-1616674146@g.us",
+            "fromMe": false,
+            "id": "AC26A9EA3B92D659566586B700116939",
+            "participant": "3311537250466@lid",
+            "participantAlt": "554791314057@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389620,
+          "pushName": "André",
+          "broadcast": false,
+          "message": {
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m235/AQPHao7hylZ7pECZalUaY2INBrYiUIz4RX4RNY_-tscTUYx3YP0bBbnBpgQL65o_zs5G5FEMpx_EkqGVXwZGBDXwXJ1qj46GGAIzwudh3w?ccb=9-4&oh=01_Q5Aa4AG96JbHrNYreatMhrSO-4zIMS3bbGFY5f3QgYx7nlyZHA&oe=69F9A2CD&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "caption": "R$ 120 cada...\nVersão anos 80/90",
+              "fileSha256": "IT6FB9dSXQ4O/9wrUbBcdMcYNXQHk6eQVdp6utdZTOk=",
+              "fileLength": "247852",
+              "height": 1200,
+              "width": 1600,
+              "mediaKey": "CLhmU39HC0XjBCguxHKfi2Ev0nXpe06jEOZV+t5Fkdc=",
+              "fileEncSha256": "eJ+njI0L3kh08DHTQC9ztVV1JETTMs18LMN3B70W3ss=",
+              "directPath": "/o1/v/t24/f2/m235/AQPHao7hylZ7pECZalUaY2INBrYiUIz4RX4RNY_-tscTUYx3YP0bBbnBpgQL65o_zs5G5FEMpx_EkqGVXwZGBDXwXJ1qj46GGAIzwudh3w?ccb=9-4&oh=01_Q5Aa4AG96JbHrNYreatMhrSO-4zIMS3bbGFY5f3QgYx7nlyZHA&oe=69F9A2CD&_nc_sid=e6ed6c",
+              "mediaKeyTimestamp": "1775389619",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAC8APwMBIgACEQEDEQH/xAAvAAADAQEBAAAAAAAAAAAAAAADBAUCAQYBAQEBAQEAAAAAAAAAAAAAAAMCAAEE/9oADAMBAAIQAxAAAABMyz0YZCE0i1tm+SWUrmrzlaXR8757rcowLuaGfakWHjzLK+TSp2cQ+tbQ6kHqQaCH/8QAJRAAAgICAQIHAQEAAAAAAAAAAQIAEQMSIQQxEyIjQUJRYTJS/9oACAEBAAE/AEJZ6mv+gwgJL0NqjeT5XAe3IlGPl9TQjgRwfjiEwH1mg3O3l4MUBjRsCoBhHY3E8E8niFsNGiJno9RYMvyAfk6XlrgBmUkvQgRlon3MVMdDyiOi7dqEzqqZgR2IiUyIT9To1A5ubqD3irZsHkzJ8R+wuEBBm1jUzq1JKTA3ppf1On4FwPjRpiz69luO4Z0BnUvyAOREzrqqsKInU5NsII9jOncNhQ/kWlAEYbGxMbeH73PF2NkwbE8GFMhH8xgddZ0/UDFiVSpuf//EAB0RAAICAgMBAAAAAAAAAAAAAAABAhEDEiFBYRP/2gAIAQIBAT8Aat9iXrEvSKuzJk1dUfVyaSXBvIxOyUNhY5J+GnGtEEoNro//xAAdEQEAAgIDAQEAAAAAAAAAAAABAAIREgMhQWFx/9oACAEDAQE/AGufZatx6juezk2OOjskoZI9VxAe2cuGh+yl6kbV8Zrxi22cxFp9zP/Z",
+              "contextInfo": {
+                "expiration": 604800,
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT",
+                  "trigger": "UNKNOWN"
+                },
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "xFEsFGOOfz5PsRI1bxSCSeJEoA1V4jx7bBcE+mcd6rMucQTafBExFQ==",
+              "scanLengths": [
+                24964,
+                106272,
+                43796,
+                72820
+              ],
+              "midQualityFileSha256": "7YwBMlQiIUPZXyhlCoJnQbZj/zhThHMuBkCYLA2+TQA="
+            },
+            "messageContextInfo": {
+              "messageSecret": "cu4CTZWcrabYSJZdSHjmelKjhI9oXiuf0/sO8AY0HbI="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389620,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:00.392Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:47:00.393Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:47:00.393Z] [SOCKET] Created chat from update 554797386565-1616674146@g.us: 554797386565-1616674146
+[2026-04-05T11:47:00.396Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:47:00.398Z] [STORE] msg from=554797386565-1616674146@g.us, ts=1775389620, type=imageMessage,messageContextInfo
+[2026-04-05T11:47:00.398Z] [STORE] msg stored for 554797386565-1616674146@g.us, total=1
+[2026-04-05T11:47:00.398Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:47:00.700Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:47:13.499Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC800137AE541187B2ADE0AE16A6EBA2",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389633,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Só salva hoje, Sonic, Mário, Fallout e talvez Twister metal.",
+            "messageContextInfo": {
+              "messageSecret": "008UDQpXx1GxgpZVekh4vZxo+jvHUQGs39mEXSGm4Mc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389633,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:13.504Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:47:13.504Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:47:13.504Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:47:13.504Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:47:13.505Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC800137AE541187B2ADE0AE16A6EBA2",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389633,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Só salva hoje, Sonic, Mário, Fallout e talvez Twister metal.",
+            "messageContextInfo": {
+              "messageSecret": "008UDQpXx1GxgpZVekh4vZxo+jvHUQGs39mEXSGm4Mc="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389633,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:13.505Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:47:13.505Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:47:13.505Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389633
+[2026-04-05T11:47:13.506Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389633
+[2026-04-05T11:47:13.506Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:47:13.506Z] [STORE] msg from=120363020599253391@g.us, ts=1775389633, type=conversation,messageContextInfo
+[2026-04-05T11:47:13.506Z] [STORE] msg stored for 120363020599253391@g.us, total=4
+[2026-04-05T11:47:13.506Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:47:13.511Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:47:33.043Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC9CA0FD34009CCDC54DEEFA5B579D48",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389653,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Filmes de silent Hill todos meia boca",
+            "messageContextInfo": {
+              "messageSecret": "ZoBQhCXRAIQepMCdZOCWUrs4gC2SdFtinsjsAM+moug="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389653,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:33.059Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:47:33.067Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:47:33.082Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:47:33.083Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:47:33.094Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC9CA0FD34009CCDC54DEEFA5B579D48",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389653,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Filmes de silent Hill todos meia boca",
+            "messageContextInfo": {
+              "messageSecret": "ZoBQhCXRAIQepMCdZOCWUrs4gC2SdFtinsjsAM+moug="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389653,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:33.094Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:47:33.094Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:47:33.095Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389653
+[2026-04-05T11:47:33.095Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389653
+[2026-04-05T11:47:33.095Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:47:33.095Z] [STORE] msg from=120363020599253391@g.us, ts=1775389653, type=conversation,messageContextInfo
+[2026-04-05T11:47:33.106Z] [STORE] msg stored for 120363020599253391@g.us, total=5
+[2026-04-05T11:47:33.111Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:47:33.115Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:47:49.945Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC72E5A6ABE09D318F5437CC314EA760",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389670,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Filmes do resident evil todos lixo",
+            "messageContextInfo": {
+              "messageSecret": "4Tl2uV+aSIUc10HCYqELzzkBn0Qkj38UPkd4RZO3NZ4="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389670,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:49.950Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:47:49.950Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:47:49.953Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:47:49.958Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:47:49.961Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC72E5A6ABE09D318F5437CC314EA760",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389670,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Filmes do resident evil todos lixo",
+            "messageContextInfo": {
+              "messageSecret": "4Tl2uV+aSIUc10HCYqELzzkBn0Qkj38UPkd4RZO3NZ4="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389670,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:47:49.961Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:47:49.961Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:47:49.961Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389670
+[2026-04-05T11:47:49.962Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389670
+[2026-04-05T11:47:49.962Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:47:49.962Z] [STORE] msg from=120363020599253391@g.us, ts=1775389670, type=conversation,messageContextInfo
+[2026-04-05T11:47:49.969Z] [STORE] msg stored for 120363020599253391@g.us, total=6
+[2026-04-05T11:47:49.969Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:47:49.971Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:47:50.576Z] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[2026-04-05T11:47:50.674Z] [2m08:47:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mserver.ts[22m
+[2026-04-05T11:47:51.877Z] Client disconnected from socket
+[2026-04-05T11:47:52.578Z] Client connected to socket
+[2026-04-05T11:47:52.764Z] [GET-CHATS] Socket event received
+[2026-04-05T11:47:52.828Z] [GET-CHATS] Filtered active chats: 5
+[2026-04-05T11:47:52.841Z] [GET-CHATS] Chats after sort: 5
+[2026-04-05T11:47:52.877Z] [GET-CHATS] Resolved chats: 5 Sample: {
+  "id": "120363020599253391@g.us",
+  "name": "120363020599253391",
+  "archived": false,
+  "unreadCount": 1,
+  "conversationTimestamp": 1775389670,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "120363020599253391@g.us",
+          "fromMe": false,
+          "id": "AC72E5A6ABE09D318F5437CC314EA760",
+          "participant": "160847129243793@lid",
+          "participantAlt": "5521993179136@s.whatsapp.net",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775389670,
+        "pushName": "Luis Julio",
+        "broadcast": false,
+        "message": {
+          "conversation": "Filmes do resident evil todos lixo",
+          "messageContextInfo": {
+            "messageSecret": "4Tl2uV+aSIUc10HCYqELzzkBn0Qkj38UPkd4RZO3NZ4="
+          }
+        }
+      }
+    }
+  ],
+  "displayName": "Emuelec",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/262027380_722517988731932_6690296095197741968_n.jpg?ccb=11-4&oh=01_Q5Aa4AGqOXgKsL_JhlHuQmwxv7Nc0ADfsGvSBim6JTkw7s_BNA&oe=69DF6C6E&_nc_sid=5e03e0&_nc_cat=110",
+  "lastMessage": "Filmes do resident evil todos lixo",
+  "lastMessageSender": "Luis Julio",
+  "lastMessageTime": 1775389670
+}
+[2026-04-05T11:47:52.955Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:47:52.977Z] [API-CHATS] Returning 5 chats
+[2026-04-05T11:48:00.138Z] 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[2026-04-05T11:48:00.144Z] [2m08:48:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mtsconfig.tsbuildinfo[22m
+[2026-04-05T11:48:00.637Z] Client disconnected from socket
+[2026-04-05T11:48:00.934Z] Client connected to socket
+[2026-04-05T11:48:00.985Z] [GET-CHATS] Socket event received
+[2026-04-05T11:48:00.992Z] [GET-CHATS] Filtered active chats: 5
+[2026-04-05T11:48:01.003Z] [GET-CHATS] Chats after sort: 5
+[2026-04-05T11:48:01.051Z] [GET-CHATS] Resolved chats: 5 Sample: {
+  "id": "120363020599253391@g.us",
+  "name": "120363020599253391",
+  "archived": false,
+  "unreadCount": 1,
+  "conversationTimestamp": 1775389670,
+  "messages": [
+    {
+      "message": {
+        "key": {
+          "remoteJid": "120363020599253391@g.us",
+          "fromMe": false,
+          "id": "AC72E5A6ABE09D318F5437CC314EA760",
+          "participant": "160847129243793@lid",
+          "participantAlt": "5521993179136@s.whatsapp.net",
+          "addressingMode": "lid"
+        },
+        "messageTimestamp": 1775389670,
+        "pushName": "Luis Julio",
+        "broadcast": false,
+        "message": {
+          "conversation": "Filmes do resident evil todos lixo",
+          "messageContextInfo": {
+            "messageSecret": "4Tl2uV+aSIUc10HCYqELzzkBn0Qkj38UPkd4RZO3NZ4="
+          }
+        }
+      }
+    }
+  ],
+  "displayName": "Emuelec",
+  "avatar": "https://pps.whatsapp.net/v/t61.24694-24/262027380_722517988731932_6690296095197741968_n.jpg?ccb=11-4&oh=01_Q5Aa4AGqOXgKsL_JhlHuQmwxv7Nc0ADfsGvSBim6JTkw7s_BNA&oe=69DF6C6E&_nc_sid=5e03e0&_nc_cat=110",
+  "lastMessage": "Filmes do resident evil todos lixo",
+  "lastMessageSender": "Luis Julio",
+  "lastMessageTime": 1775389670
+}
+[2026-04-05T11:48:01.071Z] [API-CHATS] Endpoint called, returning chats from store
+[2026-04-05T11:48:01.075Z] [API-CHATS] Returning 5 chats
+[2026-04-05T11:48:05.932Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC5D0951188C6C866A71AB711DE86933",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389686,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "O filme e tudo menos resident",
+            "messageContextInfo": {
+              "messageSecret": "8A/TWQfRlzcI79mqr27yx8OptgsKjTdRzkjbLRh6iiQ="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389686,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:48:05.937Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:48:05.937Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:48:05.937Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:48:05.937Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:48:05.938Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC5D0951188C6C866A71AB711DE86933",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389686,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "O filme e tudo menos resident",
+            "messageContextInfo": {
+              "messageSecret": "8A/TWQfRlzcI79mqr27yx8OptgsKjTdRzkjbLRh6iiQ="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389686,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:48:05.938Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:48:05.938Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:48:05.938Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:05.938Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:05.938Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:48:05.938Z] [STORE] msg from=120363020599253391@g.us, ts=1775389686, type=conversation,messageContextInfo
+[2026-04-05T11:48:05.938Z] [STORE] msg stored for 120363020599253391@g.us, total=7
+[2026-04-05T11:48:05.938Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:48:05.939Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:12.412Z] Loading archived chats...
+[2026-04-05T11:48:12.412Z] Total chats in store: 5
+[2026-04-05T11:48:12.412Z] Direct archived chats in store: 0
+[2026-04-05T11:48:12.413Z] Chats with archived property (true/false): 4
+[2026-04-05T11:48:12.413Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:48:13.203Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:13.204Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:48:13.204Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:48:13.204Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:13.204Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:48:13.204Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:13.204Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:48:13.204Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:13.204Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:13.205Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:13.210Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:13.804Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:13.807Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:13.808Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:48:13.809Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:13.811Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:13.811Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:13.812Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:14.409Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:14.410Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:48:14.411Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:48:14.411Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:14.411Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:48:14.411Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:14.411Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:48:14.411Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:14.411Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:14.411Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:14.411Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:14.976Z] [STORE] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:14.977Z] [STORE] Updating chat 120363154779634095@g.us:
+[2026-04-05T11:48:14.978Z]   - Existing: archived=false, name=120363154779634095
+[2026-04-05T11:48:14.978Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:14.978Z]   - Merged: archived=false, name=120363154779634095
+[2026-04-05T11:48:14.978Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:14.978Z] [SOCKET] Processing update for chat 120363154779634095@g.us
+[2026-04-05T11:48:14.978Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:14.978Z] [SOCKET] Before merge - archived=false, name=120363154779634095, ts=1775389519
+[2026-04-05T11:48:14.978Z] [SOCKET] After merge - archived=false, name=120363154779634095, ts=1775389519
+[2026-04-05T11:48:14.979Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:15.551Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:15.551Z] [STORE] Updating chat 554797386565-1616674146@g.us:
+[2026-04-05T11:48:15.551Z]   - Existing: archived=false, name=554797386565-1616674146
+[2026-04-05T11:48:15.551Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:15.551Z]   - Merged: archived=false, name=554797386565-1616674146
+[2026-04-05T11:48:15.552Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:15.552Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:48:15.552Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:15.552Z] [SOCKET] Before merge - archived=false, name=554797386565-1616674146, ts=1775389620
+[2026-04-05T11:48:15.552Z] [SOCKET] After merge - archived=false, name=554797386565-1616674146, ts=1775389620
+[2026-04-05T11:48:15.552Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:17.556Z] After sync attempt, archived chats: 0
+[2026-04-05T11:48:17.558Z] Archived chats found: 0
+[2026-04-05T11:48:18.536Z] Loading archived chats...
+[2026-04-05T11:48:18.537Z] Total chats in store: 5
+[2026-04-05T11:48:18.537Z] Direct archived chats in store: 0
+[2026-04-05T11:48:18.538Z] Chats with archived property (true/false): 5
+[2026-04-05T11:48:18.538Z] Attempting to fetch archived chats from WhatsApp server...
+[2026-04-05T11:48:19.112Z] [STORE] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:19.113Z] [STORE] Updating chat 558597665601@s.whatsapp.net:
+[2026-04-05T11:48:19.113Z]   - Existing: archived=false, name=558597665601
+[2026-04-05T11:48:19.113Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:19.113Z]   - Merged: archived=false, name=558597665601
+[2026-04-05T11:48:19.114Z] [SOCKET] chats.update received: [
+  {
+    "id": "558597665601@s.whatsapp.net",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:19.114Z] [SOCKET] Processing update for chat 558597665601@s.whatsapp.net
+[2026-04-05T11:48:19.114Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:19.114Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:19.114Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:19.114Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:19.744Z] [STORE] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:19.745Z] [SOCKET] chats.update received: [
+  {
+    "id": "125232690024584@lid",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:19.746Z] [SOCKET] Processing update for chat 125232690024584@lid
+[2026-04-05T11:48:19.746Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:19.746Z] [SOCKET] Before merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:19.746Z] [SOCKET] After merge - archived=false, name=558597665601, ts=1775389490
+[2026-04-05T11:48:19.747Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:20.299Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:20.300Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:48:20.300Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:48:20.300Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:20.300Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:48:20.300Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:20.301Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:48:20.301Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:20.301Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:20.301Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389686
+[2026-04-05T11:48:20.302Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:20.871Z] [STORE] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:20.872Z] [STORE] Updating chat 120363154779634095@g.us:
+[2026-04-05T11:48:20.872Z]   - Existing: archived=false, name=120363154779634095
+[2026-04-05T11:48:20.872Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:20.873Z]   - Merged: archived=false, name=120363154779634095
+[2026-04-05T11:48:20.873Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363154779634095@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:20.873Z] [SOCKET] Processing update for chat 120363154779634095@g.us
+[2026-04-05T11:48:20.873Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:20.873Z] [SOCKET] Before merge - archived=false, name=120363154779634095, ts=1775389519
+[2026-04-05T11:48:20.873Z] [SOCKET] After merge - archived=false, name=120363154779634095, ts=1775389519
+[2026-04-05T11:48:20.874Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:21.413Z] [STORE] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:21.415Z] [STORE] Updating chat 554797386565-1616674146@g.us:
+[2026-04-05T11:48:21.415Z]   - Existing: archived=false, name=554797386565-1616674146
+[2026-04-05T11:48:21.415Z]   - Update: archived=false, name=undefined
+[2026-04-05T11:48:21.415Z]   - Merged: archived=false, name=554797386565-1616674146
+[2026-04-05T11:48:21.416Z] [SOCKET] chats.update received: [
+  {
+    "id": "554797386565-1616674146@g.us",
+    "archived": false
+  }
+]
+[2026-04-05T11:48:21.416Z] [SOCKET] Processing update for chat 554797386565-1616674146@g.us
+[2026-04-05T11:48:21.416Z] [SOCKET] Update payload: archived=false, name=undefined, archive=undefined
+[2026-04-05T11:48:21.416Z] [SOCKET] Before merge - archived=false, name=554797386565-1616674146, ts=1775389620
+[2026-04-05T11:48:21.416Z] [SOCKET] After merge - archived=false, name=554797386565-1616674146, ts=1775389620
+[2026-04-05T11:48:21.417Z] [SOCKET] Emitting chats-list after update: 5 active chats
+[2026-04-05T11:48:23.420Z] After sync attempt, archived chats: 0
+[2026-04-05T11:48:23.422Z] Archived chats found: 0
+[2026-04-05T11:48:29.875Z] [STORE] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC5748EC95099757F45F768235341725",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389710,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Monsters Hunter foi ridículo",
+            "messageContextInfo": {
+              "messageSecret": "ImuYBq5u941iUFdTc3vB0cIpLcCn+myAcJSmXlllCmU="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389710,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:48:29.879Z] [STORE] Updating chat 120363020599253391@g.us:
+[2026-04-05T11:48:29.880Z]   - Existing: archived=false, name=120363020599253391
+[2026-04-05T11:48:29.880Z]   - Update: archived=undefined, name=undefined
+[2026-04-05T11:48:29.880Z]   - Merged: archived=false, name=120363020599253391
+[2026-04-05T11:48:29.880Z] [SOCKET] chats.update received: [
+  {
+    "id": "120363020599253391@g.us",
+    "messages": [
+      {
+        "message": {
+          "key": {
+            "remoteJid": "120363020599253391@g.us",
+            "fromMe": false,
+            "id": "AC5748EC95099757F45F768235341725",
+            "participant": "160847129243793@lid",
+            "participantAlt": "5521993179136@s.whatsapp.net",
+            "addressingMode": "lid"
+          },
+          "messageTimestamp": 1775389710,
+          "pushName": "Luis Julio",
+          "broadcast": false,
+          "message": {
+            "conversation": "Monsters Hunter foi ridículo",
+            "messageContextInfo": {
+              "messageSecret": "ImuYBq5u941iUFdTc3vB0cIpLcCn+myAcJSmXlllCmU="
+            }
+          }
+        }
+      }
+    ],
+    "conversationTimestamp": 1775389710,
+    "unreadCount": 1
+  }
+]
+[2026-04-05T11:48:29.881Z] [SOCKET] Processing update for chat 120363020599253391@g.us
+[2026-04-05T11:48:29.881Z] [SOCKET] Update payload: archived=undefined, name=undefined, archive=undefined
+[2026-04-05T11:48:29.881Z] [SOCKET] Before merge - archived=false, name=120363020599253391, ts=1775389710
+[2026-04-05T11:48:29.881Z] [SOCKET] After merge - archived=false, name=120363020599253391, ts=1775389710
+[2026-04-05T11:48:29.881Z] [STORE] messages.upsert fired: type=notify, count=1
+[2026-04-05T11:48:29.882Z] [STORE] msg from=120363020599253391@g.us, ts=1775389710, type=conversation,messageContextInfo
+[2026-04-05T11:48:29.882Z] [STORE] msg stored for 120363020599253391@g.us, total=8
+[2026-04-05T11:48:29.882Z] [SOCKET] messages.upsert: type=notify, count=1
+[2026-04-05T11:48:29.883Z] [SOCKET] Emitting chats-list after update: 5 active chats
