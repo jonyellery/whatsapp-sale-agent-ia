@@ -19,14 +19,14 @@ export default defineConfig(({mode}) => {
       hmr: {
         overlay: false,
       },
-      watch: {
-        ignored: [
-          '**/baileys_store.json',
-          '**/auth_info_baileys/**',
-          '**/tsconfig.json',
-          '**/package.json',
-        ],
-      },
+    watch: {
+      ignored: [
+        '**/baileys_store.json',
+        '**/auth_info_baileys/**',
+        '**/tsconfig.json',
+        '**/package.json',
+        '**/logs/**',
+      ],
     },
   };
 });
