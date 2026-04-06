@@ -255,6 +255,7 @@ class SimpleStore {
         all: () => any[];
         get: (jid: string) => any;
         set: (jid: string, data: any) => void;
+        delete: (jid: string) => void;
     };
     messages: { [jid: string]: { all: () => any[]; map?: Map<string, any> } };
     contacts: { [jid: string]: any };
@@ -269,7 +270,8 @@ class SimpleStore {
         this.chats = {
             all: () => Array.from(chatsMap.values()),
             get: (jid: string) => chatsMap.get(jid),
-            set: (jid: string, data: any) => chatsMap.set(jid, data)
+            set: (jid: string, data: any) => chatsMap.set(jid, data),
+            delete: (jid: string) => chatsMap.delete(jid)
         };
         
         this.messages = {};
@@ -488,7 +490,7 @@ const storePath = path.join(__dirname, "baileys_store.json");
 let lastStoreCleanup = Date.now();
 
 const saveStore = () => {
-    const chatsToSave = store.chats.all();
+    const chatsToSave = store.chats.all().filter((c: any) => c &&c);
     console.log(`[STORE] Saving ${chatsToSave.length} chats to file...`);
     
     // Log a sample of archived chats being saved
@@ -687,8 +689,8 @@ async function startServer() {
         }
         emitChatsTimeout = setTimeout(async () => {
             invalidateTimestampsCache();
-            let allChats = store.chats.all().filter((c: any) => 
-                isValidChatJid(c.id) && c.archived !== true
+            let allChats = store.chats.all().filter((c: any) => c &&
+                c && isValidChatJid(c.id) && c.archived !== true
             );
             // Deduplicate contacts: prefer @s.whatsapp.net over @lid for same phone number
             const seenPhones = new Set<string>();
@@ -1333,7 +1335,7 @@ io.emit("connection-update", { status: "open" });
                 setTimeout(async () => {
                     console.log("[SYNC] Fast initial emit...");
                     
-                    let chats = store.chats.all().filter((c: any) => 
+                    let chats = store.chats.all().filter((c: any) => c &&
                         isValidChatJid(c.id) && c.archived !== true
                     );
                     
@@ -1395,7 +1397,7 @@ io.emit("connection-update", { status: "open" });
                         
                         // Re-emit only if new chats were created (without avatars)
                         if (createdCount > 0) {
-            let allChats = store.chats.all().filter((c: any) => 
+            let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const seenPhones = new Set<string>();
@@ -1528,7 +1530,7 @@ io.emit("connection-update", { status: "open" });
             }
             
             // Get all chats and emit to frontend - FILTER OUT archived
-            let allChats = store.chats.all().filter((c: any) => 
+            let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             
@@ -1937,13 +1939,13 @@ io.emit("connection-update", { status: "open" });
             
             // Get all ACTIVE chats with avatars - FILTER archived
             // Sort by most recent first
-            let allChats = store.chats.all().filter((c: any) => 
+            let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             allChats = sortChatsByRecent(allChats);
             
             // Log counts for debugging
-            const totalChats = store.chats.all().filter((c: any) => 
+            const totalChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id)
             );
             const totalArchivedCount = totalChats.filter((c: any) => c.archived === true).length;
@@ -2004,7 +2006,7 @@ io.emit("connection-update", { status: "open" });
             // Filter chats that are archived (archived === true OR archive === true)
             // Baileys may send either 'archived' or 'archive' depending on the event type
             const isChatArchived = (c: any) => 
-                (c.archived === true || c.archive === true) &&
+                c && (c.archived === true || c.archive === true) &&
                 (isValidChatJid(c.id));
 
             let archivedChats = allChats.filter(isChatArchived);
@@ -2083,7 +2085,7 @@ io.emit("connection-update", { status: "open" });
             }
             
             // Re-emit active chats list (archived chat will disappear from active list)
-            let activeChats = store.chats.all().filter((c: any) => 
+            let activeChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const seenPhones = new Set<string>();
@@ -2121,8 +2123,8 @@ io.emit("connection-update", { status: "open" });
 
             console.log(`[API] Deleting chat ${jid} from store...`);
 
-            // Delete chat from store.chats
-            store.chats.set(jid, undefined as any);
+            // Delete chat from store.chats (use delete, not set undefined)
+            store.chats.delete(jid);
 
             // Delete messages from store.messages
             if (store.messages[jid]) {
@@ -2135,7 +2137,7 @@ io.emit("connection-update", { status: "open" });
                 const lid = phoneToLidMap.get(baseJid);
                 if (lid) {
                     const lidJid = `${lid}@lid`;
-                    store.chats.set(lidJid, undefined as any);
+                    store.chats.delete(lidJid);
                     if (store.messages[lidJid]) {
                         delete store.messages[lidJid];
                     }
@@ -2146,7 +2148,7 @@ io.emit("connection-update", { status: "open" });
             saveStore();
 
             // Emit updated chat list
-            const activeChats = store.chats.all().filter((c: any) => 
+            const activeChats = store.chats.all().filter((c: any) => c &&
                 c && isValidChatJid(c.id) && c.archived !== true
             );
             const chatsWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
@@ -2169,7 +2171,7 @@ io.emit("connection-update", { status: "open" });
             console.log("[API] Force refreshing chats from WhatsApp server...");
             
             // Get current ACTIVE chats - FILTER archived
-            const activeChats = store.chats.all().filter((c: any) => 
+            const activeChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const seenPhones = new Set<string>();
@@ -2190,7 +2192,7 @@ io.emit("connection-update", { status: "open" });
             console.log("[API] Active chats in store:", dedupedActive.length);
             
             // Log total and archived counts for debugging
-            const allChats = store.chats.all().filter((c: any) => 
+            const allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id)
             );
             const archivedCount = allChats.filter((c: any) => c.archived === true).length;
@@ -2247,7 +2249,7 @@ io.emit("connection-update", { status: "open" });
             }
             
             // After potential sync, emit updated ACTIVE chats - FILTER archived
-            let allChats = store.chats.all().filter((c: any) => 
+            let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const seenPhones = new Set<string>();
@@ -2268,7 +2270,7 @@ io.emit("connection-update", { status: "open" });
             
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
-            const totalChats = store.chats.all().filter((c: any) => 
+            const totalChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id)
             );
             const archivedCount = totalChats.filter((c: any) => c.archived === true).length;
@@ -2398,7 +2400,7 @@ io.emit("connection-update", { status: "open" });
             
             await new Promise(r => setTimeout(r, 2000));
             
-            const chats = store.chats.all().filter((c: any) => 
+            const chats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const deduped = deduplicateChats(chats);
@@ -2438,7 +2440,7 @@ io.emit("connection-update", { status: "open" });
             
             await new Promise(resolve => setTimeout(resolve, 5000));
             
-            const chats = store.chats.all().filter((c: any) => 
+            const chats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             const deduped = deduplicateChats(chats);
@@ -2510,15 +2512,15 @@ io.emit("connection-update", { status: "open" });
             
             // Also check contacts that we don't have in store - try to fetch their profile
             // to add them to contacts
-            const existingChats = store.chats.all().filter(c => 
-                c.id.endsWith('@s.whatsapp.net') && c.archived !== true
+            const existingChats = store.chats.all().filter((c: any) => 
+                c && c.id.endsWith('@s.whatsapp.net') && c.archived !== true
             );
             
             // Wait for any pending message processing
             await new Promise(r => setTimeout(r, 3000));
             
             // Get all active chats and emit
-            let allChats = store.chats.all().filter((c: any) => 
+            let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             allChats = deduplicateChats(allChats);
@@ -2554,7 +2556,7 @@ io.emit("connection-update", { status: "open" });
 
     app.get("/api/chats", (req, res) => {
         // Return ACTIVE chats from store with contact info - FILTER archived
-        const chats = store.chats.all().filter((c: any) => 
+        const chats = store.chats.all().filter((c: any) => c &&
             isValidChatJid(c.id) && c.archived !== true
         ).map((chat: any) => {
             const contact = store.getContact(chat.id);
@@ -4703,7 +4705,7 @@ io.emit("connection-update", { status: "open" });
         socket.on("get-chats", async () => {
             // Use optimized cache-based approach instead of manual recalculation
             invalidateTimestampsCache();
-            let existingChats = store.chats.all().filter((c: any) => 
+            let existingChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
             existingChats = sortChatsByRecent(existingChats);
@@ -4927,7 +4929,7 @@ io.emit("connection-update", { status: "open" });
             allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
 
             // Emit updated chats-list so the chat moves to correct position based on latest message
-            const allChats = store.chats.all().filter((c: any) => !c.archived);
+            const allChats = store.chats.all().filter((c: any) => c && !c.archived);
             allChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
             socket.emit("chats-list", allChats);
 
