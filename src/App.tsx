@@ -572,6 +572,19 @@ const unwrapMessage = (msg: WAMessage): WAMessage => {
   return msg;
 };
 
+// Normalize JID by removing device suffix for individual contacts
+const normalizeJid = (jid: string): string => {
+  if (!jid) return jid;
+  if (jid.endsWith('@s.whatsapp.net') && jid.includes(':')) {
+    return jid.replace(/:\d+@/, '@');
+  }
+  // Keep @lid as is - it's a valid identifier
+  if (jid.endsWith('@lid')) {
+    return jid;
+  }
+  return jid;
+};
+
 // Helper to extract message content and determine type
 const normalizeMessage = (inputMsg: WAMessage): Message => {
   const msg = unwrapMessage(inputMsg);
@@ -1318,13 +1331,17 @@ export default function App() {
     });
 
     newSocket.on('chat-details', (data: ChatDetails) => {
-      if (selectedChatRef.current === data.jid) {
+      const normalizedSelected = normalizeJid(selectedChatRef.current || '');
+      const normalizedDataJid = normalizeJid(data.jid);
+      if (normalizedSelected === normalizedDataJid) {
         setChatDetails(data);
       }
     });
 
     newSocket.on('messages-list', (data: { jid: string; messages: WAMessage[] }) => {
-      if (selectedChatRef.current === data.jid) {
+      const normalizedSelected = normalizeJid(selectedChatRef.current || '');
+      const normalizedDataJid = normalizeJid(data.jid);
+      if (normalizedSelected === normalizedDataJid) {
         const normalizedMessages = data.messages.map(normalizeMessage);
         setMessages(normalizedMessages);
         
@@ -1343,7 +1360,10 @@ export default function App() {
       if (!msg?.key?.remoteJid) return;
       const normalizedMsg = normalizeMessage(msg);
 
-      if (selectedChatRef.current === msg.key.remoteJid) {
+      const selectedNormalized = normalizeJid(selectedChatRef.current || '');
+      const msgNormalized = normalizeJid(msg.key.remoteJid);
+
+      if (selectedNormalized === msgNormalized || selectedNormalized === normalizeJid(msg.key.remoteJidAlt || '')) {
         setMessages(prev => {
           // Deduplication: check if message already exists
           if (normalizedMsg.key.id && prev.some(m => m.key.id === normalizedMsg.key.id)) {
@@ -1362,11 +1382,12 @@ export default function App() {
       if (normalizedMsg._type !== 'reaction') {
         setChats(prev => {
           const updated = [...prev];
-          const index = updated.findIndex(c => c.id === msg.key.remoteJid);
+          const normalizedMsgJid = normalizeJid(msg.key.remoteJid);
+          const index = updated.findIndex(c => normalizeJid(c.id) === normalizedMsgJid);
           const text = normalizedMsg._text || 'Mídia';
 
           if (index !== -1) {
-            const isNotSelected = selectedChatRef.current !== msg.key.remoteJid;
+            const isNotSelected = normalizeJid(selectedChatRef.current || '') !== normalizedMsgJid;
             const isIncoming = !msg.key.fromMe;
             updated[index] = {
               ...updated[index],
@@ -1383,7 +1404,9 @@ export default function App() {
     });
 
     newSocket.on('message-deleted', (data: { jid: string; messageId: string }) => {
-      if (selectedChatRef.current === data.jid) {
+      const normalizedSelected = normalizeJid(selectedChatRef.current || '');
+      const normalizedDataJid = normalizeJid(data.jid);
+      if (normalizedSelected === normalizedDataJid) {
         setMessages(prev => prev.map(m => 
           m.key.id === data.messageId 
             ? { ...m, _type: 'deleted' as const, _isDeleted: true, _text: '🚫 Essa mensagem foi apagada', message: undefined }
@@ -1394,14 +1417,18 @@ export default function App() {
 
     newSocket.on('message-updated', (msg: WAMessage) => {
       if (!msg?.key?.remoteJid || !msg?.key?.id) return;
-      if (selectedChatRef.current === msg.key.remoteJid) {
+      const normalizedSelected = normalizeJid(selectedChatRef.current || '');
+      const normalizedMsgJid = normalizeJid(msg.key.remoteJid);
+      if (normalizedSelected === normalizedMsgJid) {
         const normalizedMsg = normalizeMessage(msg);
         setMessages(prev => prev.map(m => m.key.id === msg.key.id ? normalizedMsg : m));
       }
     });
 
     newSocket.on('new-reaction', (data: { jid: string; reaction: WAMessage; targetMessageKey: any }) => {
-      if (selectedChatRef.current === data.jid && data.reaction) {
+      const normalizedSelected = normalizeJid(selectedChatRef.current || '');
+      const normalizedDataJid = normalizeJid(data.jid);
+      if (normalizedSelected === normalizedDataJid && data.reaction) {
         const normalizedReaction = normalizeMessage(data.reaction);
         setMessages(prev => {
           if (normalizedReaction.key.id && prev.some(m => m.key.id === normalizedReaction.key.id)) {
@@ -1418,8 +1445,9 @@ export default function App() {
       });
       setChats(prev => {
         const updated = [...prev];
+        const normalizedSelected = normalizeJid(selectedChatRef.current || '');
         contacts.forEach(contact => {
-          const index = updated.findIndex(c => c.id === contact.id);
+          const index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(contact.id));
           if (index !== -1) {
             updated[index] = { 
               ...updated[index], 

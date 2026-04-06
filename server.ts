@@ -1520,9 +1520,12 @@ io.emit("connection-update", { status: "open" });
             // Emit new messages from the update - realtime message sync
             for (const update of updates) {
                 if (update.messages && update.messages.length > 0) {
-                    for (const msg of update.messages) {
-                        console.log(`[SOCKET] Emitting new-message from chats.update for ${update.id}`);
-                        io.emit("new-message", msg);
+                    for (const msgWrapper of update.messages) {
+                        const msg = msgWrapper.message;
+                        if (msg?.key?.remoteJid) {
+                            console.log(`[SOCKET] Emitting new-message from chats.update for ${update.id}`);
+                            io.emit("new-message", msg);
+                        }
                     }
                 }
             }
