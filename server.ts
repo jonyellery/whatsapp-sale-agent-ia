@@ -28,6 +28,25 @@ const __dirname = path.dirname(__filename);
 
 const logger = pino({ level: "silent" });
 
+const logsDir = path.join(__dirname, "logs");
+if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const logFilePath = path.join(logsDir, `app-${timestamp}.log`);
+const fileLogger = (msg: string) => {
+    const logLine = `[${new Date().toISOString()}] ${msg}\n`;
+    fs.appendFileSync(logFilePath, logLine);
+};
+
+const originalConsoleLog = console.log;
+console.log = (...args: unknown[]) => {
+    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+    originalConsoleLog(...args);
+    fileLogger(msg);
+};
+
+fileLogger(`=== Sistema iniciado em ${timestamp} ===`);
+
 // Normalize JID by removing device suffix for individual contacts
 // e.g., "551199999:5@s.whatsapp.net" -> "551199999@s.whatsapp.net"
 // Groups (@g.us) and LIDs (@lid) are not affected
@@ -237,7 +256,7 @@ class SimpleStore {
         get: (jid: string) => any;
         set: (jid: string, data: any) => void;
     };
-    messages: { [jid: string]: { all: () => any[]; map?: Map<string, any>; getArray?: () => any[] } };
+    messages: { [jid: string]: { all: () => any[]; map?: Map<string, any> } };
     contacts: { [jid: string]: any };
     groupMetadata: { [jid: string]: any };
     
@@ -476,6 +495,19 @@ const saveStore = () => {
     const archivedCount = chatsToSave.filter((c: any) => c.archived === true).length;
     console.log(`[STORE] Archived chats being saved: ${archivedCount}`);
     
+    // Debug: log how many messages we're about to save
+    const messageJids = Object.keys(store.messages);
+    let totalMessages = 0;
+    const jidsWithMessages: string[] = [];
+    for (const jid of messageJids) {
+        const msgs = store.messages[jid]?.all() || [];
+        if (msgs.length > 0) {
+            jidsWithMessages.push(`${jid}:${msgs.length}`);
+            totalMessages += msgs.length;
+        }
+    }
+    console.log(`[STORE] Saving ${messageJids.length} JIDs with ${totalMessages} total messages. JIDs with msgs: ${jidsWithMessages.join(', ')}`);
+    
     const data = {
         chats: chatsToSave,
         messages: Object.fromEntries(
@@ -514,7 +546,7 @@ if (fs.existsSync(storePath)) {
             for (const [jid, msgs] of Object.entries(data.messages)) {
                 const msgArray = msgs as any[];
                 const map = new Map(msgArray.map(m => [m.key.id, m]));
-                store.messages[jid] = { all: () => msgArray, map };
+                store.messages[jid] = { all: () => Array.from(map.values()), map };
                 if (!store.chats.get(jid)) {
                     store.chats.set(jid, {
                         id: jid,
@@ -1575,14 +1607,11 @@ io.emit("connection-update", { status: "open" });
                     msgMap.set(msg.key.id, msg);
                     newMessages.push(msg);
                     
+                    // Add to store.messages properly using the internal map
                     const storeEntry = store.messages[jid];
-                    let arr: any[] = [];
-                    if (storeEntry.getArray) {
-                        arr = storeEntry.getArray();
-                    } else if (storeEntry.all) {
-                        arr = storeEntry.all();
+                    if (storeEntry.map) {
+                        storeEntry.map.set(msg.key.id, msg);
                     }
-                    arr.push(msg);
                 }
 
                 if (msg.messageTimestamp) {
@@ -1709,13 +1738,15 @@ io.emit("connection-update", { status: "open" });
                     pushName: reaction?.pushName || key?.pushName
                 };
                 
-                // Store the reaction in messages - use persistent array
+                // Store the reaction in messages - use persistent map
                 if (!store.messages[jid]) {
-                    const arr: any[] = [];
-                    store.messages[jid] = { all: () => arr };
+                    const map = new Map();
+                    store.messages[jid] = { all: () => Array.from(map.values()), map };
                 }
-                const msgs = store.messages[jid].all();
-                msgs.push(reactionMsg);
+                const msgMap = store.messages[jid].map;
+                if (msgMap && !msgMap.has(reactionMsg.key.id)) {
+                    msgMap.set(reactionMsg.key.id, reactionMsg);
+                }
                 
                 // Emit reaction to frontend
                 io.emit("new-reaction", {
@@ -1832,21 +1863,18 @@ io.emit("connection-update", { status: "open" });
                     if (jid) {
                         // Store the actual message - use persistent array to avoid losing messages
                 if (!store.messages[jid]) {
-                    const arr: any[] = [];
                     const map = new Map();
                     store.messages[jid] = {
-                        all: () => arr,
-                        getArray: () => arr,
+                        all: () => Array.from(map.values()),
                         map
                     };
                 }
-                const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
-                        // Avoid duplicates
-                        if (!msgs.find((x: any) => x.key?.id === msg.key?.id)) {
-                            msgs.push(msg);
-                            // Update search index for fast lookups
-                            updateMessageSearchIndex(jid);
-                        }
+                const msgMap = store.messages[jid].map;
+                if (msgMap && msg.key?.id && !msgMap.has(msg.key.id)) {
+                    msgMap.set(msg.key.id, msg);
+                    // Update search index for fast lookups
+                    updateMessageSearchIndex(jid);
+                }
 
                         const existingChat = store.chats.get(jid);
                         if (!existingChat) {
@@ -2673,18 +2701,15 @@ io.emit("connection-update", { status: "open" });
                     console.log("[LOAD-MORE] Storing msg:", msg.key.id, "ts=", msg.messageTimestamp, "jid=", msgJid);
                     
                     if (!store.messages[msgJid]) {
-                        const arr: any[] = [];
                         const map = new Map();
                         store.messages[msgJid] = {
-                            all: () => arr,
-                            getArray: () => arr,
+                            all: () => Array.from(map.values()),
                             map
                         };
-                        (store as any)._messagesMap?.set?.(msgJid, arr);
                     }
-                    const msgs = store.messages[msgJid].getArray ? store.messages[msgJid].getArray() : store.messages[msgJid].all();
-                    if (msg.key.id && !msgs.find((m: any) => m.key?.id === msg.key.id)) {
-                        msgs.push(msg);
+                    const msgMap = store.messages[msgJid].map;
+                    if (msgMap && msg.key.id && !msgMap.has(msg.key.id)) {
+                        msgMap.set(msg.key.id, msg);
                     }
                 }
             }
@@ -4777,17 +4802,15 @@ io.emit("connection-update", { status: "open" });
 
                             // Armazena no store
                             if (!store.messages[jid]) {
-                                const arr: any[] = [];
                                 const map = new Map();
                                 store.messages[jid] = {
-                                    all: () => arr,
-                                    getArray: () => arr,
+                                    all: () => Array.from(map.values()),
                                     map
                                 };
                             }
-                            const msgs = store.messages[jid].getArray ? store.messages[jid].getArray() : store.messages[jid].all();
-                            if (!msgs.find((m: any) => m.key?.id === msgId)) {
-                                msgs.push(standardizedMsg);
+                            const msgMap = store.messages[jid].map;
+                            if (msgMap && !msgMap.has(msgId)) {
+                                msgMap.set(msgId, standardizedMsg);
 
                                 // Update chat timestamp when new messages are added
                                 const chat = store.chats.get(jid);
