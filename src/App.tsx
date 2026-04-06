@@ -575,12 +575,16 @@ const unwrapMessage = (msg: WAMessage): WAMessage => {
 // Normalize JID by removing device suffix for individual contacts
 const normalizeJid = (jid: string): string => {
   if (!jid) return jid;
+  // Remove device suffix: 558512345678:8@s.whatsapp.net -> 558512345678@s.whatsapp.net
   if (jid.endsWith('@s.whatsapp.net') && jid.includes(':')) {
     return jid.replace(/:\d+@/, '@');
   }
-  // Keep @lid as is - it's a valid identifier
+  // Normalize @s.whatsapp.net and @lid to a common base for comparison
+  if (jid.endsWith('@s.whatsapp.net')) {
+    return jid.replace('@s.whatsapp.net', '');
+  }
   if (jid.endsWith('@lid')) {
-    return jid;
+    return jid.replace('@lid', '');
   }
   return jid;
 };
