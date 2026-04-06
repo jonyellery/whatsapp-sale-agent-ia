@@ -1589,6 +1589,15 @@ io.emit("connection-update", { status: "open" });
                 if (!msgMap.has(msg.key.id)) {
                     msgMap.set(msg.key.id, msg);
                     newMessages.push(msg);
+                    
+                    const storeEntry = store.messages[jid];
+                    let arr: any[] = [];
+                    if (storeEntry.getArray) {
+                        arr = storeEntry.getArray();
+                    } else if (storeEntry.all) {
+                        arr = storeEntry.all();
+                    }
+                    arr.push(msg);
                 }
 
                 if (msg.messageTimestamp) {
@@ -1603,6 +1612,12 @@ io.emit("connection-update", { status: "open" });
             // Emit em lote (melhor performance)
             if (newMessages.length) {
                 io.emit("new-message-batch", newMessages);
+                // Also emit individually for frontend compatibility
+                for (const msg of newMessages) {
+                    io.emit("new-message", msg);
+                }
+                // Force immediate save for new messages
+                saveStore();
             }
 
             emitChats();
