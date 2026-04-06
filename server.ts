@@ -1517,6 +1517,16 @@ io.emit("connection-update", { status: "open" });
                 }
             }
             
+            // Emit new messages from the update - realtime message sync
+            for (const update of updates) {
+                if (update.messages && update.messages.length > 0) {
+                    for (const msg of update.messages) {
+                        console.log(`[SOCKET] Emitting new-message from chats.update for ${update.id}`);
+                        io.emit("new-message", msg);
+                    }
+                }
+            }
+            
             // Get all chats and emit to frontend - FILTER OUT archived
             let allChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
