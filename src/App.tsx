@@ -1226,33 +1226,36 @@ export default function App() {
           .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
 
         setChats(prevChats => {
-          const incomingMap = new Map(filteredChats.map(c => [c.id, c]));
-          const mergedChats = prevChats.map(existingChat => {
-            const incoming = incomingMap.get(existingChat.id);
-            if (incoming) {
-              // Normalize archived: Baileys may send 'archive' or 'archived'
-              const incomingArchived = incoming.archived !== undefined
-                ? incoming.archived
-                : incoming.archive !== undefined
-                  ? incoming.archive
-                  : existingChat.archived;
-              return {
-                ...existingChat,
-                ...incoming,
-                archived: incomingArchived
-              };
+          const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
+          
+          const findMatch = (existingId: string): [string, any] | null => {
+            const normalizedExisting = normalizeJid(existingId);
+            const entries = Array.from(incomingMap.entries()) as [string, any][];
+            const incomingEntry = entries.find(([id]) => normalizeJid(id) === normalizedExisting);
+            if (incomingEntry) return incomingEntry;
+            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
+              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
+              const lidJid = `${lidPart}@lid`;
+              if (incomingMap.has(lidJid)) return [lidJid, incomingMap.get(lidJid)!];
             }
-            return existingChat;
+            return null;
+          };
+          
+          const mergedChats = prevChats.map(existingChat => {
+            const match = findMatch(existingChat.id);
+            if (!match) return existingChat;
+            const [incomingId, incoming] = match;
+            incomingMap.delete(incomingId);
+            
+            const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
+            return { ...existingChat, ...incoming, archived: incomingArchived };
           });
           const existingIds = new Set(prevChats.map(c => c.id));
           const newChats = filteredChats.filter(c => !existingIds.has(c.id));
-          // Ensure uniqueness in final list
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
           allChats.forEach(chat => uniqueChats.set(chat.id, chat));
-          return Array.from(uniqueChats.values()).sort(
-            (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
-          );
+          return Array.from(uniqueChats.values()).sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
         });
       } else if (data.type === 'full') {
         if (!Array.isArray(data.chats)) {
@@ -1265,62 +1268,82 @@ export default function App() {
           .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
 
         setChats(prevChats => {
-          const incomingMap = new Map(filteredChats.map(c => [c.id, c]));
-          const mergedChats = prevChats.map(existingChat => {
-            const incoming = incomingMap.get(existingChat.id);
-            if (incoming) {
-              // Normalize archived: Baileys may send 'archive' or 'archived'
-              const incomingArchived = incoming.archived !== undefined
-                ? incoming.archived
-                : incoming.archive !== undefined
-                  ? incoming.archive
-                  : existingChat.archived;
-              return {
-                ...existingChat,
-                ...incoming,
-                archived: incomingArchived
-              };
+          const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
+          
+          const findMatch = (existingId: string): [string, any] | null => {
+            const normalizedExisting = normalizeJid(existingId);
+            const entries = Array.from(incomingMap.entries()) as [string, any][];
+            const incomingEntry = entries.find(([id]) => normalizeJid(id) === normalizedExisting);
+            if (incomingEntry) return incomingEntry;
+            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
+              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
+              const lidJid = `${lidPart}@lid`;
+              if (incomingMap.has(lidJid)) return [lidJid, incomingMap.get(lidJid)!];
             }
-            return existingChat;
+            return null;
+          };
+          
+          const mergedChats = prevChats.map(existingChat => {
+            const match = findMatch(existingChat.id);
+            if (!match) return existingChat;
+            const [incomingId, incoming] = match;
+            incomingMap.delete(incomingId);
+            
+            const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
+            return { ...existingChat, ...incoming, archived: incomingArchived };
           });
           const existingIds = new Set(prevChats.map(c => c.id));
           const newChats = filteredChats.filter(c => !existingIds.has(c.id));
-          // Ensure uniqueness in final list
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
           allChats.forEach(chat => uniqueChats.set(chat.id, chat));
-          return Array.from(uniqueChats.values()).sort(
-            (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
-          );
+          return Array.from(uniqueChats.values()).sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
         });
       } else if (data.type === 'diff') {
         const { updated, removed } = data.changes;
         setChats(prevChats => {
-          // Remove removed chats
-          let newChats = prevChats.filter(c => !removed.some(r => r.id === c.id));
-          // Update or add updated chats
-          const updatedMap = new Map(updated.map(c => [c.id, c]));
-          newChats = newChats.map(existing => {
-            const update = updatedMap.get(existing.id);
-            if (update) {
-              updatedMap.delete(existing.id); // Mark as processed
-              // Normalize archived
-              const incomingArchived = update.archived !== undefined
-                ? update.archived
-                : update.archive !== undefined
-                  ? update.archive
-                  : existing.archived;
-              return {
-                ...existing,
-                ...update,
-                archived: incomingArchived
-              };
+          const updatedMap = new Map<string, any>(updated.map(c => [c.id, c]));
+          
+          const findUpdateMatch = (existingId: string): [string, any] | null => {
+            const normalizedExisting = normalizeJid(existingId);
+            const entries = Array.from(updatedMap.entries()) as [string, any][];
+            const updateEntry = entries.find(([id]) => 
+              normalizeJid(id) === normalizedExisting
+            );
+            if (updateEntry) return updateEntry;
+            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
+              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
+              const lidJid = `${lidPart}@lid`;
+              if (updatedMap.has(lidJid)) return [lidJid, updatedMap.get(lidJid)!];
             }
-            return existing;
+            return null;
+          };
+          
+          let newChats = prevChats.filter(c => !removed.some(r => {
+            const normalizedR = normalizeJid(r.id);
+            return normalizeJid(c.id) === normalizedR || 
+              (c.id.endsWith('@s.whatsapp.net') && `${c.id.replace('@s.whatsapp.net', '')}@lid` === normalizedR);
+          }));
+          
+          newChats = newChats.map(existing => {
+            const match = findUpdateMatch(existing.id);
+            if (!match) return existing;
+            const [updateId, update] = match;
+            updatedMap.delete(updateId);
+            
+            const incomingArchived = update.archived !== undefined
+              ? update.archived
+              : update.archive !== undefined
+                ? update.archive
+                : existing.archived;
+            return {
+              ...existing,
+              ...update,
+              archived: incomingArchived
+            };
           });
-          // Add new updated chats that weren't in existing
+          
           newChats = [...newChats, ...Array.from(updatedMap.values())];
-          // Deduplicate, filter, and sort
           const deduplicated = newChats.filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index);
           const filtered = deduplicated.filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
           return filtered.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
@@ -1383,7 +1406,18 @@ export default function App() {
         setChats(prev => {
           const updated = [...prev];
           const normalizedMsgJid = normalizeJid(msg.key.remoteJid);
-          const index = updated.findIndex(c => normalizeJid(c.id) === normalizedMsgJid);
+          
+          // Find chat by normalized JID OR by mapped JID (handle @lid <-> @s.whatsapp.net)
+          let index = updated.findIndex(c => normalizeJid(c.id) === normalizedMsgJid);
+          if (index === -1 && normalizedMsgJid.endsWith('@lid')) {
+            const pnJid = store.current.lidMappings[normalizedMsgJid];
+            if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
+          } else if (index === -1 && normalizedMsgJid.endsWith('@s.whatsapp.net')) {
+            const lidJid = `${normalizedMsgJid.replace('@s.whatsapp.net', '')}@lid`;
+            const mapped = Object.entries(store.current.lidMappings).find(([k]) => normalizeJid(k) === normalizedMsgJid);
+            if (mapped) index = updated.findIndex(c => c.id === mapped[0]);
+          }
+          
           const text = normalizedMsg._text || 'Mídia';
 
           if (index !== -1) {
@@ -1505,7 +1539,17 @@ export default function App() {
       setChats(prev => {
         const updated = [...prev];
         for (const update of updates) {
-          const index = updated.findIndex(c => c.id === update.id);
+          let index = updated.findIndex(c => c.id === update.id);
+          if (index === -1) {
+            index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(update.id));
+            if (index === -1 && update.id.endsWith('@lid')) {
+              const pnJid = store.current.lidMappings[update.id];
+              if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
+            } else if (index === -1 && update.id.endsWith('@s.whatsapp.net')) {
+              const lidJid = `${update.id.replace('@s.whatsapp.net', '')}@lid`;
+              index = updated.findIndex(c => c.id === lidJid);
+            }
+          }
           if (index !== -1) {
             updated[index] = { ...updated[index], ...update };
           }

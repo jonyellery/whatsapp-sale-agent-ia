@@ -57,6 +57,24 @@ const isValidChatJid = (jid: string): boolean => {
            jid.endsWith('@lid') || jid.endsWith('@newsletter') || jid.endsWith('@broadcast');
 };
 
+// Helper to deduplicate chats: prefer @s.whatsapp.net over @lid for same phone number
+const deduplicateChats = (chats: any[]): any[] => {
+    const seenPhones = new Set<string>();
+    return chats.filter(chat => {
+        if (chat.id.endsWith('@lid')) {
+            const lidPart = chat.id.replace('@lid', '');
+            const pn = lidToPhoneMap.get(lidPart);
+            if (pn && seenPhones.has(pn)) return false;
+            if (pn) seenPhones.add(pn);
+        } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+            const phone = chat.id.replace('@s.whatsapp.net', '');
+            if (seenPhones.has(phone)) return false;
+            seenPhones.add(phone);
+        }
+        return true;
+    });
+};
+
 // Resolve a JID (including @lid) to the best display name available
 // Uses LID→PN mapping to find the real contact when available
 const resolveContactName = (jid: string, contactsStore: { [key: string]: any }): string => {
@@ -655,6 +673,21 @@ async function startServer() {
             let allChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            // Deduplicate contacts: prefer @s.whatsapp.net over @lid for same phone number
+            const seenPhones = new Set<string>();
+            allChats = allChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
             allChats = sortChatsByRecent(allChats);
             const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
@@ -1345,10 +1378,24 @@ io.emit("connection-update", { status: "open" });
                         
                         // Re-emit only if new chats were created (without avatars)
                         if (createdCount > 0) {
-                            let allChats = store.chats.all().filter((c: any) => 
-                                isValidChatJid(c.id) && c.archived !== true
-                            );
-                            allChats = sortChatsByRecent(allChats);
+            let allChats = store.chats.all().filter((c: any) => 
+                isValidChatJid(c.id) && c.archived !== true
+            );
+            const seenPhones = new Set<string>();
+            allChats = allChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
+            allChats = sortChatsByRecent(allChats);
                             const allFast = allChats.map((chat: any) => ({
                                 id: chat.id,
                                 name: chat.name || chat.subject,
@@ -1386,33 +1433,6 @@ io.emit("connection-update", { status: "open" });
                     unreadCount: 0
                 });
             }
-            // Also ensure the variant exists (@s.whatsapp.net <-> @lid)
-            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
-                const baseJid = jid.replace('@s.whatsapp.net', '');
-                const lid = phoneToLidMap.get(baseJid);
-                if (lid && !store.chats.get(`${lid}@lid`)) {
-                    const contact = store.contacts[`${lid}@lid`];
-                    const chatName = contact?.name || contact?.notify || resolveContactName(`${lid}@lid`, store.contacts);
-                    store.chats.set(`${lid}@lid`, {
-                        id: `${lid}@lid`,
-                        name: chatName,
-                        unreadCount: 0
-                    });
-                }
-            }
-            if (jid.endsWith('@lid')) {
-                const lidPart = jid.replace('@lid', '');
-                const pnUser = lidToPhoneMap.get(lidPart);
-                if (pnUser && !store.chats.get(`${pnUser}@s.whatsapp.net`)) {
-                    const contact = store.contacts[`${pnUser}@s.whatsapp.net`];
-                    const chatName = contact?.name || contact?.notify || resolveContactName(`${pnUser}@s.whatsapp.net`, store.contacts);
-                    store.chats.set(`${pnUser}@s.whatsapp.net`, {
-                        id: `${pnUser}@s.whatsapp.net`,
-                        name: chatName,
-                        unreadCount: 0
-                    });
-                }
-            }
         };
 
         sock.ev.on("chats.upsert", async (chats: any[]) => {
@@ -1424,25 +1444,6 @@ io.emit("connection-update", { status: "open" });
                     const existing = store.chats.get(chat.id);
                     const merged = store.mergeChatData(existing, chat);
                     store.chats.set(chat.id, merged);
-                    // Also create/update the variant if this is @s.whatsapp.net or @lid
-                    if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
-                        const baseJid = chat.id.replace('@s.whatsapp.net', '');
-                        const lid = phoneToLidMap.get(baseJid);
-                        if (lid) {
-                            const lidJid = `${lid}@lid`;
-                            const existingLid = store.chats.get(lidJid);
-                            store.chats.set(lidJid, store.mergeChatData(existingLid, { ...chat, id: lidJid }));
-                        }
-                    }
-                    if (chat.id.endsWith('@lid')) {
-                        const lidPart = chat.id.replace('@lid', '');
-                        const pnUser = lidToPhoneMap.get(lidPart);
-                        if (pnUser) {
-                            const pnJid = `${pnUser}@s.whatsapp.net`;
-                            const existingPn = store.chats.get(pnJid);
-                            store.chats.set(pnJid, store.mergeChatData(existingPn, { ...chat, id: pnJid }));
-                        }
-                    }
                 }
             }
             invalidateTimestampsCache();
@@ -1480,27 +1481,6 @@ io.emit("connection-update", { status: "open" });
                     
                     // Update the store
                     store.chats.set(update.id, mergedChat);
-                    // Also sync variant if this is @s.whatsapp.net or @lid
-                    if (update.id.endsWith('@s.whatsapp.net') && !update.id.includes(':')) {
-                        const baseJid = update.id.replace('@s.whatsapp.net', '');
-                        const lid = phoneToLidMap.get(baseJid);
-                        if (lid) {
-                            const lidChat = store.chats.get(`${lid}@lid`);
-                            if (lidChat) {
-                                store.chats.set(`${lid}@lid`, { ...lidChat, ...update, id: `${lid}@lid`, conversationTimestamp: newTs });
-                            }
-                        }
-                    }
-                    if (update.id.endsWith('@lid')) {
-                        const lidPart = update.id.replace('@lid', '');
-                        const pnUser = lidToPhoneMap.get(lidPart);
-                        if (pnUser) {
-                            const pnChat = store.chats.get(`${pnUser}@s.whatsapp.net`);
-                            if (pnChat) {
-                                store.chats.set(`${pnUser}@s.whatsapp.net`, { ...pnChat, ...update, id: `${pnUser}@s.whatsapp.net`, conversationTimestamp: newTs });
-                            }
-                        }
-                    }
                 } else {
                     // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
                     const contactInfo = store.contacts[update.id];
@@ -2078,6 +2058,20 @@ io.emit("connection-update", { status: "open" });
             let activeChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            const seenPhones = new Set<string>();
+            activeChats = activeChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
             activeChats = sortChatsByRecent(activeChats);
             const activeWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
             io.emit("chats-list", activeWithAvatars);
@@ -2102,18 +2096,32 @@ io.emit("connection-update", { status: "open" });
             const activeChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            const seenPhones = new Set<string>();
+            const dedupedActive = activeChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
             
-            console.log("[API] Active chats in store:", activeChats.length);
+            console.log("[API] Active chats in store:", dedupedActive.length);
             
             // Log total and archived counts for debugging
             const allChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id)
             );
             const archivedCount = allChats.filter((c: any) => c.archived === true).length;
-            console.log(`[API] Total: ${allChats.length}, Archived: ${archivedCount}, Active: ${activeChats.length}`);
+            console.log(`[API] Total: ${allChats.length}, Archived: ${archivedCount}, Active: ${dedupedActive.length}`);
             
             // Emit only active chats
-            const chatsWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
+            const chatsWithAvatars = await Promise.all(dedupedActive.map(getChatWithAvatarFromStore));
             
             io.emit("chats-list", chatsWithAvatars);
             
@@ -2166,6 +2174,20 @@ io.emit("connection-update", { status: "open" });
             let allChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            const seenPhones = new Set<string>();
+            allChats = allChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
             allChats = sortChatsByRecent(allChats);
             
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
@@ -2303,9 +2325,10 @@ io.emit("connection-update", { status: "open" });
             const chats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            const deduped = deduplicateChats(chats);
             
             // Get avatars - use the function that checks contacts and groups
-            const chatsWithAvatars = await Promise.all(chats.map(getChatWithAvatarFromStore));
+            const chatsWithAvatars = await Promise.all(deduped.map(getChatWithAvatarFromStore));
             
             console.log("Active chats after fetch:", chatsWithAvatars.length);
             
@@ -2342,9 +2365,10 @@ io.emit("connection-update", { status: "open" });
             const chats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            const deduped = deduplicateChats(chats);
             
             // Get avatars - use the function that checks contacts and groups
-            const chatsWithAvatars = await Promise.all(chats.map(getChatWithAvatarFromStore));
+            const chatsWithAvatars = await Promise.all(deduped.map(getChatWithAvatarFromStore));
             io.emit("chats-list", chatsWithAvatars);
             res.json({ count: chatsWithAvatars.length });
         } catch (e) {
@@ -2421,6 +2445,7 @@ io.emit("connection-update", { status: "open" });
             let allChats = store.chats.all().filter((c: any) => 
                 isValidChatJid(c.id) && c.archived !== true
             );
+            allChats = deduplicateChats(allChats);
             allChats = sortChatsByRecent(allChats);
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
