@@ -2111,6 +2111,54 @@ io.emit("connection-update", { status: "open" });
         }
     });
 
+    // Delete a chat completely from store
+    app.delete("/api/chat", express.json(), async (req, res) => {
+        try {
+            const { jid } = req.body;
+            if (!jid) {
+                return res.status(400).json({ error: "jid é obrigatório" });
+            }
+
+            console.log(`[API] Deleting chat ${jid} from store...`);
+
+            // Delete chat from store.chats
+            store.chats.set(jid, undefined as any);
+
+            // Delete messages from store.messages
+            if (store.messages[jid]) {
+                delete store.messages[jid];
+            }
+
+            // Also delete LID variant if exists
+            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+                const baseJid = jid.replace('@s.whatsapp.net', '');
+                const lid = phoneToLidMap.get(baseJid);
+                if (lid) {
+                    const lidJid = `${lid}@lid`;
+                    store.chats.set(lidJid, undefined as any);
+                    if (store.messages[lidJid]) {
+                        delete store.messages[lidJid];
+                    }
+                }
+            }
+
+            // Save immediately after deletion
+            saveStore();
+
+            // Emit updated chat list
+            const activeChats = store.chats.all().filter((c: any) => 
+                c && isValidChatJid(c.id) && c.archived !== true
+            );
+            const chatsWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
+            io.emit("chats-list", chatsWithAvatars);
+
+            res.json({ success: true });
+        } catch (e) {
+            console.log("Error deleting chat:", e);
+            res.status(500).json({ error: e.message });
+        }
+    });
+
     // Force refresh chats - triggers Baileys to fetch from server
     app.get("/api/refresh-chats", async (req, res) => {
         if (!sock) {

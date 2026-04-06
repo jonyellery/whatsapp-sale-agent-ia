@@ -4192,8 +4192,15 @@ export default function App() {
                 }}>
                   <Download size={18} /> Exportar conversa
                 </div>
-                <div className="wa-context-menu-item danger" onClick={() => {
+                <div className="wa-context-menu-item danger" onClick={async () => {
                   if (contextMenu.chatId) {
+                    try {
+                      await fetch('/api/chat', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jid: contextMenu.chatId })
+                      });
+                    } catch {}
                     setChats(prev => prev.filter(c => c.id !== contextMenu.chatId));
                     if (selectedChat === contextMenu.chatId) setSelectedChat(null);
                   }
