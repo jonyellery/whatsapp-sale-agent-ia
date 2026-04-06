@@ -21,7 +21,7 @@ export default defineConfig(({mode}) => {
       },
       watch: {
         ignored: [
-          '**/baileys_store.json',
+          '**/store/**',
           '**/auth_info_baileys/**',
           '**/tsconfig.json',
           '**/package.json',

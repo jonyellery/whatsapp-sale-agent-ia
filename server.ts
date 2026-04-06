@@ -485,157 +485,170 @@ class SimpleStore {
 
 const store = new SimpleStore();
 
-// Persist store to file - including metadata like archived status
-const storePath = path.join(__dirname, "baileys_store.json");
+// Persist store to files in separate directory
+const storeDir = path.join(__dirname, "store");
+const storeChatsPath = path.join(storeDir, "chats.json");
+const storeContactsPath = path.join(storeDir, "contacts.json");
+const storeGroupMetadataPath = path.join(storeDir, "group-metadata.json");
+const storeMessagesDir = path.join(storeDir, "messages");
+const storeMetaPath = path.join(storeDir, "meta.json");
+
+if (!fs.existsSync(storeDir)) fs.mkdirSync(storeDir, { recursive: true });
+if (!fs.existsSync(storeMessagesDir)) fs.mkdirSync(storeMessagesDir, { recursive: true });
+
 let lastStoreCleanup = Date.now();
 
 const saveStore = () => {
-    const chatsToSave = store.chats.all().filter((c: any) => c &&c);
-    console.log(`[STORE] Saving ${chatsToSave.length} chats to file...`);
+    // Save chats
+    const chatsToSave = store.chats.all().filter((c: any) => c && c);
+    console.log(`[STORE] Saving ${chatsToSave.length} chats...`);
     
-    // Log a sample of archived chats being saved
-    const archivedCount = chatsToSave.filter((c: any) => c.archived === true).length;
-    console.log(`[STORE] Archived chats being saved: ${archivedCount}`);
+    fs.writeFileSync(storeChatsPath, JSON.stringify(chatsToSave));
     
-    // Debug: log how many messages we're about to save
+    // Save contacts
+    fs.writeFileSync(storeContactsPath, JSON.stringify(store.contacts));
+    
+    // Save group metadata
+    fs.writeFileSync(storeGroupMetadataPath, JSON.stringify(store.groupMetadata));
+    
+    // Save meta (last cleanup timestamp)
+    fs.writeFileSync(storeMetaPath, JSON.stringify({ lastStoreCleanup }));
+    
+    // Save messages per JID (each chat has its own file)
     const messageJids = Object.keys(store.messages);
     let totalMessages = 0;
-    const jidsWithMessages: string[] = [];
+    
     for (const jid of messageJids) {
         const msgs = store.messages[jid]?.all() || [];
         if (msgs.length > 0) {
-            jidsWithMessages.push(`${jid}:${msgs.length}`);
             totalMessages += msgs.length;
+            const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
+            const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
+            fs.writeFileSync(msgFilePath, JSON.stringify(msgs));
+        } else {
+            // Remove empty message files
+            const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
+            const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
+            if (fs.existsSync(msgFilePath)) fs.unlinkSync(msgFilePath);
         }
     }
-    console.log(`[STORE] Saving ${messageJids.length} JIDs with ${totalMessages} total messages. JIDs with msgs: ${jidsWithMessages.join(', ')}`);
     
-    const data = {
-        chats: chatsToSave,
-        messages: Object.fromEntries(
-            Object.entries(store.messages).map(([k, v]) => [k, v.all()])
-        ),
-        contacts: store.contacts,
-        groupMetadata: store.groupMetadata,
-        lastStoreCleanup
-    };
-    
-    // Serialize compactly to avoid string length limits
-    const jsonStr = JSON.stringify(data);
-    const jsonSize = Buffer.byteLength(jsonStr, 'utf8');
-
-    fs.writeFileSync(storePath, jsonStr);
-    console.log(`[STORE] Saved ${chatsToSave.length} chats (${Math.round(jsonSize/1024)}KB)`);
+    console.log(`[STORE] Saved ${chatsToSave.length} chats, ${messageJids.length} JIDs with ${totalMessages} messages`);
 };
 
-// Load store from file if exists
-if (fs.existsSync(storePath)) {
+// Load store from files
+if (fs.existsSync(storeChatsPath)) {
     try {
-        let data: any;
-        
-        data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
-
-        if (data.chats && Array.isArray(data.chats)) {
-            for (const chat of data.chats) {
-                if (chat.id && (isValidChatJid(chat.id))) {
+        const chatsData = JSON.parse(fs.readFileSync(storeChatsPath, 'utf-8'));
+        if (Array.isArray(chatsData)) {
+            for (const chat of chatsData) {
+                if (chat.id && isValidChatJid(chat.id)) {
                     store.chats.set(chat.id, chat);
                 }
             }
-            console.log("[STORE] Loaded chats from store file:", data.chats.length);
+            console.log("[STORE] Loaded chats:", chatsData.length);
         }
-
-        if (data.messages) {
-            for (const [jid, msgs] of Object.entries(data.messages)) {
-                const msgArray = msgs as any[];
-                const map = new Map(msgArray.map(m => [m.key.id, m]));
-                store.messages[jid] = { all: () => Array.from(map.values()), map };
-                if (!store.chats.get(jid)) {
-                    store.chats.set(jid, {
-                        id: jid,
-                        name: getPhoneNumber(jid),
-                        unreadCount: 0
-                    });
-                }
-            }
-            console.log("[STORE] Loaded messages from store file, JIDs:", Object.keys(data.messages).length);
-            
-            // Recalculate conversationTimestamp for ALL individual chats from messages
-            // This ensures correct sorting even if stored timestamps are stale
-            const getAllChatMessages = (chatId: string): any[] => {
-                let msgs = store.messages[chatId]?.all() || [];
-                if (chatId && chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
-                    const baseJid = chatId.replace('@s.whatsapp.net', '');
-                    for (const key of Object.keys(store.messages)) {
-                        if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
-                            msgs = msgs.concat(store.messages[key]?.all() || []);
-                        }
-                    }
-                    const lid = phoneToLidMap.get(baseJid);
-                    if (lid) {
-                        const lidJid = `${lid}@lid`;
-                        const lidMsgs = store.messages[lidJid]?.all() || [];
-                        msgs = msgs.concat(lidMsgs);
-                    }
-                }
-                if (chatId?.endsWith('@lid')) {
-                    const lidPart = chatId.replace('@lid', '');
-                    const pnUser = lidToPhoneMap.get(lidPart);
-                    if (pnUser) {
-                        const pnJid = `${pnUser}@s.whatsapp.net`;
-                        const pnMsgs = store.messages[pnJid]?.all() || [];
-                        msgs = msgs.concat(pnMsgs);
-                    }
-                }
-                return msgs;
-            };
-            
-            const allChats = store.chats.all();
-            for (const chat of allChats) {
-                if (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@lid')) {
-                    const chatMessages = getAllChatMessages(chat.id);
-                    if (chatMessages.length > 0) {
-                        const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
-                        if (latestMsgTs > 0) {
-                            chat.conversationTimestamp = latestMsgTs;
-                            store.chats.set(chat.id, chat);
-                        }
-                    }
-                }
-            }
-            console.log("[STORE] Recalculated timestamps for individual chats from messages");
-        }
-
-        if (data.contacts) {
-            for (const [jid, contact] of Object.entries(data.contacts)) {
-                store.contacts[jid] = contact;
-                if (jid.endsWith('@s.whatsapp.net') && !store.chats.get(jid)) {
-                    const c = contact as any;
-                    store.chats.set(jid, {
-                        id: jid,
-                        name: c.name || c.notify || getPhoneNumber(jid),
-                        unreadCount: 0
-                    });
-                }
-            }
-            console.log("[STORE] Loaded contacts from store file:", Object.keys(store.contacts).length);
-        }
-
-        if (data.groupMetadata) {
-            for (const [jid, meta] of Object.entries(data.groupMetadata)) {
-                store.groupMetadata[jid] = meta;
-            }
-            console.log("[STORE] Loaded group metadata from store file:", Object.keys(store.groupMetadata).length);
-        }
-
-        if (data.lastStoreCleanup) {
-            lastStoreCleanup = data.lastStoreCleanup;
-            console.log("[STORE] Last cleanup:", new Date(lastStoreCleanup).toISOString());
-        }
-
     } catch (e) {
-        console.log("[STORE] Failed to load store:", e);
+        console.log("[STORE] Error loading chats:", e);
     }
 }
+
+if (fs.existsSync(storeContactsPath)) {
+    try {
+        store.contacts = JSON.parse(fs.readFileSync(storeContactsPath, 'utf-8'));
+        console.log("[STORE] Loaded contacts:", Object.keys(store.contacts).length);
+    } catch (e) {
+        console.log("[STORE] Error loading contacts:", e);
+    }
+}
+
+if (fs.existsSync(storeGroupMetadataPath)) {
+    try {
+        store.groupMetadata = JSON.parse(fs.readFileSync(storeGroupMetadataPath, 'utf-8'));
+        console.log("[STORE] Loaded group metadata:", Object.keys(store.groupMetadata).length);
+    } catch (e) {
+        console.log("[STORE] Error loading group metadata:", e);
+    }
+}
+
+if (fs.existsSync(storeMetaPath)) {
+    try {
+        const meta = JSON.parse(fs.readFileSync(storeMetaPath, 'utf-8'));
+        lastStoreCleanup = meta.lastStoreCleanup || Date.now();
+        console.log("[STORE] Last cleanup:", new Date(lastStoreCleanup).toISOString());
+    } catch (e) {}
+}
+
+// Load messages from individual files
+const messageFiles = fs.readdirSync(storeMessagesDir).filter(f => f.endsWith('.json'));
+console.log("[STORE] Loading messages from", messageFiles.length, "files...");
+
+for (const file of messageFiles) {
+    try {
+        const jid = file.replace('.json', '').replace(/_/g, '.');
+        const msgs = JSON.parse(fs.readFileSync(path.join(storeMessagesDir, file), 'utf-8'));
+        const map: Map<string, any> = new Map(msgs.map((m: any) => [m.key.id, m]));
+        store.messages[jid] = { all: () => Array.from(map.values()), map };
+        
+        if (!store.chats.get(jid)) {
+            store.chats.set(jid, {
+                id: jid,
+                name: getPhoneNumber(jid),
+                unreadCount: 0
+            });
+        }
+    } catch (e) {
+        console.log("[STORE] Error loading message file", file, ":", e);
+    }
+}
+
+console.log("[STORE] Loaded messages for", Object.keys(store.messages).length, "JIDs");
+
+// Recalculate timestamps after loading
+const getAllChatMessages = (chatId: string): any[] => {
+    let msgs = store.messages[chatId]?.all() || [];
+    if (chatId && chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
+        const baseJid = chatId.replace('@s.whatsapp.net', '');
+        for (const key of Object.keys(store.messages)) {
+            if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                msgs = msgs.concat(store.messages[key]?.all() || []);
+            }
+        }
+        const lid = phoneToLidMap.get(baseJid);
+        if (lid) {
+            const lidJid = `${lid}@lid`;
+            const lidMsgs = store.messages[lidJid]?.all() || [];
+            msgs = msgs.concat(lidMsgs);
+        }
+    }
+    if (chatId?.endsWith('@lid')) {
+        const lidPart = chatId.replace('@lid', '');
+        const pnUser = lidToPhoneMap.get(lidPart);
+        if (pnUser) {
+            const pnJid = `${pnUser}@s.whatsapp.net`;
+            const pnMsgs = store.messages[pnJid]?.all() || [];
+            msgs = msgs.concat(pnMsgs);
+        }
+    }
+    return msgs;
+};
+
+const allChats = store.chats.all();
+for (const chat of allChats) {
+    if (chat.id.endsWith('@s.whatsapp.net') || chat.id.endsWith('@lid')) {
+        const chatMessages = getAllChatMessages(chat.id);
+        if (chatMessages.length > 0) {
+            const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
+            if (latestMsgTs > 0) {
+                chat.conversationTimestamp = latestMsgTs;
+                store.chats.set(chat.id, chat);
+            }
+        }
+    }
+}
+console.log("[STORE] Recalculated timestamps for individual chats from messages");
+
+// Save store every 30 seconds (optimized from 10s)
 
 // Save store every 30 seconds (optimized from 10s)
 setInterval(saveStore, 30_000);
@@ -839,6 +852,9 @@ async function startServer() {
                 chatMessages = chatMessages.concat(store.messages[pnJid]?.all() || []);
             }
         }
+        
+        let lastMessageFromMe = false;
+        
         if (chatMessages.length > 0) {
             // Sort by timestamp descending to get the most recent
             // Filter out reactions - they should not appear as last message preview (matches WhatsApp Web behavior)
@@ -850,6 +866,9 @@ async function startServer() {
             const lastMsg = sortedMessages[0];
 
             if (lastMsg) {
+                // Check if last message was sent by me
+                lastMessageFromMe = lastMsg.key?.fromMe === true;
+                
                 // Use the actual timestamp from the last message
                 lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
 
@@ -892,6 +911,7 @@ async function startServer() {
             lastMessage: lastMessageText,
             lastMessageSender: lastMessageSender,
             lastMessageTime: lastMessageTime,
+            lastMessageFromMe,
             conversationTimestamp: lastMessageTime
         };
     };
@@ -973,6 +993,9 @@ async function startServer() {
                 chatMessages = chatMessages.concat(store.messages[pnJid]?.all() || []);
             }
         }  
+        
+        let lastMessageFromMe = false;
+        
         if (chatMessages.length > 0) {
             // Sort by timestamp descending to get the most recent
             // Filter out reactions - they should not appear as last message preview (matches WhatsApp Web behavior)
@@ -984,6 +1007,9 @@ async function startServer() {
             const lastMsg = sortedMessages[0];
             
             if (lastMsg) {
+                // Check if last message was sent by me
+                lastMessageFromMe = lastMsg.key?.fromMe === true;
+                
                 // Use the actual timestamp from the last message
                 lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
                 
@@ -1099,6 +1125,7 @@ async function startServer() {
             lastMessage: lastMessageText,
             lastMessageSender: lastMessageSender,
             lastMessageTime: lastMessageTime,
+            lastMessageFromMe,
             conversationTimestamp: lastMessageTime
         };
     };

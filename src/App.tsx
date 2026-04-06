@@ -421,6 +421,7 @@ interface Chat {
   lastMessageSender?: string;
   lastMessageTime?: number;
   lastMessageStatus?: string; // 'sent' | 'delivered' | 'read' | 'played'
+  lastMessageFromMe?: boolean;
   description?: string;
   archived?: boolean;
   archive?: boolean;
@@ -3603,6 +3604,7 @@ export default function App() {
                             {chat.lastMessageStatus === 'read' && <CheckCheck size={16} className="wa-check-read-icon" />}
                           </span>
                         )}
+                        {chat.lastMessageFromMe ? 'Você: ' : ''}
                         {chat.lastMessageSender && chat.id.endsWith('@g.us') && (
                           <span>{chat.lastMessageSender}: </span>
                         )}
