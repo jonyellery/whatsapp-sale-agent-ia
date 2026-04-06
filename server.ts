@@ -1277,73 +1277,57 @@ async function startServer() {
                 connectionStatus = "open";
                 qrCode = null;
                 reconnectAttempts.current = 0;
-                io.emit("connection-update", { status: "open" });
+io.emit("connection-update", { status: "open" });
                 
-                // Emit current chats and wait for WhatsApp to send more via events
+                // FAST EMIT - send chats immediately without waiting for avatars
                 setTimeout(async () => {
-                    console.log("[SYNC] Checking for chats after connection...");
+                    console.log("[SYNC] Fast initial emit...");
                     
                     let chats = store.chats.all().filter((c: any) => 
                         isValidChatJid(c.id) && c.archived !== true
                     );
                     
                     console.log("Chats found:", chats.length);
-                    
-                    // Helper to get all messages for a chat (including device variants and LID)
-                    const getAllChatMessages = (chatId: string): any[] => {
-                        let msgs = store.messages[chatId]?.all() || [];
-                        if (chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
-                            const baseJid = chatId.replace('@s.whatsapp.net', '');
-                            for (const key of Object.keys(store.messages)) {
-                                if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
-                                    msgs = msgs.concat(store.messages[key]?.all() || []);
-                                }
-                            }
-                            const lid = phoneToLidMap.get(baseJid);
-                            if (lid) {
-                                const lidJid = `${lid}@lid`;
-                                const lidMsgs = store.messages[lidJid]?.all() || [];
-                                msgs = msgs.concat(lidMsgs);
-                            }
-                        }
-                        if (chatId.endsWith('@lid')) {
-                            const lidPart = chatId.replace('@lid', '');
-                            const pnUser = lidToPhoneMap.get(lidPart);
-                            if (pnUser) {
-                                const pnJid = `${pnUser}@s.whatsapp.net`;
-                                msgs = msgs.concat(store.messages[pnJid]?.all() || []);
-                            }
-                        }
-                        return msgs;
-                    };
-                    
-                    // Recalculate timestamps from messages before emitting
-                    for (const chat of chats) {
-                        const chatMessages = getAllChatMessages(chat.id);
-                        if (chatMessages.length > 0) {
-                            const latestMsgTs = Math.max(...chatMessages.map((m: any) => m.messageTimestamp || 0));
-                            chat.conversationTimestamp = latestMsgTs;
-                            store.chats.set(chat.id, chat);
-                        } else {
-                            // No messages yet - clear timestamp so sort uses 0
-                            chat.conversationTimestamp = 0;
-                            store.chats.set(chat.id, chat);
-                        }
-                    }
-                    
-                    // Send whatever chats we have - use the outer function that checks contacts and groups
-                    // Sort by most recent first - ALREADY FILTERED archived above
+
+                    // Sort by most recent first
                     const chatsSorted = sortChatsByRecent(chats);
-                    const chatsWithAvatars = await Promise.all(chatsSorted.map(getChatWithAvatarFromStore));
-                    console.log("Emitting chats:", chatsWithAvatars.length);
-                    io.emit("chats-list", chatsWithAvatars);
                     
+                    // FAST: send WITHOUT avatar fetching (frontend fetches on-demand)
+                    const chatsFastEmit = chatsSorted.map((chat: any) => ({
+                        id: chat.id,
+                        name: chat.name || chat.subject || resolveContactName(chat.id, store.contacts),
+                        displayName: chat.name || chat.subject || resolveContactName(chat.id, store.contacts),
+                        unreadCount: chat.unreadCount || 0,
+                        archived: false,
+                        conversationTimestamp: chat.conversationTimestamp || 0,
+                        pinnedAt: chat.pinnedAt,
+                        muted: chat.muted,
+                        ephemeralExpiration: chat.ephemeralExpiration
+                    }));
                     
+                    console.log("Fast emit:", chatsFastEmit.length);
+                    io.emit("chats-list", chatsFastEmit);
                     
-                    // Safety sync: after another delay, ensure all contacts have chat entries
-                    // This catches contacts that arrived via contacts.upsert after the initial emit
+                    // Background avatar fetch - parallel in batches
                     setTimeout(async () => {
-                        console.log("[SAFETY] Running delayed contact-to-chat sync...");
+                        console.log("[SYNC] Fetching avatars in parallel...");
+                        const BATCH_SIZE = 10;
+                        const results: any[] = [];
+                        
+                        for (let i = 0; i < chatsSorted.length; i += BATCH_SIZE) {
+                            const batch = chatsSorted.slice(i, i + BATCH_SIZE);
+                            const batchResults = await Promise.all(batch.map(getChatWithAvatarFromStore));
+                            results.push(...batchResults);
+                            if (i + BATCH_SIZE < chatsSorted.length) {
+                                await new Promise(r => setTimeout(r, 100));
+                            }
+                        }
+                        io.emit("chats-list", results);
+                    }, 1000);
+                    
+// Safety sync: ensure all contacts have chat entries
+                    setTimeout(async () => {
+                        console.log("[SAFETY] Fast contact-to-chat sync...");
                         let createdCount = 0;
                         for (const [jid, contact] of Object.entries(store.contacts)) {
                             if (jid.endsWith('@s.whatsapp.net') && !store.chats.get(jid)) {
@@ -1359,51 +1343,26 @@ async function startServer() {
                         }
                         console.log(`[SAFETY] Created ${createdCount} chats from contacts`);
                         
-                        // Re-emit the full chat list if any were created
+                        // Re-emit only if new chats were created (without avatars)
                         if (createdCount > 0) {
                             let allChats = store.chats.all().filter((c: any) => 
                                 isValidChatJid(c.id) && c.archived !== true
                             );
                             allChats = sortChatsByRecent(allChats);
-                            const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-                            console.log(`[SAFETY] Re-emitting ${allWithAvatars.length} active chats`);
-                            io.emit("chats-list", allWithAvatars);
+                            const allFast = allChats.map((chat: any) => ({
+                                id: chat.id,
+                                name: chat.name || chat.subject,
+                                displayName: chat.name || chat.subject || resolveContactName(chat.id, store.contacts),
+                                unreadCount: 0,
+                                archived: false,
+                                conversationTimestamp: chat.conversationTimestamp || 0
+                            }));
+                            io.emit("chats-list", allFast);
                         }
 
-                        // Update group metadata on every startup - BATCHED FETCH
-                        const groupChats = store.chats.all().filter((c: any) => c.id.endsWith('@g.us'));
-                        console.log(`[GROUPS] Fetching metadata for ${groupChats.length} groups in batches...`);
-
-                        // Fetch all group metadata in batches to avoid rate limits
-                        const results = await processInBatches(groupChats, async (group: any) => {
-                            try {
-                                const meta = await sock.groupMetadata(group.id);
-                                store.groupMetadata[group.id] = meta;
-                                // Update chat name with group subject
-                                if (meta.subject) {
-                                    const existingChat = store.chats.get(group.id);
-                                    if (existingChat) {
-                                        existingChat.name = meta.subject;
-                                        store.chats.set(group.id, existingChat);
-                                    }
-                                }
-                                return true;
-                            } catch (e) {
-                                return false;
-                            }
-                        });
-                        const groupsUpdated = results.filter(r => r).length;
-                        console.log(`[GROUPS] Updated metadata for ${groupsUpdated}/${groupChats.length} groups`);
-                        
-                        // Re-emit chats with updated group names - FILTER archived
-                        let refreshedChats = store.chats.all().filter((c: any) => 
-                            isValidChatJid(c.id) && c.archived !== true
-                        );
-                        refreshedChats = sortChatsByRecent(refreshedChats);
-                        const refreshedWithAvatars = await Promise.all(refreshedChats.map(getChatWithAvatarFromStore));
-                        io.emit("chats-list", refreshedWithAvatars);
-                    }, 5000);
-                }, 8000);
+                        // Skip sequential group metadata - lazy load on-demand
+                    }, 3000);
+                }, 3000);
             }
         });
 
