@@ -4,10 +4,9 @@ import { Server } from "socket.io";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import zlib from "zlib";
-import makeWASocket, { 
-    useMultiFileAuthState, 
-    DisconnectReason, 
+import makeWASocket, {
+    useMultiFileAuthState,
+    DisconnectReason,
     fetchLatestBaileysVersion,
     WAMessageKey,
     Contact,
@@ -490,15 +489,9 @@ const saveStore = () => {
     // Serialize compactly to avoid string length limits
     const jsonStr = JSON.stringify(data);
     const jsonSize = Buffer.byteLength(jsonStr, 'utf8');
-    
-    if (jsonSize > 1024 * 1024) {
-        // Compress with gzip for large files
-        const compressed = zlib.gzipSync(Buffer.from(jsonStr, 'utf8'));
-        fs.writeFileSync(storePath + '.gz', compressed);
-        console.log(`[STORE] Saved ${chatsToSave.length} chats (compressed: ${Math.round(compressed.length/1024)}KB from ${Math.round(jsonSize/1024)}KB)`);
-    } else {
-        fs.writeFileSync(storePath, jsonStr);
-    }
+
+    fs.writeFileSync(storePath, jsonStr);
+    console.log(`[STORE] Saved ${chatsToSave.length} chats (${Math.round(jsonSize/1024)}KB)`);
 };
 
 // Load store from file if exists
@@ -506,15 +499,7 @@ if (fs.existsSync(storePath)) {
     try {
         let data: any;
         
-        // Check for compressed file first
-        if (fs.existsSync(storePath + '.gz')) {
-            const compressed = fs.readFileSync(storePath + '.gz');
-            const decompressed = zlib.gunzipSync(compressed);
-            data = JSON.parse(decompressed.toString('utf8'));
-            console.log("[STORE] Loaded compressed store file");
-        } else {
-            data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
-        }
+        data = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
 
         if (data.chats && Array.isArray(data.chats)) {
             for (const chat of data.chats) {
