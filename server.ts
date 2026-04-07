@@ -142,6 +142,19 @@ const resolveContactName = (jid: string, contactsStore: { [key: string]: any }):
     return getPhoneNumber(jid);
 };
 
+// Normalize JID: convert @lid to @s.whatsapp.net if mapping exists
+const normalizeJidForLid = (jid: string): string => {
+    if (!jid) return jid;
+    if (jid.endsWith('@lid')) {
+        const lidPart = jid.replace('@lid', '');
+        const pnUser = lidToPhoneMap.get(lidPart);
+        if (pnUser) {
+            return `${pnUser}@s.whatsapp.net`;
+        }
+    }
+    return jid;
+};
+
 // File upload configuration
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -393,8 +406,20 @@ class SimpleStore {
         eventEmitter.on("messages.upsert", (m: { messages: any[], type: string }) => {
             console.log(`[STORE] messages.upsert fired: type=${m.type}, count=${m.messages?.length || 0}`);
             for (const msg of m.messages) {
-                const jid = normalizeJid(msg.key.remoteJid!);
+                // Use normalizeJid to remove device suffix (e.g., 558512345678:5@s.whatsapp.net -> 558512345678@s.whatsapp.net)
+                let jid = normalizeJid(msg.key.remoteJid!);
+                
+                // Normalize LID to phone number if mapping exists
+                if (jid.endsWith('@lid')) {
+                    const lidPart = jid.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        jid = `${pnUser}@s.whatsapp.net`;
+                    }
+                }
+                
                 console.log(`[STORE] msg from=${msg.key.fromMe ? 'ME' : jid}, ts=${msg.messageTimestamp}, type=${Object.keys(msg.message || {}).join(',') || 'none'}`);
+                
                 if (!this.messages[jid]) {
                     const map = new Map();
                     this.messages[jid] = {
@@ -446,20 +471,17 @@ class SimpleStore {
                         this.contacts[contact.id] = contact;
                     }
                     
-                    // CRITICAL: Also create/update chat entry for this contact
-                    // This ensures individual contacts appear in chat list
+                    // Only update existing chat entries - don't create new empty chats
                     const chatJid = contact.id;
                     if (chatJid.endsWith('@s.whatsapp.net')) {
                         const existingChat = this.chats.get(chatJid);
-                        if (!existingChat) {
-                            this.chats.set(chatJid, {
-                                id: chatJid,
-                                name: contact.name || contact.notify || getPhoneNumber(chatJid),
-                                unreadCount: 0,
-                                archived: false
-                            });
-                            console.log(`[STORE] Created chat from contact ${chatJid}: ${contact.name || contact.notify}`);
+                        if (existingChat) {
+                            // Update existing chat name if missing
+                            if (!existingChat.name || existingChat.name === getPhoneNumber(chatJid)) {
+                                existingChat.name = contact.name || contact.notify || existingChat.name;
+                            }
                         }
+                        // Don't create new chat - let it be created on first message
                     }
                 }
             }
@@ -543,22 +565,39 @@ const scheduleSave = () => {
 };
 
 const saveStore = () => {
-    // Save chats - only dirty ones for efficiency
+    // Save chats - merge with existing chats to prevent data loss
     let chatsToSave: any[] = [];
     
+    // First, load existing chats from file to merge
+    let existingChats: any[] = [];
+    if (fs.existsSync(storeChatsPath)) {
+        try {
+            existingChats = JSON.parse(fs.readFileSync(storeChatsPath, 'utf-8'));
+            if (!Array.isArray(existingChats)) existingChats = [];
+        } catch (e) {
+            existingChats = [];
+        }
+    }
+    
     if (dirtyChats.size > 0) {
-        // Diff save: save only dirty chats (deduplicated)
+        // Diff save: merge dirty chats with existing
         const dirtyChatsList: any[] = [];
         for (const chatId of dirtyChats) {
             const chat = store.chats.get(chatId);
             if (chat) dirtyChatsList.push(chat);
         }
-        // Deduplicate before saving to prevent duplicates on next load
-        const dedupedChats = deduplicateChats(dirtyChatsList);
-        chatsToSave = dedupedChats;
-        console.log(`[STORE] Diff save: ${dirtyChatsList.length} dirty chats (${chatsToSave.length} after dedup)...`);
+        // Merge: existing + dirty (dirty overwrites existing)
+        const existingMap = new Map(existingChats.map(c => [c.id, c]));
+        for (const chat of dirtyChatsList) {
+            existingMap.set(chat.id, chat);
+        }
+        chatsToSave = deduplicateChats(Array.from(existingMap.values()));
+        console.log(`[STORE] Diff save: ${dirtyChatsList.length} dirty + ${existingChats.length} existing = ${chatsToSave.length} total...`);
         fs.writeFileSync(storeChatsPath, JSON.stringify(chatsToSave));
         dirtyChats.clear();
+    } else if (existingChats.length > 0) {
+        // No dirty chats, but preserve existing
+        chatsToSave = existingChats;
     }
     
     // Save contacts (always, small data)
@@ -669,15 +708,45 @@ for (const file of messageFiles) {
                 name: getPhoneNumber(jid),
                 unreadCount: 0
             });
+            markChatDirty(jid); // Marcar para persistência
         }
     } catch (e) {
         console.log("[STORE] Error loading message file", file, ":", e);
     }
 }
 
+// After loading, normalize LID messages to phone JIDs if mapping exists
+console.log("[STORE] Normalizing LID messages to phone JIDs...");
+for (const [lid, pn] of lidToPhoneMap) {
+    const lidJid = `${lid}@lid`;
+    const pnJid = `${pn}@s.whatsapp.net`;
+    const lidMsgs = store.messages[lidJid];
+    const pnMsgs = store.messages[pnJid];
+    
+    if (lidMsgs && lidMsgs.map) {
+        if (pnMsgs && pnMsgs.map) {
+            // Merge LID messages into phone messages
+            for (const [msgId, msg] of lidMsgs.map) {
+                if (!pnMsgs.map.has(msgId)) {
+                    pnMsgs.map.set(msgId, msg);
+                }
+            }
+            // Update the all() function
+            pnMsgs.all = () => Array.from(pnMsgs.map.values());
+            markJidDirty(pnJid);
+            console.log(`[STORE] Merged LID ${lid} messages into phone ${pn}`);
+        } else {
+            // Move LID messages to phone JID
+            store.messages[pnJid] = lidMsgs;
+            markJidDirty(pnJid);
+            console.log(`[STORE] Moved LID ${lid} messages to phone ${pn}`);
+        }
+    }
+}
+
 console.log("[STORE] Loaded messages for", Object.keys(store.messages).length, "JIDs");
 
-// Recalculate timestamps after loading
+// Recalculate timestamps after loading - original logic preserved
 const getAllChatMessages = (chatId: string): any[] => {
     let msgs = store.messages[chatId]?.all() || [];
     if (chatId && chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
@@ -715,6 +784,7 @@ for (const chat of allChats) {
             if (latestMsgTs > 0) {
                 chat.conversationTimestamp = latestMsgTs;
                 store.chats.set(chat.id, chat);
+                markChatDirty(chat.id);
             }
         }
     }
@@ -922,8 +992,9 @@ async function startServer() {
         let lastMessageText = '';
         let lastMessageSender = displayName; // Default to chat display name
         let lastMessageTime = chat.conversationTimestamp || chat.lastMessageRecvTimestamp || 0;
+        // Try cache first for speed - getChatWithAvatarCachedOnly
         let chatMessages = store.messages[chat.id]?.all() || [];
-
+        
         // For individual contacts, also check device-specific JID variants
         if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
             const baseJid = chat.id.replace('@s.whatsapp.net', '');
@@ -933,7 +1004,7 @@ async function startServer() {
                 }
             }
         }
-
+        
         // For @lid, also check the corresponding @s.whatsapp.net JID
         if (chat.id.endsWith('@lid')) {
             const lidPart = chat.id.replace('@lid', '');
@@ -1063,6 +1134,7 @@ async function startServer() {
         let lastMessageText = '';
         let lastMessageSender = displayName; // Default to chat display name
         let lastMessageTime = chat.conversationTimestamp || chat.lastMessageRecvTimestamp || 0;
+        // Try cache first for speed - getChatWithAvatarCachedOnly
         let chatMessages = store.messages[chat.id]?.all() || [];
         
         // For individual contacts, also check device-specific JID variants
@@ -1083,7 +1155,7 @@ async function startServer() {
                 const pnJid = `${pnUser}@s.whatsapp.net`;
                 chatMessages = chatMessages.concat(store.messages[pnJid]?.all() || []);
             }
-        }  
+        }
         
         let lastMessageFromMe = false;
         
@@ -1302,20 +1374,18 @@ async function startServer() {
             contact.notify = pushName;
         }
 
-        // Only create chat if it's @s.whatsapp.net and there's no existing @lid for same phone
+        // Only update chat if it already exists - don't create empty chats
         if (contactJid.endsWith('@s.whatsapp.net') && !contactJid.includes(':')) {
             const phone = contactJid.replace('@s.whatsapp.net', '');
             const lid = phoneToLidMap.get(phone);
             const existingLidChat = lid ? store.chats.get(`${lid}@lid`) : null;
-            // Only create if no existing @lid chat (it will be deduplicated to @s.whatsapp.net)
-            if (!existingLidChat && !store.chats.get(contactJid)) {
-                store.chats.set(contactJid, {
-                    id: contactJid,
-                    name: pushName,
-                    unreadCount: 0,
-                    conversationTimestamp: Math.floor(Date.now() / 1000)
-                });
+            const existingChat = store.chats.get(contactJid);
+            
+            if (existingChat && (!existingChat.name || existingChat.name === getPhoneNumber(contactJid))) {
+                existingChat.name = pushName;
+                store.chats.set(contactJid, existingChat);
             }
+            // Don't create new chat - let it be created on first message
         }
     };
 
@@ -1437,71 +1507,45 @@ io.emit("connection-update", { status: "open" });
                     console.log("Fast emit:", chatsFastEmit.length);
                     io.emit("chats-list", chatsFastEmit);
                     
-                    // Background avatar fetch - parallel in batches
+                    // Background avatar fetch - parallel in batches (sem re-emissão completa)
+                    // Os avatares serão puxados pelo frontend sob demanda
                     setTimeout(async () => {
-                        console.log("[SYNC] Fetching avatars in parallel...");
+                        console.log("[SYNC] Fetching avatars in background (no re-emit)...");
                         const BATCH_SIZE = 10;
-                        const results: any[] = [];
                         
                         for (let i = 0; i < chatsSorted.length; i += BATCH_SIZE) {
                             const batch = chatsSorted.slice(i, i + BATCH_SIZE);
-                            const batchResults = await Promise.all(batch.map(getChatWithAvatarFromStore));
-                            results.push(...batchResults);
+                            await Promise.all(batch.map(getChatWithAvatarFromStore));
                             if (i + BATCH_SIZE < chatsSorted.length) {
                                 await new Promise(r => setTimeout(r, 100));
                             }
                         }
-                        io.emit("chats-list", results);
+                        console.log("[SYNC] Background avatar fetch completed");
                     }, 1000);
                     
-// Safety sync: ensure all contacts have chat entries
+// Safety sync: ensure all contacts have chat entries - but only for chats with messages
+// Chats without messages will be created on first message
                     setTimeout(async () => {
                         console.log("[SAFETY] Fast contact-to-chat sync...");
-                        let createdCount = 0;
+                        
+                        // Only process contacts that already have chats (with messages)
+                        // Don't create empty chats here
+                        let existingCount = 0;
                         for (const [jid, contact] of Object.entries(store.contacts)) {
-                            if (jid.endsWith('@s.whatsapp.net') && !store.chats.get(jid)) {
+                            if (jid.endsWith('@s.whatsapp.net') && store.chats.get(jid)) {
                                 const c = contact as any;
-                                store.chats.set(jid, {
-                                    id: jid,
-                                    name: c.name || c.notify || getPhoneNumber(jid),
-                                    unreadCount: 0,
-                                    conversationTimestamp: Math.floor(Date.now() / 1000)
-                                });
-                                createdCount++;
+                                const chat = store.chats.get(jid);
+                                if (chat && (!chat.name || chat.name === getPhoneNumber(jid))) {
+                                    chat.name = c.name || c.notify || chat.name;
+                                    store.chats.set(jid, chat);
+                                }
+                                existingCount++;
                             }
                         }
-                        console.log(`[SAFETY] Created ${createdCount} chats from contacts`);
+                        console.log(`[SAFETY] Updated ${existingCount} existing chats from contacts`);
                         
-                        // Re-emit only if new chats were created (without avatars)
-                        if (createdCount > 0) {
-            let allChats = store.chats.all().filter((c: any) => c &&
-                isValidChatJid(c.id) && c.archived !== true
-            );
-            const seenPhones = new Set<string>();
-            allChats = allChats.filter(chat => {
-                if (chat.id.endsWith('@lid')) {
-                    const lidPart = chat.id.replace('@lid', '');
-                    const pn = lidToPhoneMap.get(lidPart);
-                    if (pn && seenPhones.has(pn)) return false;
-                    if (pn) seenPhones.add(pn);
-                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
-                    const phone = chat.id.replace('@s.whatsapp.net', '');
-                    if (seenPhones.has(phone)) return false;
-                    seenPhones.add(phone);
-                }
-                return true;
-            });
-            allChats = sortChatsByRecent(allChats);
-                            const allFast = allChats.map((chat: any) => ({
-                                id: chat.id,
-                                name: chat.name || chat.subject,
-                                displayName: chat.name || chat.subject || resolveContactName(chat.id, store.contacts),
-                                unreadCount: 0,
-                                archived: false,
-                                conversationTimestamp: chat.conversationTimestamp || 0
-                            }));
-                            io.emit("chats-list", allFast);
-                        }
+                        // Não re-emitir todos os chats aqui - os chats de contatos ficam em background
+                        // e serão включены naturalmente quando tiverem mensagens
 
                         // Skip sequential group metadata - lazy load on-demand
                     }, 3000);
@@ -1653,30 +1697,20 @@ io.emit("connection-update", { status: "open" });
                 
                 store.contacts[contact.id] = contact;
                 
-                // CRITICAL: Also create chat entry for individual contacts if not exists
-                // This ensures contacts appear in the chat list
-                // Only create if no existing @lid chat for same phone
+                // Only update existing chat entries - don't create new empty chats
+                // Chats should be created when messages arrive
                 if (contact.id.endsWith('@s.whatsapp.net')) {
                     const phone = contact.id.replace('@s.whatsapp.net', '');
                     const lid = phoneToLidMap.get(phone);
                     const existingLidChat = lid ? store.chats.get(`${lid}@lid`) : null;
                     
                     const existingChat = store.chats.get(contact.id);
-                    if (!existingChat && !existingLidChat) {
-                        store.chats.set(contact.id, {
-                            id: contact.id,
-                            name: contact.name || contact.notify || getPhoneNumber(contact.id),
-                            unreadCount: 0,
-                            archived: false,
-                            conversationTimestamp: Math.floor(Date.now() / 1000)
-                        });
-                        console.log(`[SOCKET] Created chat from contact ${contact.id}: ${contact.name || contact.notify}`);
-                    } else if (existingChat) {
-                        // Update existing chat with contact name - PRESERVE archived status
+                    if (existingChat) {
+                        // Update existing chat with contact name - PRESERVE archived status and timestamp
                         const updatedChat = {
                             ...existingChat,
                             name: contact.name || contact.notify || existingChat.name
-                            // Do NOT touch archived - preserve existing value
+                            // Do NOT touch archived or conversationTimestamp - preserve existing values
                         };
                         store.chats.set(contact.id, updatedChat);
                     }
@@ -1709,8 +1743,17 @@ io.emit("connection-update", { status: "open" });
             const newMessages: any[] = [];
 
             for (const msg of m.messages) {
-                const jid = normalizeJid(msg.key.remoteJid);
+                let jid = normalizeJid(msg.key.remoteJid);
                 if (!jid) continue;
+
+                // Normalize LID to phone number if mapping exists
+                if (jid.endsWith('@lid')) {
+                    const lidPart = jid.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        jid = `${pnUser}@s.whatsapp.net`;
+                    }
+                }
 
                 ensureChatExists(jid);
 
@@ -1751,8 +1794,17 @@ io.emit("connection-update", { status: "open" });
             const deleted: any[] = [];
 
             for (const { key, update } of updates) {
-                const jid = normalizeJid(key.remoteJid);
+                let jid = normalizeJid(key.remoteJid);
                 if (!jid) continue;
+
+                // Normalize LID to phone number if mapping exists
+                if (jid.endsWith('@lid')) {
+                    const lidPart = jid.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        jid = `${pnUser}@s.whatsapp.net`;
+                    }
+                }
 
                 const msgMap = store.messages[jid]?.map;
                 if (!msgMap) continue;
@@ -1825,7 +1877,16 @@ io.emit("connection-update", { status: "open" });
             
             for (const reactionData of reactions) {
                 const { key, reaction } = reactionData;
-                const jid = normalizeJid(key.remoteJid);
+                let jid = normalizeJid(key.remoteJid);
+                
+                // Normalize LID to phone number if mapping exists
+                if (jid.endsWith('@lid')) {
+                    const lidPart = jid.replace('@lid', '');
+                    const pnUser = lidToPhoneMap.get(lidPart);
+                    if (pnUser) {
+                        jid = `${pnUser}@s.whatsapp.net`;
+                    }
+                }
                 
                 // Ensure chat exists
                 ensureChatExists(jid);
@@ -1902,7 +1963,18 @@ io.emit("connection-update", { status: "open" });
                             archivedCount++;
                         }
                         
-                        store.chats.set(chat.id, chat);
+                        // Merge with existing chat to preserve conversationTimestamp from messages
+                        const existingChat = store.chats.get(chat.id);
+                        if (existingChat) {
+                            // Preserve existing timestamp if it exists and is valid
+                            const merged = {
+                                ...chat,
+                                conversationTimestamp: existingChat.conversationTimestamp || chat.conversationTimestamp || 0
+                            };
+                            store.chats.set(chat.id, merged);
+                        } else {
+                            store.chats.set(chat.id, chat);
+                        }
                     }
                 }
                 console.log(`[SOCKET] Processed ${history.chats.length} chats from history, ${archivedCount} archived`);
@@ -1929,15 +2001,9 @@ io.emit("connection-update", { status: "open" });
                             
                             const existingChat = store.chats.get(contact.id);
                             const contactName = contact.name || contact.notify || getPhoneNumber(contact.id);
-                            if (!existingChat && !existingLidChat) {
-                                store.chats.set(contact.id, {
-                                    id: contact.id,
-                                    name: contactName,
-                                    unreadCount: 0
-                                    // Don't set conversationTimestamp here - let messages or recalc set it
-                                });
-                                console.log(`[SOCKET] Created chat from history contact ${contact.id}: ${contactName}`);
-                            } else if (existingChat && (!existingChat.name || existingChat.name === getPhoneNumber(contact.id))) {
+                            // Only create chat if it already exists or will have messages later
+                            // Don't create empty chats from contacts - let them be created on first message
+                            if (existingChat && (!existingChat.name || existingChat.name === getPhoneNumber(contact.id))) {
                                 // Update chat name if it's currently just a phone number
                                 existingChat.name = contactName;
                                 store.chats.set(contact.id, existingChat);
@@ -1951,7 +2017,16 @@ io.emit("connection-update", { status: "open" });
             // Process messages from history - STORE MESSAGES AND CREATE CHATS FROM MESSAGE JIDs!
             if (history.messages && history.messages.length > 0) {
                 for (const msg of history.messages) {
-                    const jid = msg.key?.remoteJid ? normalizeJid(msg.key.remoteJid) : null;
+                    let jid = msg.key?.remoteJid ? normalizeJid(msg.key.remoteJid) : null;
+                    
+                    // Normalize LID to phone number if mapping exists
+                    if (jid && jid.endsWith('@lid')) {
+                        const lidPart = jid.replace('@lid', '');
+                        const pnUser = lidToPhoneMap.get(lidPart);
+                        if (pnUser) {
+                            jid = `${pnUser}@s.whatsapp.net`;
+                        }
+                    }
                     
                     // Extract pushName from message and store as contact
                     if (msg.pushName && jid) {
@@ -1974,20 +2049,20 @@ io.emit("connection-update", { status: "open" });
                     
                     if (jid) {
                         // Store the actual message - use persistent array to avoid losing messages
-                if (!store.messages[jid]) {
-                    const map = new Map();
-                    store.messages[jid] = {
-                        all: () => Array.from(map.values()),
-                        map
-                    };
-                }
-                const msgMap = store.messages[jid].map;
-                if (msgMap && msg.key?.id && !msgMap.has(msg.key.id)) {
-                    msgMap.set(msg.key.id, msg);
-                    markJidDirty(jid);
-                    // Update search index for fast lookups
-                    updateMessageSearchIndex(jid);
-                }
+                        if (!store.messages[jid]) {
+                            const map = new Map();
+                            store.messages[jid] = {
+                                all: () => Array.from(map.values()),
+                                map
+                            };
+                        }
+                        const msgMap = store.messages[jid].map;
+                        if (msgMap && msg.key?.id && !msgMap.has(msg.key.id)) {
+                            msgMap.set(msg.key.id, msg);
+                            markJidDirty(jid);
+                            // Update search index for fast lookups
+                            updateMessageSearchIndex(jid);
+                        }
 
                         const existingChat = store.chats.get(jid);
                         if (!existingChat) {
@@ -2010,7 +2085,6 @@ io.emit("connection-update", { status: "open" });
             }
             
             // Recalculate conversationTimestamp for ALL chats from their latest messages
-            // This ensures timestamps are always correct even if WhatsApp sends stale data
             const getAllMessagesForChat = (chatId: string): any[] => {
                 let msgs = store.messages[chatId]?.all() || [];
                 if (chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
@@ -2711,7 +2785,16 @@ io.emit("connection-update", { status: "open" });
 
     // Get chat with full details including avatar
     app.get("/api/chat/:jid", async (req, res) => {
-        const { jid } = req.params;
+        let { jid } = req.params;
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
         
         try {
             const chat = store.chats.get(jid);
@@ -2802,9 +2885,18 @@ io.emit("connection-update", { status: "open" });
     });
 
     app.get("/api/messages/:jid", (req, res) => {
-        const { jid } = req.params;
+        let { jid } = req.params;
         const limit = parseInt(req.query.limit as string) || 50;
         const before = req.query.before as string;
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
         
         let allMsgs: any[] = [];
         const seen = new Set<string>();
@@ -2848,9 +2940,18 @@ io.emit("connection-update", { status: "open" });
 
     // Get recent messages (newest first) - for WhatsApp Web style pagination
     app.get("/api/messages/:jid/recent", (req, res) => {
-        const { jid } = req.params;
+        let { jid } = req.params;
         const limit = parseInt(req.query.limit as string) || 20;
         const after = req.query.after as string;
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
         
         let allMsgs: any[] = [];
         const seen = new Set<string>();
@@ -2898,9 +2999,18 @@ io.emit("connection-update", { status: "open" });
 
     // Load more messages (older)
     app.get("/api/messages/:jid/load-more", async (req, res) => {
-        const { jid } = req.params;
+        let { jid } = req.params;
         const before = parseInt(req.query.before as string) || Math.floor(Date.now() / 1000);
         const limit = parseInt(req.query.limit as string) || 30;
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
         
         if (!sock) {
             return res.status(500).json({ error: "Socket not initialized" });
@@ -2995,7 +3105,16 @@ io.emit("connection-update", { status: "open" });
 
     // Media proxy endpoint - downloads encrypted media from WhatsApp and serves it
     app.get("/api/media/:jid/:messageId", async (req, res) => {
-        const { jid, messageId } = req.params;
+        let { jid, messageId } = req.params;
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
         
         if (!sock) {
             return res.status(500).json({ error: "Socket not initialized" });
@@ -3234,7 +3353,7 @@ io.emit("connection-update", { status: "open" });
                 }
             }
             await sock.sendReadReceipt(jid);
-            emitChats();
+            emitChatsDebounced();
             res.json({ success: true });
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
@@ -3496,7 +3615,17 @@ io.emit("connection-update", { status: "open" });
 
     // Get shared media with a contact
     app.get("/api/shared-media/:jid", (req, res) => {
-        const jid = decodeURIComponent(req.params.jid);
+        let jid = decodeURIComponent(req.params.jid);
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
+        
         const media: any[] = [];
         
         for (const [chatJid, msgObj] of Object.entries(store.messages)) {
@@ -3522,7 +3651,17 @@ io.emit("connection-update", { status: "open" });
 
     // Get common groups with a contact
     app.get("/api/common-groups/:jid", async (req, res) => {
-        const jid = decodeURIComponent(req.params.jid);
+        let jid = decodeURIComponent(req.params.jid);
+        
+        // Normalize LID to phone number if mapping exists
+        if (jid.endsWith('@lid')) {
+            const lidPart = jid.replace('@lid', '');
+            const pnUser = lidToPhoneMap.get(lidPart);
+            if (pnUser) {
+                jid = `${pnUser}@s.whatsapp.net`;
+            }
+        }
+        
         const groups: any[] = [];
         
         // Find groups where this contact is a participant
