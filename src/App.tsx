@@ -1224,11 +1224,10 @@ export default function App() {
 
       newSocket.on('chats-list', (data: any) => {
       if (Array.isArray(data)) {
-        // Legacy or direct array emission
+        // Legacy or direct array emission - servidor já envia ordenado
         const filteredChats = data
-          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index) // Deduplicate by id first
-          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'))
-          .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index)
+          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
 
         setChats(prevChats => {
           const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
@@ -1260,7 +1259,7 @@ export default function App() {
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
           allChats.forEach(chat => uniqueChats.set(chat.id, chat));
-          return Array.from(uniqueChats.values()).sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+          return Array.from(uniqueChats.values()); // Servidor já envia ordenado por lastMessageTime
         });
       } else if (data.type === 'full') {
         if (!Array.isArray(data.chats)) {
@@ -1268,9 +1267,8 @@ export default function App() {
           return;
         }
         const filteredChats = data.chats
-          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index) // Deduplicate by id first
-          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'))
-          .sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index)
+          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
 
         setChats(prevChats => {
           const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
@@ -1302,7 +1300,7 @@ export default function App() {
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
           allChats.forEach(chat => uniqueChats.set(chat.id, chat));
-          return Array.from(uniqueChats.values()).sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+          return Array.from(uniqueChats.values()); // Servidor já envia ordenado
         });
       } else if (data.type === 'diff') {
         const { updated, removed } = data.changes;

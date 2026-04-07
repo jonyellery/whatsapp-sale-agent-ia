@@ -733,7 +733,6 @@ async function startServer() {
             clearTimeout(emitChatsTimeout);
         }
         emitChatsTimeout = setTimeout(async () => {
-            invalidateTimestampsCache();
             let allChats = store.chats.all().filter((c: any) => c &&
                 c && isValidChatJid(c.id) && c.archived !== true
             );
@@ -798,7 +797,7 @@ async function startServer() {
                     total: allWithAvatars.length
                 });
             }
-        }, 1000); // 1s debounce to batch multiple rapid events
+        }, 300); // 300ms debounce para msgs em tempo real
     };
 
     // Apply rate limiting to all API routes
@@ -1162,7 +1161,7 @@ async function startServer() {
         };
     };
 
-    // Helper to sort chats by most recent message (defined at function scope for API endpoints)
+    // Helper to sort chats by most recent message - usa conversationTimestamp diretamente (já atualizado em tempo real)
     const sortChatsByRecent = (chats: any[]): any[] => {
         return chats.sort((a, b) => {
             // Pinned chats always come first
@@ -1172,58 +1171,9 @@ async function startServer() {
             if (!aPinned && bPinned) return 1;
             if (aPinned && bPinned) return bPinned - aPinned;
 
-            // Use cached timestamps if available, otherwise calculate
-            let aMsgTime = chatTimestampsCache.get(a.id) || 0;
-            let bMsgTime = chatTimestampsCache.get(b.id) || 0;
-
-            // If cache is invalid, calculate and cache
-            if (!timestampsCacheValid) {
-                // Calculate from messages
-                const getMessagesForChat = (chatId: string): any[] => {
-                    let msgs = store.messages[chatId]?.all() || [];
-                    
-                    // For @s.whatsapp.net without device suffix, check : variants
-                    if (chatId.endsWith('@s.whatsapp.net') && !chatId.includes(':')) {
-                        const baseJid = chatId.replace('@s.whatsapp.net', '');
-                        for (const key of Object.keys(store.messages)) {
-                            if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
-                                msgs = msgs.concat(store.messages[key]?.all() || []);
-                            }
-                        }
-                        const lid = phoneToLidMap.get(baseJid);
-                        if (lid) {
-                            const lidJid = `${lid}@lid`;
-                            const lidMsgs = store.messages[lidJid]?.all() || [];
-                            msgs = msgs.concat(lidMsgs);
-                        }
-                    }
-                    
-                    // For @lid, also check the corresponding @s.whatsapp.net JID
-                    if (chatId.endsWith('@lid')) {
-                        const lidPart = chatId.replace('@lid', '');
-                        const pnUser = lidToPhoneMap.get(lidPart);
-                        if (pnUser) {
-                            const pnJid = `${pnUser}@s.whatsapp.net`;
-                            const altMsgs = store.messages[pnJid]?.all() || [];
-                            msgs = msgs.concat(altMsgs);
-                        }
-                    }
-                    
-                    return msgs;
-                };
-
-                // Update cache for all chats
-                for (const chat of store.chats.all()) {
-                    const msgs = getMessagesForChat(chat.id);
-                    if (msgs.length > 0) {
-                        const latestTs = Math.max(...msgs.map((m: any) => m.messageTimestamp || 0));
-                        chatTimestampsCache.set(chat.id, latestTs);
-                    }
-                }
-                timestampsCacheValid = true;
-                aMsgTime = chatTimestampsCache.get(a.id) || 0;
-                bMsgTime = chatTimestampsCache.get(b.id) || 0;
-            }
+            // Use conversationTimestamp diretamente (atualizado em tempo real via updateChatTimestamp)
+            const aMsgTime = a.conversationTimestamp || a.lastMessageRecvTimestamp || 0;
+            const bMsgTime = b.conversationTimestamp || b.lastMessageRecvTimestamp || 0;
             
             return bMsgTime - aMsgTime; // Descending order (most recent first)
         });
@@ -1524,7 +1474,6 @@ io.emit("connection-update", { status: "open" });
                     store.chats.set(chat.id, merged);
                 }
             }
-            invalidateTimestampsCache();
             emitChats();
         });
         
@@ -4812,8 +4761,7 @@ io.emit("connection-update", { status: "open" });
         }
         
         socket.on("get-chats", async () => {
-            // Use optimized cache-based approach instead of manual recalculation
-            invalidateTimestampsCache();
+            // Ordenar diretamente pelo conversationTimestamp (já atualizado em tempo real)
             let existingChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
