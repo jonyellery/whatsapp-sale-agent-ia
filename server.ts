@@ -521,31 +521,25 @@ const scheduleSave = () => {
     }, 5000);
 };
 
-const saveStore = (forceFullSave: boolean = false) => {
-    // Save chats - only dirty ones for efficiency, or all if forceFullSave (periodic 30s save)
+const saveStore = () => {
+    // Save chats - only dirty ones for efficiency
     let chatsToSave: any[] = [];
     
-    if (forceFullSave || dirtyChats.size === 0) {
-        // Full save: save all chats (initial load or periodic)
-        chatsToSave = store.chats.all().filter((c: any) => c && c);
-        console.log(`[STORE] Full save: ${chatsToSave.length} chats...`);
-        dirtyChats.clear();
-    } else {
+    if (dirtyChats.size > 0) {
         // Diff save: save only dirty chats
         for (const chatId of dirtyChats) {
             const chat = store.chats.get(chatId);
             if (chat) chatsToSave.push(chat);
         }
         console.log(`[STORE] Diff save: ${chatsToSave.length} dirty chats...`);
+        fs.writeFileSync(storeChatsPath, JSON.stringify(chatsToSave));
+        dirtyChats.clear();
     }
     
-    fs.writeFileSync(storeChatsPath, JSON.stringify(chatsToSave));
-    dirtyChats.clear();
-    
-    // Save contacts
+    // Save contacts (always, small data)
     fs.writeFileSync(storeContactsPath, JSON.stringify(store.contacts));
     
-    // Save group metadata
+    // Save group metadata (always, small data)
     fs.writeFileSync(storeGroupMetadataPath, JSON.stringify(store.groupMetadata));
     
     // Save meta (last cleanup timestamp)
@@ -700,8 +694,8 @@ for (const chat of allChats) {
 }
 console.log("[STORE] Recalculated timestamps for individual chats from messages");
 
-// Save store every 30 seconds - full save para garantir persistencia
-setInterval(() => saveStore(true), 30_000);
+// Save store via schedule (dirty saves happen automatically via markChatDirty)
+setInterval(() => scheduleSave(), 30_000);
 
 // Daily cleanup: clear messages and group metadata if 24h have passed
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
