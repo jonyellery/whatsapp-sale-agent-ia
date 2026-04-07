@@ -2776,6 +2776,56 @@ io.emit("connection-update", { status: "open" });
         res.json(allMsgs);
     });
 
+    // Get recent messages (newest first) - for WhatsApp Web style pagination
+    app.get("/api/messages/:jid/recent", (req, res) => {
+        const { jid } = req.params;
+        const limit = parseInt(req.query.limit as string) || 20;
+        const after = req.query.after as string;
+        
+        let allMsgs: any[] = [];
+        const seen = new Set<string>();
+        
+        // Coleta msgs do store local
+        for (const msg of (store.messages[jid]?.all() || [])) {
+            if (msg.key?.id && !seen.has(msg.key.id)) {
+                seen.add(msg.key.id);
+                allMsgs.push(msg);
+            }
+        }
+        
+        // Para contatos individuais, também verifica variantes de device
+        if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
+            const baseJid = jid.replace('@s.whatsapp.net', '');
+            for (const key of Object.keys(store.messages)) {
+                if (key.startsWith(baseJid + ':') && key.endsWith('@s.whatsapp.net')) {
+                    for (const msg of (store.messages[key]?.all() || [])) {
+                        if (msg.key?.id && !seen.has(msg.key.id)) {
+                            seen.add(msg.key.id);
+                            allMsgs.push(msg);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Ordena por timestamp crescente (mais antigas primeiro) - correto para display
+        allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+        
+        // Aplicar paginação - after é timestamp para carregar mensagens mais recentes que ele
+        if (after) {
+            const afterTime = parseInt(after);
+            allMsgs = allMsgs.filter((m: any) => (m.messageTimestamp || 0) > afterTime);
+        }
+        
+        // Slice para pegar as mais recentes do array ordenado (ascendente)
+        // As mais antigas estão no início, as mais recentes no final
+        allMsgs = allMsgs.slice(-limit);
+        
+        // Retorna totalCount para o frontend saber se há mais mensagens
+        const totalInStore = seen.size;
+        res.json({ messages: allMsgs, totalCount: totalInStore });
+    });
+
     // Load more messages (older)
     app.get("/api/messages/:jid/load-more", async (req, res) => {
         const { jid } = req.params;

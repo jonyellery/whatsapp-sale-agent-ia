@@ -1568,6 +1568,33 @@ export default function App() {
     };
   }, []);
 
+  // Load recent messages via REST API (WhatsApp Web style)
+  const loadRecentMessages = useCallback(async (jid: string, limit = 20) => {
+    try {
+      const response = await fetch(`/api/messages/${encodeURIComponent(jid)}/recent?limit=${limit}`);
+      if (response.ok) {
+        const data = await response.json();
+        const normalizedMessages = (data.messages || []).map(normalizeMessage);
+        
+        // Update hasMore based on total count vs loaded count
+        const loadedCount = normalizedMessages.length;
+        const totalCount = data.totalCount || 0;
+        setHasMoreMessages(loadedCount < totalCount);
+        
+        // Store oldest timestamp for load-more (first item is oldest in the batch - ascending order)
+        if (normalizedMessages.length > 0) {
+          const firstMsg = normalizedMessages[0];
+          oldestMessageTimeRef.current = firstMsg.messageTimestamp || Math.floor(Date.now() / 1000);
+        }
+        
+        return normalizedMessages;
+      }
+    } catch (err) {
+      console.error('Error loading recent messages:', err);
+    }
+    return [];
+  }, []);
+
   useEffect(() => {
     if (selectedChat && socket) {
       // Clear messages immediately when switching chats
@@ -1578,13 +1605,17 @@ export default function App() {
       prevMessagesCountRef.current = 0;
       isNearBottomRef.current = true;
 
-      socket.emit('get-messages', selectedChat);
+      // Load recent messages via REST (WhatsApp Web style)
+      loadRecentMessages(selectedChat).then(msgs => {
+        setMessages(msgs);
+      });
+
       socket.emit('get-chat-details', selectedChat);
 
       // Reset unread count for the selected chat
       setChats(prev => prev.map(c => c.id === selectedChat ? { ...c, unreadCount: 0 } : c));
     }
-  }, [selectedChat, socket]);
+  }, [selectedChat, socket, loadRecentMessages]);
 
   // Smart auto-scroll: only scroll to bottom when new messages arrive and user is near bottom
   useEffect(() => {
@@ -1630,11 +1661,12 @@ export default function App() {
         if (olderMessages.length > 0) {
           const normalizedOlder = olderMessages.map(normalizeMessage);
           
-          // Deduplicate before prepending (older messages go at the start), then sort chronologically
+          // Deduplicate before prepending (older messages go at the start)
+          // Already sorted chronologically (oldest first) from API
           setMessages(prev => {
             const existingIds = new Set(prev.map(m => m.key.id).filter(Boolean));
             const uniqueOlder = normalizedOlder.filter(m => !m.key.id || !existingIds.has(m.key.id));
-            return [...uniqueOlder, ...prev].sort((a, b) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+            return [...uniqueOlder, ...prev];
           });
           
           // Update oldest timestamp (last item is the most recent of the loaded batch)
