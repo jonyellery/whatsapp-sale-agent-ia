@@ -499,10 +499,16 @@ if (!fs.existsSync(storeMessagesDir)) fs.mkdirSync(storeMessagesDir, { recursive
 
 let lastStoreCleanup = Date.now();
 let dirtyJids = new Set<string>();
+let dirtyChats = new Set<string>(); // Para salvar apenas chats modificados
 let saveScheduled = false;
 
 const markJidDirty = (jid: string) => {
     dirtyJids.add(jid);
+    scheduleSave();
+};
+
+const markChatDirty = (chatId: string) => {
+    dirtyChats.add(chatId);
     scheduleSave();
 };
 
@@ -515,12 +521,26 @@ const scheduleSave = () => {
     }, 5000);
 };
 
-const saveStore = () => {
-    // Save chats
-    const chatsToSave = store.chats.all().filter((c: any) => c && c);
-    console.log(`[STORE] Saving ${chatsToSave.length} chats...`);
+const saveStore = (forceFullSave: boolean = false) => {
+    // Save chats - only dirty ones for efficiency, or all if forceFullSave (periodic 30s save)
+    let chatsToSave: any[] = [];
+    
+    if (forceFullSave || dirtyChats.size === 0) {
+        // Full save: save all chats (initial load or periodic)
+        chatsToSave = store.chats.all().filter((c: any) => c && c);
+        console.log(`[STORE] Full save: ${chatsToSave.length} chats...`);
+        dirtyChats.clear();
+    } else {
+        // Diff save: save only dirty chats
+        for (const chatId of dirtyChats) {
+            const chat = store.chats.get(chatId);
+            if (chat) chatsToSave.push(chat);
+        }
+        console.log(`[STORE] Diff save: ${chatsToSave.length} dirty chats...`);
+    }
     
     fs.writeFileSync(storeChatsPath, JSON.stringify(chatsToSave));
+    dirtyChats.clear();
     
     // Save contacts
     fs.writeFileSync(storeContactsPath, JSON.stringify(store.contacts));
@@ -680,10 +700,8 @@ for (const chat of allChats) {
 }
 console.log("[STORE] Recalculated timestamps for individual chats from messages");
 
-// Save store every 30 seconds (optimized from 10s)
-
-// Save store every 30 seconds (optimized from 10s)
-setInterval(saveStore, 30_000);
+// Save store every 30 seconds - full save para garantir persistencia
+setInterval(() => saveStore(true), 30_000);
 
 // Daily cleanup: clear messages and group metadata if 24h have passed
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
@@ -781,17 +799,23 @@ async function startServer() {
             
             // Emit full list for initial load (history sync), otherwise diff
             const hasChanges = changedChats.length > 0 || removedChats.length > 0;
+            
+            // For full list: fetch avatars in background batches (history sync)
+            // For diff: fetch avatars only for changed chats (fast!)
             if (forceFullList || !hasChanges) {
+                // Full emit - fetch avatars in background batches
                 ioInstance.emit("chats-list", {
                     type: 'full',
                     chats: allWithAvatars,
                     total: allWithAvatars.length
                 });
             } else {
+                // Diff emit - fetch avatars only for changed chats (much faster!)
+                const changedWithAvatars = await Promise.all(changedChats.map(getChatWithAvatarFromStore));
                 ioInstance.emit("chats-list", {
                     type: 'diff',
                     changes: {
-                        updated: changedChats,
+                        updated: changedWithAvatars,
                         removed: removedChats
                     },
                     total: allWithAvatars.length
@@ -1205,6 +1229,7 @@ async function startServer() {
         if (!chat.conversationTimestamp || timestamp > chat.conversationTimestamp) {
             chat.conversationTimestamp = timestamp;
             store.chats.set(jid, chat);
+            markChatDirty(jid); // Marcar chat como dirty para save incremental
         }
     };
 
@@ -1450,7 +1475,6 @@ io.emit("connection-update", { status: "open" });
 
         // Create a helper function to ensure chat exists
         const ensureChatExists = (jid: string) => {
-            // Create chat for this JID if not exists
             const existingChat = store.chats.get(jid);
             if (!existingChat) {
                 const contact = store.contacts[jid];
@@ -1460,18 +1484,19 @@ io.emit("connection-update", { status: "open" });
                     name: chatName,
                     unreadCount: 0
                 });
+                markChatDirty(jid); // Novo chat precisa ser salvo
             }
         };
 
         sock.ev.on("chats.upsert", async (chats: any[]) => {
             console.log("[SOCKET] chats.upsert event received:", chats.length, "chats");
-            // Ensure each chat exists before updating - USE MERGE to preserve archived status
             for (const chat of chats) {
                 if (chat.id && (isValidChatJid(chat.id))) {
                     console.log(`[SOCKET] Upsert chat ${chat.id}: archived=${chat.archived}, archive=${chat.archive}, name=${chat.name || chat.subject}`);
                     const existing = store.chats.get(chat.id);
                     const merged = store.mergeChatData(existing, chat);
                     store.chats.set(chat.id, merged);
+                    markChatDirty(chat.id); // Chat modificado precisa ser salvo
                 }
             }
             emitChats();
@@ -1508,6 +1533,7 @@ io.emit("connection-update", { status: "open" });
                     
                     // Update the store
                     store.chats.set(update.id, mergedChat);
+                    markChatDirty(update.id);
                 } else {
                     // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
                     const contactInfo = store.contacts[update.id];
@@ -1520,6 +1546,7 @@ io.emit("connection-update", { status: "open" });
                         conversationTimestamp: update.conversationTimestamp || 0,
                         ...update
                     });
+                    markChatDirty(update.id);
                     console.log(`[SOCKET] Created chat from update ${update.id}: ${chatName}`);
                 }
             }
@@ -1635,8 +1662,6 @@ io.emit("connection-update", { status: "open" });
                 for (const msg of newMessages) {
                     io.emit("new-message", msg);
                 }
-                // Force immediate save for new messages
-                saveStore();
             }
 
             emitChats();
@@ -3092,19 +3117,28 @@ io.emit("connection-update", { status: "open" });
         const { jid } = req.body;
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });
         try {
-            const chat = store.chats.get(jid);
+            const normalizedJid = normalizeJid(jid);
+            const chat = store.chats.get(normalizedJid);
             if (chat) {
                 chat.unreadCount = 0;
-                store.chats.set(jid, chat);
+                store.chats.set(normalizedJid, chat);
+                markChatDirty(normalizedJid);
+            }
+            // Also check and update @lid variant
+            if (normalizedJid.endsWith('@s.whatsapp.net')) {
+                const base = normalizedJid.replace('@s.whatsapp.net', '');
+                const lid = phoneToLidMap.get(base);
+                if (lid) {
+                    const lidChat = store.chats.get(`${lid}@lid`);
+                    if (lidChat) {
+                        lidChat.unreadCount = 0;
+                        store.chats.set(`${lid}@lid`, lidChat);
+                        markChatDirty(`${lid}@lid`);
+                    }
+                }
             }
             await sock.sendReadReceipt(jid);
-            // Re-emit chats list with updated unread count - FILTER archived
-            let allChats = store.chats.all().filter((c: any) =>
-                isValidChatJid(c.id) && c.archived !== true
-            );
-            allChats = sortChatsByRecent(allChats);
-            const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
-            io.emit("chats-list", allWithAvatars);
+            emitChats();
             res.json({ success: true });
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
