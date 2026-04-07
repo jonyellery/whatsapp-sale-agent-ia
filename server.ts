@@ -532,9 +532,7 @@ const saveStore = () => {
     fs.writeFileSync(storeMetaPath, JSON.stringify({ lastStoreCleanup }));
     
     // Save only dirty JIDs - messages that changed since last save
-    const MAX_MESSAGES_PER_CHAT = 500;
     let totalMessages = 0;
-    let truncatedCount = 0;
     
     if (dirtyJids.size > 0) {
         console.log(`[STORE] Saving ${dirtyJids.size} dirty JIDs...`);
@@ -550,14 +548,6 @@ const saveStore = () => {
                 continue;
             }
             
-            // Sort by timestamp descending and limit to MAX_MESSAGES_PER_CHAT
-            if (msgs.length > MAX_MESSAGES_PER_CHAT) {
-                msgs = msgs
-                    .sort((a: any, b: any) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
-                    .slice(0, MAX_MESSAGES_PER_CHAT);
-                truncatedCount++;
-            }
-            
             totalMessages += msgs.length;
             const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
             const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
@@ -567,7 +557,7 @@ const saveStore = () => {
         dirtyJids.clear();
     }
     
-    console.log(`[STORE] Saved ${chatsToSave.length} chats, ${totalMessages} messages (${truncatedCount} truncated)`);
+    console.log(`[STORE] Saved ${chatsToSave.length} chats, ${totalMessages} messages`);
 };
 
 const forceSaveAllMessages = () => {
@@ -4812,6 +4802,36 @@ io.emit("connection-update", { status: "open" });
                 }
             }
             
+            // 1b. Para LID (@lid), também busca a variante @s.whatsapp.net
+            if (jid.endsWith('@lid')) {
+                const lidPart = jid.replace('@lid', '');
+                let phoneJid: string | null = null;
+                
+                // Primeiro tenta pelo mapa lidToPhoneMap
+                const pnUser = lidToPhoneMap.get(lidPart);
+                if (pnUser) {
+                    phoneJid = `${pnUser}@s.whatsapp.net`;
+                } else {
+                    // Fallback: procura remoteJidAlt nas msgs já carregadas
+                    for (const msg of allMsgs) {
+                        if (msg.key?.remoteJidAlt?.includes('@s.whatsapp.net')) {
+                            phoneJid = msg.key.remoteJidAlt;
+                            break;
+                        }
+                    }
+                }
+                
+                if (phoneJid) {
+                    console.log(`[GET-MESSAGES] LID mapping found: ${jid} -> ${phoneJid}`);
+                    for (const msg of (store.messages[phoneJid]?.all() || [])) {
+                        if (msg.key?.id && !seen.has(msg.key.id)) {
+                            seen.add(msg.key.id);
+                            allMsgs.push(msg);
+                        }
+                    }
+                }
+            }
+            
             // 2. Para individuais, verifica variantes de device e LID usando índice otimizado
             if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
                 const baseJid = jid.replace('@s.whatsapp.net', '');
@@ -4994,20 +5014,16 @@ io.emit("connection-update", { status: "open" });
                 }
             }
 
-            // 5. Ordena e limita a 500 mensagens mais recentes
+            // 5. Ordena e emite
             allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
-            const MAX_INITIAL_MESSAGES = 500;
-            const limitedMsgs = allMsgs.length > MAX_INITIAL_MESSAGES 
-                ? allMsgs.slice(-MAX_INITIAL_MESSAGES) 
-                : allMsgs;
-
+            
             // Emit updated chats-list so the chat moves to correct position based on latest message
             const allChats = store.chats.all().filter((c: any) => c && !c.archived);
             allChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
             socket.emit("chats-list", allChats);
 
-            console.log(`[GET-MESSAGES] Emitting ${limitedMsgs.length} messages for ${jid} (of ${allMsgs.length} total)`);
-            socket.emit("messages-list", { jid, messages: limitedMsgs, totalCount: allMsgs.length });
+            console.log(`[GET-MESSAGES] Emitting ${allMsgs.length} messages for ${jid}`);
+            socket.emit("messages-list", { jid, messages: allMsgs, totalCount: allMsgs.length });
         });
 
         // Get chat details including avatar
