@@ -384,6 +384,7 @@ class SimpleStore {
                 const msgMap = this.messages[jid].map;
                 if (!msgMap.has(msg.key.id)) {
                     msgMap.set(msg.key.id, msg);
+                    markJidDirty(jid);
                     console.log(`[STORE] msg stored for ${jid}, total=${msgMap.size}`);
                 } else {
                     console.log(`[STORE] duplicate msg skipped for ${jid}`);
@@ -497,6 +498,22 @@ if (!fs.existsSync(storeDir)) fs.mkdirSync(storeDir, { recursive: true });
 if (!fs.existsSync(storeMessagesDir)) fs.mkdirSync(storeMessagesDir, { recursive: true });
 
 let lastStoreCleanup = Date.now();
+let dirtyJids = new Set<string>();
+let saveScheduled = false;
+
+const markJidDirty = (jid: string) => {
+    dirtyJids.add(jid);
+    scheduleSave();
+};
+
+const scheduleSave = () => {
+    if (saveScheduled) return;
+    saveScheduled = true;
+    setTimeout(() => {
+        saveStore();
+        saveScheduled = false;
+    }, 5000);
+};
 
 const saveStore = () => {
     // Save chats
@@ -514,26 +531,51 @@ const saveStore = () => {
     // Save meta (last cleanup timestamp)
     fs.writeFileSync(storeMetaPath, JSON.stringify({ lastStoreCleanup }));
     
-    // Save messages per JID (each chat has its own file)
-    const messageJids = Object.keys(store.messages);
+    // Save only dirty JIDs - messages that changed since last save
+    const MAX_MESSAGES_PER_CHAT = 500;
     let totalMessages = 0;
+    let truncatedCount = 0;
     
-    for (const jid of messageJids) {
-        const msgs = store.messages[jid]?.all() || [];
-        if (msgs.length > 0) {
+    if (dirtyJids.size > 0) {
+        console.log(`[STORE] Saving ${dirtyJids.size} dirty JIDs...`);
+        
+        for (const jid of dirtyJids) {
+            let msgs = store.messages[jid]?.all() || [];
+            
+            if (msgs.length === 0) {
+                // Remove file if no messages
+                const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
+                const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
+                if (fs.existsSync(msgFilePath)) fs.unlinkSync(msgFilePath);
+                continue;
+            }
+            
+            // Sort by timestamp descending and limit to MAX_MESSAGES_PER_CHAT
+            if (msgs.length > MAX_MESSAGES_PER_CHAT) {
+                msgs = msgs
+                    .sort((a: any, b: any) => (b.messageTimestamp || 0) - (a.messageTimestamp || 0))
+                    .slice(0, MAX_MESSAGES_PER_CHAT);
+                truncatedCount++;
+            }
+            
             totalMessages += msgs.length;
             const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
             const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
             fs.writeFileSync(msgFilePath, JSON.stringify(msgs));
-        } else {
-            // Remove empty message files
-            const safeJid = jid.replace(/[^a-zA-Z0-9@.-]/g, '_');
-            const msgFilePath = path.join(storeMessagesDir, `${safeJid}.json`);
-            if (fs.existsSync(msgFilePath)) fs.unlinkSync(msgFilePath);
         }
+        
+        dirtyJids.clear();
     }
     
-    console.log(`[STORE] Saved ${chatsToSave.length} chats, ${messageJids.length} JIDs with ${totalMessages} messages`);
+    console.log(`[STORE] Saved ${chatsToSave.length} chats, ${totalMessages} messages (${truncatedCount} truncated)`);
+};
+
+const forceSaveAllMessages = () => {
+    // Mark all JIDs as dirty for full save
+    for (const jid of Object.keys(store.messages)) {
+        dirtyJids.add(jid);
+    }
+    scheduleSave();
 };
 
 // Load store from files
@@ -1635,12 +1677,7 @@ io.emit("connection-update", { status: "open" });
                 if (!msgMap.has(msg.key.id)) {
                     msgMap.set(msg.key.id, msg);
                     newMessages.push(msg);
-                    
-                    // Add to store.messages properly using the internal map
-                    const storeEntry = store.messages[jid];
-                    if (storeEntry.map) {
-                        storeEntry.map.set(msg.key.id, msg);
-                    }
+                    markJidDirty(jid);
                 }
 
                 if (msg.messageTimestamp) {
@@ -1775,6 +1812,7 @@ io.emit("connection-update", { status: "open" });
                 const msgMap = store.messages[jid].map;
                 if (msgMap && !msgMap.has(reactionMsg.key.id)) {
                     msgMap.set(reactionMsg.key.id, reactionMsg);
+                    markJidDirty(jid);
                 }
                 
                 // Emit reaction to frontend
@@ -1901,6 +1939,7 @@ io.emit("connection-update", { status: "open" });
                 const msgMap = store.messages[jid].map;
                 if (msgMap && msg.key?.id && !msgMap.has(msg.key.id)) {
                     msgMap.set(msg.key.id, msg);
+                    markJidDirty(jid);
                     // Update search index for fast lookups
                     updateMessageSearchIndex(jid);
                 }
@@ -2156,6 +2195,7 @@ io.emit("connection-update", { status: "open" });
             // Delete messages from store.messages
             if (store.messages[jid]) {
                 delete store.messages[jid];
+                markJidDirty(jid);
             }
 
             // Also delete LID variant if exists
@@ -2167,6 +2207,7 @@ io.emit("connection-update", { status: "open" });
                     store.chats.delete(lidJid);
                     if (store.messages[lidJid]) {
                         delete store.messages[lidJid];
+                        markJidDirty(lidJid);
                     }
                 }
             }
@@ -2787,6 +2828,7 @@ io.emit("connection-update", { status: "open" });
                     const msgMap = store.messages[msgJid].map;
                     if (msgMap && msg.key.id && !msgMap.has(msg.key.id)) {
                         msgMap.set(msg.key.id, msg);
+                        markJidDirty(msgJid);
                     }
                 }
             }
@@ -4952,16 +4994,20 @@ io.emit("connection-update", { status: "open" });
                 }
             }
 
-            // 5. Ordena e emite
+            // 5. Ordena e limita a 500 mensagens mais recentes
             allMsgs.sort((a: any, b: any) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+            const MAX_INITIAL_MESSAGES = 500;
+            const limitedMsgs = allMsgs.length > MAX_INITIAL_MESSAGES 
+                ? allMsgs.slice(-MAX_INITIAL_MESSAGES) 
+                : allMsgs;
 
             // Emit updated chats-list so the chat moves to correct position based on latest message
             const allChats = store.chats.all().filter((c: any) => c && !c.archived);
             allChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
             socket.emit("chats-list", allChats);
 
-            console.log(`[GET-MESSAGES] Emitting ${allMsgs.length} messages for ${jid}`);
-            socket.emit("messages-list", { jid, messages: allMsgs });
+            console.log(`[GET-MESSAGES] Emitting ${limitedMsgs.length} messages for ${jid} (of ${allMsgs.length} total)`);
+            socket.emit("messages-list", { jid, messages: limitedMsgs, totalCount: allMsgs.length });
         });
 
         // Get chat details including avatar
