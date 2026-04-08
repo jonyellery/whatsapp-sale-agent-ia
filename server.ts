@@ -2273,6 +2273,23 @@ io.emit("connection-update", { status: "open" });
             let allChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
+            
+            // Deduplicate chats: prefer @s.whatsapp.net over @lid for same phone number
+            const seenPhones = new Set<string>();
+            allChats = allChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
+            
             allChats = sortChatsByRecent(allChats);
             
             // Log counts for debugging
@@ -5180,6 +5197,23 @@ io.emit("connection-update", { status: "open" });
             let existingChats = store.chats.all().filter((c: any) => c &&
                 isValidChatJid(c.id) && c.archived !== true
             );
+            
+            // Deduplicate chats: prefer @s.whatsapp.net over @lid for same phone number
+            const seenPhones = new Set<string>();
+            existingChats = existingChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
+            
             existingChats = sortChatsByRecent(existingChats);
             
             if (existingChats.length > 0) {
@@ -5418,8 +5452,25 @@ io.emit("connection-update", { status: "open" });
             
             // Emit updated chats-list so the chat moves to correct position based on latest message
             const allChats = store.chats.all().filter((c: any) => c && !c.archived);
-            allChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
-            socket.emit("chats-list", allChats);
+            
+            // Deduplicate chats: prefer @s.whatsapp.net over @lid for same phone number
+            const seenPhones = new Set<string>();
+            const dedupedChats = allChats.filter(chat => {
+                if (chat.id.endsWith('@lid')) {
+                    const lidPart = chat.id.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn && seenPhones.has(pn)) return false;
+                    if (pn) seenPhones.add(pn);
+                } else if (chat.id.endsWith('@s.whatsapp.net') && !chat.id.includes(':')) {
+                    const phone = chat.id.replace('@s.whatsapp.net', '');
+                    if (seenPhones.has(phone)) return false;
+                    seenPhones.add(phone);
+                }
+                return true;
+            });
+            
+            dedupedChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
+            socket.emit("chats-list", dedupedChats);
 
             console.log(`[GET-MESSAGES] Emitting ${allMsgs.length} messages for ${jid}`);
             socket.emit("messages-list", { jid, messages: allMsgs, totalCount: allMsgs.length });
