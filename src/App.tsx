@@ -1387,9 +1387,12 @@ export default function App() {
       const normalizedMsg = normalizeMessage(msg);
 
       const selectedNormalized = normalizeJid(selectedChatRef.current || '');
-      const msgNormalized = normalizeJid(msg.key.remoteJid);
+      
+      // Use remoteJidAlt if available (server now normalizes LID to PN)
+      const msgJid = (msg.key as any).remoteJidAlt || msg.key.remoteJid;
+      const msgNormalized = normalizeJid(msgJid);
 
-      if (selectedNormalized === msgNormalized || selectedNormalized === normalizeJid(msg.key.remoteJidAlt || '')) {
+      if (selectedNormalized === msgNormalized || selectedNormalized === normalizeJid((msg.key as any).remoteJidAlt || '')) {
         setMessages(prev => {
           // Deduplication: check if message already exists
           if (normalizedMsg.key.id && prev.some(m => m.key.id === normalizedMsg.key.id)) {
@@ -1408,23 +1411,41 @@ export default function App() {
       if (normalizedMsg._type !== 'reaction') {
         setChats(prev => {
           const updated = [...prev];
-          const normalizedMsgJid = normalizeJid(msg.key.remoteJid);
+          
+          // Use remoteJidAlt if available (server now normalizes LID to PN)
+          const msgJidForChat = (msg.key as any).remoteJidAlt || msg.key.remoteJid;
+          const normalizedMsgJid = normalizeJid(msgJidForChat);
+          
+          // Also check if remoteJid is LID and we have a mapping
+          let finalNormalizedJid = normalizedMsgJid;
+          if (msg.key.remoteJid.endsWith('@lid') && (msg.key as any).remoteJidAlt) {
+            const altJid = (msg.key as any).remoteJidAlt;
+            if (altJid.endsWith('@s.whatsapp.net')) {
+              finalNormalizedJid = normalizeJid(altJid);
+              // Also infer and store the mapping
+              const lidPart = msg.key.remoteJid.replace('@lid', '');
+              const pn = altJid.split('@')[0];
+              if (!store.current.lidMappings[msg.key.remoteJid] && !store.current.lidMappings[`${lidPart}@lid`]) {
+                store.current.lidMappings[`${lidPart}@lid`] = altJid;
+              }
+            }
+          }
           
           // Find chat by normalized JID OR by mapped JID (handle @lid <-> @s.whatsapp.net)
-          let index = updated.findIndex(c => normalizeJid(c.id) === normalizedMsgJid);
-          if (index === -1 && normalizedMsgJid.endsWith('@lid')) {
-            const pnJid = store.current.lidMappings[normalizedMsgJid];
+          let index = updated.findIndex(c => normalizeJid(c.id) === finalNormalizedJid);
+          if (index === -1 && finalNormalizedJid.endsWith('@lid')) {
+            const pnJid = store.current.lidMappings[finalNormalizedJid];
             if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
-          } else if (index === -1 && normalizedMsgJid.endsWith('@s.whatsapp.net')) {
-            const lidJid = `${normalizedMsgJid.replace('@s.whatsapp.net', '')}@lid`;
-            const mapped = Object.entries(store.current.lidMappings).find(([k]) => normalizeJid(k) === normalizedMsgJid);
+          } else if (index === -1 && finalNormalizedJid.endsWith('@s.whatsapp.net')) {
+            const lidJid = `${finalNormalizedJid.replace('@s.whatsapp.net', '')}@lid`;
+            const mapped = Object.entries(store.current.lidMappings).find(([k]) => normalizeJid(k) === finalNormalizedJid);
             if (mapped) index = updated.findIndex(c => c.id === mapped[0]);
           }
           
           const text = normalizedMsg._text || 'Mídia';
 
           if (index !== -1) {
-            const isNotSelected = normalizeJid(selectedChatRef.current || '') !== normalizedMsgJid;
+            const isNotSelected = normalizeJid(selectedChatRef.current || '') !== finalNormalizedJid;
             const isIncoming = !msg.key.fromMe;
             updated[index] = {
               ...updated[index],
@@ -3703,7 +3724,7 @@ export default function App() {
               </div>
               <div className="wa-header-right">
                 <Phone size={20} className="cursor-pointer" />
-                <Search size={20} className="cursor-pointer" onClick={() => setMessageSearchOpen(true)} title="Buscar mensagens" />
+                <Search size={20} className="cursor-pointer" onClick={() => setMessageSearchOpen(true)} aria-label="Buscar mensagens" />
                 <div 
                   className="cursor-pointer" 
                   onClick={() => !selectedChat?.endsWith('@g.us') && openContactProfile(selectedChat)}

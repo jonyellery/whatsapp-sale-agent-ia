@@ -412,7 +412,16 @@ class SimpleStore {
                 // Normalize LID to phone number if mapping exists
                 if (jid.endsWith('@lid')) {
                     const lidPart = jid.replace('@lid', '');
-                    const pnUser = lidToPhoneMap.get(lidPart);
+                    let pnUser = lidToPhoneMap.get(lidPart);
+                    
+                    // If no mapping exists, try to get from remoteJidAlt
+                    if (!pnUser && (msg.key as any).remoteJidAlt) {
+                        const altJid = (msg.key as any).remoteJidAlt;
+                        if (altJid.endsWith('@s.whatsapp.net')) {
+                            pnUser = altJid.split('@')[0];
+                        }
+                    }
+                    
                     if (pnUser) {
                         jid = `${pnUser}@s.whatsapp.net`;
                     }
@@ -861,13 +870,15 @@ async function startServer() {
                 return true;
             });
             allChats = sortChatsByRecent(allChats);
-            const allWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
+            
+            // Use cached-only avatars for fast emit (don't await all profilePictureUrl calls)
+            const allWithCachedAvatars = allChats.map(getChatWithAvatarCachedOnly);
             
             // Calculate diff: detect changes between last emission and current state
             const changedChats: any[] = [];
             const currentMap = new Map<string, any>();
             
-            for (const chat of allWithAvatars) {
+            for (const chat of allWithCachedAvatars) {
                 currentMap.set(chat.id, chat);
                 const lastChat = lastEmittedChatsMap.get(chat.id);
                 
@@ -891,14 +902,14 @@ async function startServer() {
             // Emit full list for initial load (history sync), otherwise diff
             const hasChanges = changedChats.length > 0 || removedChats.length > 0;
             
-            // For full list: fetch avatars in background batches (history sync)
+            // For full list: emit cached avatars first, fetch missing in background
             // For diff: fetch avatars only for changed chats (fast!)
             if (forceFullList || !hasChanges) {
-                // Full emit - fetch avatars in background batches
+                // Full emit - use cached avatars for speed, fetch missing in background
                 ioInstance.emit("chats-list", {
                     type: 'full',
-                    chats: allWithAvatars,
-                    total: allWithAvatars.length
+                    chats: allWithCachedAvatars,
+                    total: allWithCachedAvatars.length
                 });
             } else {
                 // Diff emit - fetch avatars only for changed chats (much faster!)
@@ -909,7 +920,7 @@ async function startServer() {
                         updated: changedWithAvatars,
                         removed: removedChats
                     },
-                    total: allWithAvatars.length
+                    total: allWithCachedAvatars.length
                 });
             }
         }, 300); // 300ms debounce para msgs em tempo real
@@ -1110,8 +1121,13 @@ async function startServer() {
         }
         
         // Try to get profile picture - use cached avatar with TTL to prevent flickering
+        // Normalize JID to ensure consistent cache key (@lid -> @s.whatsapp.net)
+        const cacheKey = chat.id.endsWith('@lid') 
+            ? (() => { const lidPart = chat.id.replace('@lid', ''); const pn = lidToPhoneMap.get(lidPart); return pn ? `${pn}@s.whatsapp.net` : chat.id; })()
+            : chat.id;
+        
         if (sock) {
-            const cachedAvatar = getCachedAvatar(chat.id);
+            const cachedAvatar = getCachedAvatar(cacheKey);
             if (cachedAvatar !== undefined) {
                 avatar = cachedAvatar;
             } else {
@@ -1123,9 +1139,9 @@ async function startServer() {
                             setTimeout(() => reject(new Error('Avatar fetch timeout')), 5000)
                         )
                     ]);
-                    setCachedAvatar(chat.id, avatar || null);
+                    setCachedAvatar(cacheKey, avatar || null);
                 } catch (e) {
-                    setCachedAvatar(chat.id, null);
+                    setCachedAvatar(cacheKey, null);
                 }
             }
         }
@@ -1625,16 +1641,54 @@ io.emit("connection-update", { status: "open" });
             for (const update of updates) {
                 if (!update.id) continue;
                 
-                console.log(`[SOCKET] Processing update for chat ${update.id}`);
+                // Normalize LID to phone number if mapping exists
+                let jid = update.id;
+                
+                // Try to get phone number from LID mapping OR from remoteJidAlt in messages
+                if (jid.endsWith('@lid')) {
+                    const lidPart = jid.replace('@lid', '');
+                    let pnUser = lidToPhoneMap.get(lidPart);
+                    
+                    // If no mapping exists, try to get from message in the update
+                    if (!pnUser && update.messages && update.messages[0]?.message?.key?.remoteJidAlt) {
+                        const altJid = update.messages[0].message.key.remoteJidAlt;
+                        if (altJid.endsWith('@s.whatsapp.net')) {
+                            pnUser = altJid.split('@')[0];
+                            // Also update the LID→PN mapping for future use
+                            lidToPhoneMap.set(lidPart, pnUser);
+                            phoneToLidMap.set(pnUser, lidPart);
+                            updateCachedLidMappings();
+                            io.emit("lid-mappings", cachedLidMappings);
+                            console.log(`[SOCKET] Inferred LID mapping from chats.update: ${lidPart} -> ${pnUser}`);
+                        }
+                    }
+                    
+                    if (pnUser) {
+                        jid = `${pnUser}@s.whatsapp.net`;
+                    }
+                }
+                
+                console.log(`[SOCKET] Processing update for chat ${jid} (original: ${update.id})`);
                 console.log(`[SOCKET] Update payload: archived=${update.archived}, name=${update.name}, archive=${update.archive}`);
                 
                 // Check if it's a valid chat (including @lid)
-                if (!(isValidChatJid(update.id))) {
-                    console.log(`[SOCKET] Skipping non-chat JID: ${update.id}`);
+                if (!(isValidChatJid(jid))) {
+                    console.log(`[SOCKET] Skipping non-chat JID: ${jid}`);
                     continue;
                 }
                 
-                const chat = store.chats.get(update.id);
+                const chat = store.chats.get(jid);
+                
+                // Also check if there's an @lid variant that needs to be migrated
+                let lidChat = null;
+                if (jid.endsWith('@s.whatsapp.net')) {
+                    const phone = jid.replace('@s.whatsapp.net', '');
+                    const lid = phoneToLidMap.get(phone);
+                    if (lid) {
+                        lidChat = store.chats.get(`${lid}@lid`);
+                    }
+                }
+                
                 if (chat) {
                     // Merge the update with existing chat data - prioritize newer timestamp
                     const existingTs = chat.conversationTimestamp || 0;
@@ -1647,22 +1701,58 @@ io.emit("connection-update", { status: "open" });
                     console.log(`[SOCKET] After merge - archived=${mergedChat.archived}, name=${mergedChat.name || mergedChat.subject}, ts=${newTs}`);
                     
                     // Update the store
-                    store.chats.set(update.id, mergedChat);
-                    markChatDirty(update.id);
+                    store.chats.set(jid, mergedChat);
+                    markChatDirty(jid);
+                    
+                    // If there's an @lid variant, migrate it to @s.whatsapp.net and delete the old one
+                    if (lidChat) {
+                        // Delete the @lid variant
+                        if (jid.endsWith('@s.whatsapp.net')) {
+                            const phone = jid.replace('@s.whatsapp.net', '');
+                            const oldLid = phoneToLidMap.get(phone);
+                            if (oldLid) {
+                                store.chats.delete(`${oldLid}@lid`);
+                            }
+                        }
+                        console.log(`[SOCKET] Migrated @lid chat to @s.whatsapp.net: ${jid}`);
+                    }
+                } else if (lidChat) {
+                    // Chat exists only as @lid - migrate to @s.whatsapp.net
+                    const contactInfo = store.contacts[jid];
+                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || resolveContactName(jid, store.contacts);
+                    const existingTs = lidChat.conversationTimestamp || 0;
+                    const updateTs = update.conversationTimestamp || 0;
+                    const newTs = Math.max(existingTs, updateTs);
+                    
+                    const migratedChat = {
+                        ...lidChat,
+                        id: jid,
+                        name: chatName,
+                        archived: update.archived || update.archive || lidChat.archived || false,
+                        unreadCount: update.unreadCount ?? lidChat.unreadCount ?? 0,
+                        conversationTimestamp: newTs,
+                        ...update
+                    };
+                    store.chats.set(jid, migratedChat);
+                    store.chats.delete(`${jid.endsWith('@s.whatsapp.net') ? jid.replace('@s.whatsapp.net', '') : jid}@lid`.replace('@s.whatsapp.net', '@lid'));
+                    store.chats.delete(update.id); // Delete old @lid ID
+                    markChatDirty(jid);
+                    console.log(`[SOCKET] Migrated chat from @lid to @s.whatsapp.net: ${jid}`);
                 } else {
                     // Chat doesn't exist in store (e.g. after store cleanup) - create it from the update
-                    const contactInfo = store.contacts[update.id];
-                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || resolveContactName(update.id, store.contacts);
-                    store.chats.set(update.id, {
-                        id: update.id,
+                    // Normalize LID to phone JID
+                    const contactInfo = store.contacts[jid];
+                    const chatName = update.name || update.subject || contactInfo?.name || contactInfo?.notify || resolveContactName(jid, store.contacts);
+                    store.chats.set(jid, {
+                        id: jid,
                         name: chatName,
                         archived: update.archived || update.archive || false,
                         unreadCount: update.unreadCount || 0,
                         conversationTimestamp: update.conversationTimestamp || 0,
                         ...update
                     });
-                    markChatDirty(update.id);
-                    console.log(`[SOCKET] Created chat from update ${update.id}: ${chatName}`);
+                    markChatDirty(jid);
+                    console.log(`[SOCKET] Created chat from update ${jid}: ${chatName}`);
                 }
             }
             
@@ -1672,7 +1762,17 @@ io.emit("connection-update", { status: "open" });
                     for (const msgWrapper of update.messages) {
                         const msg = msgWrapper.message;
                         if (msg?.key?.remoteJid) {
-                            console.log(`[SOCKET] Emitting new-message from chats.update for ${update.id}`);
+                            // Normalize LID in message JID
+                            let msgJid = msg.key.remoteJid;
+                            if (msgJid.endsWith('@lid')) {
+                                const lidPart = msgJid.replace('@lid', '');
+                                const pnUser = lidToPhoneMap.get(lidPart);
+                                if (pnUser) {
+                                    msgJid = `${pnUser}@s.whatsapp.net`;
+                                }
+                            }
+                            msg.key.remoteJid = msgJid;
+                            console.log(`[SOCKET] Emitting new-message from chats.update for ${msgJid}`);
                             io.emit("new-message", msg);
                         }
                     }
@@ -1749,7 +1849,20 @@ io.emit("connection-update", { status: "open" });
                 // Normalize LID to phone number if mapping exists
                 if (jid.endsWith('@lid')) {
                     const lidPart = jid.replace('@lid', '');
-                    const pnUser = lidToPhoneMap.get(lidPart);
+                    let pnUser = lidToPhoneMap.get(lidPart);
+                    
+                    // If no mapping exists, try to get from remoteJidAlt
+                    if (!pnUser && msg.key.remoteJidAlt) {
+                        const altJid = msg.key.remoteJidAlt;
+                        if (altJid.endsWith('@s.whatsapp.net')) {
+                            pnUser = altJid.split('@')[0];
+                            // Also update the LID→PN mapping for future use
+                            lidToPhoneMap.set(lidPart, pnUser);
+                            phoneToLidMap.set(pnUser, lidPart);
+                            console.log(`[SOCKET] Inferred LID mapping from remoteJidAlt: ${lidPart} -> ${pnUser}`);
+                        }
+                    }
+                    
                     if (pnUser) {
                         jid = `${pnUser}@s.whatsapp.net`;
                     }
@@ -1959,21 +2072,43 @@ io.emit("connection-update", { status: "open" });
                     if (chat.id && (isValidChatJid(chat.id))) {
                         console.log(`[SOCKET] History chat ${chat.id}: archived=${chat.archived}, name=${chat.name || chat.subject}`);
                         
+                        // Normalize LID to phone JID
+                        let chatJid = chat.id;
+                        if (chatJid.endsWith('@lid')) {
+                            const lidPart = chatJid.replace('@lid', '');
+                            let pnUser = lidToPhoneMap.get(lidPart);
+                            
+                            // Try to get from remoteJidAlt if available
+                            if (!pnUser && (chat as any).messages && (chat as any).messages[0]?.message?.key?.remoteJidAlt) {
+                                const altJid = (chat as any).messages[0].message.key.remoteJidAlt;
+                                if (altJid.endsWith('@s.whatsapp.net')) {
+                                    pnUser = altJid.split('@')[0];
+                                    lidToPhoneMap.set(lidPart, pnUser);
+                                    phoneToLidMap.set(pnUser, lidPart);
+                                }
+                            }
+                            
+                            if (pnUser) {
+                                chatJid = `${pnUser}@s.whatsapp.net`;
+                            }
+                        }
+                        
                         if (chat.archived === true) {
                             archivedCount++;
                         }
                         
                         // Merge with existing chat to preserve conversationTimestamp from messages
-                        const existingChat = store.chats.get(chat.id);
+                        const existingChat = store.chats.get(chatJid);
                         if (existingChat) {
                             // Preserve existing timestamp if it exists and is valid
                             const merged = {
                                 ...chat,
+                                id: chatJid, // Use normalized JID
                                 conversationTimestamp: existingChat.conversationTimestamp || chat.conversationTimestamp || 0
                             };
-                            store.chats.set(chat.id, merged);
+                            store.chats.set(chatJid, merged);
                         } else {
-                            store.chats.set(chat.id, chat);
+                            store.chats.set(chatJid, { ...chat, id: chatJid });
                         }
                     }
                 }
@@ -2022,7 +2157,18 @@ io.emit("connection-update", { status: "open" });
                     // Normalize LID to phone number if mapping exists
                     if (jid && jid.endsWith('@lid')) {
                         const lidPart = jid.replace('@lid', '');
-                        const pnUser = lidToPhoneMap.get(lidPart);
+                        let pnUser = lidToPhoneMap.get(lidPart);
+                        
+                        // Try to get from remoteJidAlt if available
+                        if (!pnUser && (msg.key as any).remoteJidAlt) {
+                            const altJid = (msg.key as any).remoteJidAlt;
+                            if (altJid.endsWith('@s.whatsapp.net')) {
+                                pnUser = altJid.split('@')[0];
+                                lidToPhoneMap.set(lidPart, pnUser);
+                                phoneToLidMap.set(pnUser, lidPart);
+                            }
+                        }
+                        
                         if (pnUser) {
                             jid = `${pnUser}@s.whatsapp.net`;
                         }
@@ -5061,50 +5207,36 @@ io.emit("connection-update", { status: "open" });
             console.log(`[GET-MESSAGES] Looking for messages for ${jid}`);
             console.log(`[GET-MESSAGES] Store messages keys:`, Object.keys(store.messages).filter(k => k.includes(jid.split('@')[0])));
             
+            // Normalize LID to phone JID if needed (in case frontend still sends LID)
+            let actualJid = jid;
+            if (jid.endsWith('@lid')) {
+                const lidPart = jid.replace('@lid', '');
+                let pnUser = lidToPhoneMap.get(lidPart);
+                if (!pnUser && (jid as any).remoteJidAlt) {
+                    const altJid = (jid as any).remoteJidAlt;
+                    if (altJid.endsWith('@s.whatsapp.net')) {
+                        pnUser = altJid.split('@')[0];
+                    }
+                }
+                if (pnUser) {
+                    actualJid = `${pnUser}@s.whatsapp.net`;
+                }
+            }
+            
             // 1. Busca JID direto
-            for (const msg of (store.messages[jid]?.all() || [])) {
+            for (const msg of (store.messages[actualJid]?.all() || [])) {
                 if (msg.key?.id && !seen.has(msg.key.id)) {
                     seen.add(msg.key.id);
                     allMsgs.push(msg);
                 }
             }
             
-            // 1b. Para LID (@lid), também busca a variante @s.whatsapp.net
-            if (jid.endsWith('@lid')) {
-                const lidPart = jid.replace('@lid', '');
-                let phoneJid: string | null = null;
-                
-                // Primeiro tenta pelo mapa lidToPhoneMap
-                const pnUser = lidToPhoneMap.get(lidPart);
-                if (pnUser) {
-                    phoneJid = `${pnUser}@s.whatsapp.net`;
-                } else {
-                    // Fallback: procura remoteJidAlt nas msgs já carregadas
-                    for (const msg of allMsgs) {
-                        if (msg.key?.remoteJidAlt?.includes('@s.whatsapp.net')) {
-                            phoneJid = msg.key.remoteJidAlt;
-                            break;
-                        }
-                    }
-                }
-                
-                if (phoneJid) {
-                    console.log(`[GET-MESSAGES] LID mapping found: ${jid} -> ${phoneJid}`);
-                    for (const msg of (store.messages[phoneJid]?.all() || [])) {
-                        if (msg.key?.id && !seen.has(msg.key.id)) {
-                            seen.add(msg.key.id);
-                            allMsgs.push(msg);
-                        }
-                    }
-                }
-            }
-            
             // 2. Para individuais, verifica variantes de device e LID usando índice otimizado
-            if (jid.endsWith('@s.whatsapp.net') && !jid.includes(':')) {
-                const baseJid = jid.replace('@s.whatsapp.net', '');
+            if (actualJid.endsWith('@s.whatsapp.net') && !actualJid.includes(':')) {
+                const baseJid = actualJid.replace('@s.whatsapp.net', '');
                 
                 // Busca variantes de device usando o índice O(1) em vez de O(n)
-                const deviceJids = getMessageJidsForPhone(jid);
+                const deviceJids = getMessageJidsForPhone(actualJid);
                 for (const key of deviceJids) {
                     for (const msg of (store.messages[key]?.all() || [])) {
                         if (msg.key?.id && !seen.has(msg.key.id)) {
