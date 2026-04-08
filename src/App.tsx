@@ -1223,6 +1223,10 @@ export default function App() {
     });
 
       newSocket.on('chats-list', (data: any) => {
+      console.log('[FRONTEND] chats-list event received, type:', data?.type || 'array', 'count:', data?.chats?.length || (Array.isArray(data) ? data.length : 'N/A'));
+      if (data?.type === 'diff') {
+        console.log('[FRONTEND] Processing diff, updated:', data.changes?.updated?.length, 'removed:', data.changes?.removed?.length);
+      }
       if (Array.isArray(data)) {
         // Legacy or direct array emission - servidor já envia ordenado
         const filteredChats = data
@@ -1262,6 +1266,7 @@ export default function App() {
           return Array.from(uniqueChats.values()); // Servidor já envia ordenado por lastMessageTime
         });
       } else if (data.type === 'full') {
+        console.log('[FRONTEND] Full chats update, count:', data.chats.length);
         if (!Array.isArray(data.chats)) {
           console.error('Invalid full chats data:', data);
           return;
@@ -1304,6 +1309,7 @@ export default function App() {
         });
       } else if (data.type === 'diff') {
         const { updated, removed } = data.changes;
+        console.log('[FRONTEND] Diff update:', updated.map(c => c.id), 'removed:', removed.map(c => c.id));
         setChats(prevChats => {
           const updatedMap = new Map<string, any>(updated.map(c => [c.id, c]));
           
@@ -1383,6 +1389,7 @@ export default function App() {
     });
 
     newSocket.on('new-message', (msg: WAMessage) => {
+      console.log('[FRONTEND] new-message event received:', msg?.key?.remoteJid, 'fromMe:', msg?.key?.fromMe);
       if (!msg?.key?.remoteJid) return;
       const normalizedMsg = normalizeMessage(msg);
 
@@ -1407,61 +1414,8 @@ export default function App() {
         showDesktopNotification(senderName, msgText.length > 50 ? msgText.slice(0, 50) + '...' : msgText);
       }
 
-      // Update chat list (skip reactions - they should not appear as last message preview)
-      if (normalizedMsg._type !== 'reaction') {
-        console.log('[FRONTEND] new-message updating chat list, remoteJid:', msg.key.remoteJid, 'remoteJidAlt:', (msg.key as any).remoteJidAlt);
-        setChats(prev => {
-          const updated = [...prev];
-          
-          // Use remoteJidAlt if available (server now normalizes LID to PN)
-          const msgJidForChat = (msg.key as any).remoteJidAlt || msg.key.remoteJid;
-          const normalizedMsgJid = normalizeJid(msgJidForChat);
-          
-          // Also check if remoteJid is LID and we have a mapping
-          let finalNormalizedJid = normalizedMsgJid;
-          if (msg.key.remoteJid.endsWith('@lid') && (msg.key as any).remoteJidAlt) {
-            const altJid = (msg.key as any).remoteJidAlt;
-            if (altJid.endsWith('@s.whatsapp.net')) {
-              finalNormalizedJid = normalizeJid(altJid);
-              // Also infer and store the mapping
-              const lidPart = msg.key.remoteJid.replace('@lid', '');
-              const pn = altJid.split('@')[0];
-              if (!store.current.lidMappings[msg.key.remoteJid] && !store.current.lidMappings[`${lidPart}@lid`]) {
-                store.current.lidMappings[`${lidPart}@lid`] = altJid;
-              }
-            }
-          }
-          
-          // Find chat by normalized JID OR by mapped JID (handle @lid <-> @s.whatsapp.net)
-          let index = updated.findIndex(c => normalizeJid(c.id) === finalNormalizedJid);
-          if (index === -1 && finalNormalizedJid.endsWith('@lid')) {
-            const pnJid = store.current.lidMappings[finalNormalizedJid];
-            if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
-          } else if (index === -1 && finalNormalizedJid.endsWith('@s.whatsapp.net')) {
-            const lidJid = `${finalNormalizedJid.replace('@s.whatsapp.net', '')}@lid`;
-            const mapped = Object.entries(store.current.lidMappings).find(([k]) => normalizeJid(k) === finalNormalizedJid);
-            if (mapped) index = updated.findIndex(c => c.id === mapped[0]);
-          }
-          
-          const text = normalizedMsg._text || 'Mídia';
-
-          if (index !== -1) {
-            const isNotSelected = normalizeJid(selectedChatRef.current || '') !== finalNormalizedJid;
-            const isIncoming = !msg.key.fromMe;
-            updated[index] = {
-              ...updated[index],
-              lastMessage: text,
-              lastMessageTime: msg.messageTimestamp,
-              unreadCount: isNotSelected && isIncoming ? (updated[index].unreadCount || 0) + 1 : updated[index].unreadCount
-            };
-            const [item] = updated.splice(index, 1);
-            updated.unshift(item);
-          } else {
-            console.log('[FRONTEND] new-message: Chat not found for JID:', finalNormalizedJid, 'Looking for:', msg.key.remoteJid);
-          }
-          return updated;
-        });
-      }
+      // Don't update chat list here - let chats-list diff event handle it
+      // This prevents duplicate updates and race conditions
     });
 
     newSocket.on('message-deleted', (data: { jid: string; messageId: string }) => {
