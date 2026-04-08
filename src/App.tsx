@@ -1409,6 +1409,7 @@ export default function App() {
 
       // Update chat list (skip reactions - they should not appear as last message preview)
       if (normalizedMsg._type !== 'reaction') {
+        console.log('[FRONTEND] new-message updating chat list, remoteJid:', msg.key.remoteJid, 'remoteJidAlt:', (msg.key as any).remoteJidAlt);
         setChats(prev => {
           const updated = [...prev];
           
@@ -1455,6 +1456,8 @@ export default function App() {
             };
             const [item] = updated.splice(index, 1);
             updated.unshift(item);
+          } else {
+            console.log('[FRONTEND] new-message: Chat not found for JID:', finalNormalizedJid, 'Looking for:', msg.key.remoteJid);
           }
           return updated;
         });
@@ -1560,22 +1563,25 @@ export default function App() {
     });
 
     newSocket.on('chats.update', (updates: any[]) => {
+      console.log('[FRONTEND] chats.update received:', JSON.stringify(updates, null, 2));
       setChats(prev => {
         const updated = [...prev];
         for (const update of updates) {
-          let index = updated.findIndex(c => c.id === update.id);
-          if (index === -1) {
-            index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(update.id));
-            if (index === -1 && update.id.endsWith('@lid')) {
-              const pnJid = store.current.lidMappings[update.id];
-              if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
-            } else if (index === -1 && update.id.endsWith('@s.whatsapp.net')) {
-              const lidJid = `${update.id.replace('@s.whatsapp.net', '')}@lid`;
-              index = updated.findIndex(c => c.id === lidJid);
-            }
+          console.log('[FRONTEND] Processing chat update for:', update.id);
+          let index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(update.id));
+          console.log('[FRONTEND] Found index:', index, 'for JID:', update.id);
+          if (index === -1 && update.id.endsWith('@lid')) {
+            const pnJid = store.current.lidMappings[update.id];
+            if (pnJid) index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(pnJid));
+          } else if (index === -1 && update.id.endsWith('@s.whatsapp.net')) {
+            const lidJid = `${update.id.replace('@s.whatsapp.net', '')}@lid`;
+            index = updated.findIndex(c => normalizeJid(c.id) === normalizeJid(lidJid));
           }
+          console.log('[FRONTEND] Final index after LID check:', index);
           if (index !== -1) {
             updated[index] = { ...updated[index], ...update };
+          } else {
+            console.log('[FRONTEND] Chat not found, would be skipped:', update.id);
           }
         }
         return updated;
