@@ -1254,11 +1254,11 @@ export default function App() {
             const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
             return { ...existingChat, ...incoming, archived: incomingArchived };
           });
-          const existingIds = new Set(prevChats.map(c => c.id));
-          const newChats = filteredChats.filter(c => !existingIds.has(c.id));
+          const existingIds = new Set(prevChats.map(c => normalizeJid(c.id)));
+          const newChats = filteredChats.filter(c => !existingIds.has(normalizeJid(c.id)));
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
-          allChats.forEach(chat => uniqueChats.set(chat.id, chat));
+          allChats.forEach(chat => uniqueChats.set(normalizeJid(chat.id), chat));
           return Array.from(uniqueChats.values()); // Servidor já envia ordenado por lastMessageTime
         });
       } else if (data.type === 'full') {
@@ -1295,11 +1295,11 @@ export default function App() {
             const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
             return { ...existingChat, ...incoming, archived: incomingArchived };
           });
-          const existingIds = new Set(prevChats.map(c => c.id));
-          const newChats = filteredChats.filter(c => !existingIds.has(c.id));
+          const existingIds = new Set(prevChats.map(c => normalizeJid(c.id)));
+          const newChats = filteredChats.filter(c => !existingIds.has(normalizeJid(c.id)));
           const allChats = [...mergedChats, ...newChats];
           const uniqueChats = new Map();
-          allChats.forEach(chat => uniqueChats.set(chat.id, chat));
+          allChats.forEach(chat => uniqueChats.set(normalizeJid(chat.id), chat));
           return Array.from(uniqueChats.values()); // Servidor já envia ordenado
         });
       } else if (data.type === 'diff') {
@@ -1800,8 +1800,8 @@ export default function App() {
       if (data.chats && data.chats.length > 0) {
         // Merge archived chats into existing chats
         setChats(prev => {
-          const existingIds = new Set(prev.map(c => c.id));
-          const newArchived = data.chats.filter((c: Chat) => !existingIds.has(c.id));
+          const existingIds = new Set(prev.map(c => normalizeJid(c.id)));
+          const newArchived = data.chats.filter((c: Chat) => !existingIds.has(normalizeJid(c.id)));
           return [...prev, ...newArchived.map((c: Chat) => ({ ...c, archived: true }))];
         });
       }
