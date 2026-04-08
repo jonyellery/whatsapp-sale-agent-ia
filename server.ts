@@ -884,7 +884,7 @@ async function startServer() {
                 
                 // Chat is new or has meaningful changes
                 if (!lastChat || 
-                    lastChat.lastMessageTimestamp !== chat.lastMessageTimestamp ||
+                    lastChat.conversationTimestamp !== chat.conversationTimestamp ||
                     lastChat.unreadCount !== chat.unreadCount ||
                     lastChat.name !== chat.name ||
                     lastChat.avatar !== chat.avatar) {
@@ -3495,30 +3495,43 @@ io.emit("connection-update", { status: "open" });
         const { jid } = req.body;
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });
         try {
-            const normalizedJid = normalizeJid(jid);
-            const chat = store.chats.get(normalizedJid);
-            if (chat) {
-                chat.unreadCount = 0;
-                store.chats.set(normalizedJid, chat);
-                markChatDirty(normalizedJid);
+            // Clean device suffix but keep @s.whatsapp.net/@g.us/@lid
+            let cleanJid = jid;
+            if (jid.includes(':') && (jid.includes('@s.whatsapp.net') || jid.includes('@newsletter') || jid.includes('@broadcast'))) {
+                cleanJid = jid.replace(/:\d+@/, '@');
             }
-            // Also check and update @lid variant
-            if (normalizedJid.endsWith('@s.whatsapp.net')) {
-                const base = normalizedJid.replace('@s.whatsapp.net', '');
-                const lid = phoneToLidMap.get(base);
-                if (lid) {
-                    const lidChat = store.chats.get(`${lid}@lid`);
-                    if (lidChat) {
-                        lidChat.unreadCount = 0;
-                        store.chats.set(`${lid}@lid`, lidChat);
-                        markChatDirty(`${lid}@lid`);
+            
+            // Check if chat exists directly
+            let chat = store.chats.get(cleanJid);
+            
+            // If not found, try with @lid <-> @s.whatsapp.net conversion
+            if (!chat) {
+                if (cleanJid.endsWith('@s.whatsapp.net')) {
+                    const base = cleanJid.replace('@s.whatsapp.net', '');
+                    const lid = phoneToLidMap.get(base);
+                    if (lid) {
+                        chat = store.chats.get(`${lid}@lid`);
+                    }
+                } else if (cleanJid.endsWith('@lid')) {
+                    const lidPart = cleanJid.replace('@lid', '');
+                    const pn = lidToPhoneMap.get(lidPart);
+                    if (pn) {
+                        chat = store.chats.get(`${pn}@s.whatsapp.net`);
                     }
                 }
             }
-            await sock.sendReadReceipt(jid);
+            
+            if (chat) {
+                chat.unreadCount = 0;
+                store.chats.set(chat.id, chat);
+                markChatDirty(chat.id);
+            }
+            
+            await sock.sendReadReceipt(cleanJid);
             emitChatsDebounced();
             res.json({ success: true });
         } catch (err) {
+            console.error('[MARK-READ] Error:', err);
             res.status(500).json({ error: (err as Error).message });
         }
     });

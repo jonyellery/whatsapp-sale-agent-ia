@@ -1390,23 +1390,84 @@ export default function App() {
 
     newSocket.on('new-message', (msg: WAMessage) => {
       console.log('[FRONTEND] new-message event received:', msg?.key?.remoteJid, 'fromMe:', msg?.key?.fromMe);
-      if (!msg?.key?.remoteJid) return;
+      if (!msg?.key?.remoteJid) {
+        console.log('[FRONTEND] No remoteJid, returning');
+        return;
+      }
       const normalizedMsg = normalizeMessage(msg);
 
-      const selectedNormalized = normalizeJid(selectedChatRef.current || '');
+      const currentSelectedChat = selectedChatRef.current || '';
+      const selectedNormalized = normalizeJid(currentSelectedChat);
       
       // Use remoteJidAlt if available (server now normalizes LID to PN)
       const msgJid = (msg.key as any).remoteJidAlt || msg.key.remoteJid;
       const msgNormalized = normalizeJid(msgJid);
+      
+      // Also normalize the raw remoteJid for comparison
+      const rawRemoteJid = msg.key.remoteJid;
+      const rawNormalized = normalizeJid(rawRemoteJid);
 
-      if (selectedNormalized === msgNormalized || selectedNormalized === normalizeJid((msg.key as any).remoteJidAlt || '')) {
-        setMessages(prev => {
-          // Deduplication: check if message already exists
-          if (normalizedMsg.key.id && prev.some(m => m.key.id === normalizedMsg.key.id)) {
-            return prev;
+      // Check if message matches selected chat - check both remoteJid and remoteJidAlt
+      const matchesSelected = selectedNormalized === msgNormalized || selectedNormalized === rawNormalized;
+      
+      // Also check the reverse: if selected chat is @lid and message has @s.whatsapp.net equivalent
+      let matchesViaAlt = false;
+      const msgAltJid = (msg.key as any).remoteJidAlt;
+      console.log('[FRONTEND] Checking matches - matchesSelected:', matchesSelected, 'msgAltJid:', msgAltJid);
+      if (msgAltJid) {
+        const msgAltNormalized = normalizeJid(msgAltJid);
+        console.log('[FRONTEND] msgAltNormalized:', msgAltNormalized, 'selectedNormalized:', selectedNormalized);
+        if (selectedNormalized === msgAltNormalized) {
+          console.log('[FRONTEND] Matched via remoteJidAlt');
+          matchesViaAlt = true;
+        }
+      }
+      
+      // Fallback: check via store.current.lidMappings
+      // If selected is @lid format, check if it maps to the same phone number as the message
+      if (!matchesSelected && !matchesViaAlt && currentSelectedChat.endsWith('@lid')) {
+        const selectedPhone = store.current.lidMappings[currentSelectedChat];
+        if (selectedPhone) {
+          const selectedPhoneNumber = selectedPhone.replace('@s.whatsapp.net', '');
+          const msgPhoneNumber = msgNormalized;
+          if (selectedPhoneNumber === msgPhoneNumber) {
+            console.log('[FRONTEND] Matched via lidMappings!');
+            matchesViaAlt = true;
           }
-          return [...prev, normalizedMsg];
-        });
+        }
+      }
+      
+      // Also check reverse: if selected is @s.whatsapp.net and we have a LID mapping
+      if (!matchesSelected && !matchesViaAlt && currentSelectedChat.endsWith('@s.whatsapp.net')) {
+        // Check if there's a LID that maps to this phone
+        const entries = Object.entries(store.current.lidMappings);
+        const lidEntry = entries.find(([_, pn]) => pn === currentSelectedChat);
+        if (lidEntry) {
+          const lidNumber = lidEntry[0].replace('@lid', '');
+          if (lidNumber === msgNormalized) {
+            console.log('[FRONTEND] Matched via reverse lidMappings!');
+            matchesViaAlt = true;
+          }
+        }
+      }
+
+      console.log('[FRONTEND] Final matches - matchesSelected:', matchesSelected, 'matchesViaAlt:', matchesViaAlt);
+
+      if (matchesSelected || matchesViaAlt) {
+        console.log('[FRONTEND] MATCH! Adding message to view');
+        try {
+          setMessages(prev => {
+            // Deduplication: check if message already exists
+            if (normalizedMsg.key.id && prev.some(m => m.key.id === normalizedMsg.key.id)) {
+              console.log('[FRONTEND] Message already exists in state, skipping');
+              return prev;
+            }
+            console.log('[FRONTEND] Appending message to state, new length:', prev.length + 1);
+            return [...prev, normalizedMsg];
+          });
+        } catch (e) {
+          console.error('[FRONTEND] Error updating messages:', e);
+        }
       } else if (!msg.key.fromMe) {
         // Show desktop notification for messages not in current chat
         const senderName = msg.pushName || 'Contato';
