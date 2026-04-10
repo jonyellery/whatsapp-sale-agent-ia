@@ -844,21 +844,42 @@ async function startServer() {
 
     const PORT = 3000;
 
-    let pendingForceFull = false; // Track if force full emit was requested
+    let emitSequence = 0; // Sequence number to prevent race conditions
 
-    // Debounce helper for emitting chats list with diff (defined here for access to helpers inside startServer)
-    const emitChatsDebounced = async (forceFullList: boolean = false) => {
-        if (!ioInstance) return;
-        if (forceFullList) {
-            pendingForceFull = true; // Mark as pending, will be processed on next emit
+    // Helper to emit chats-list in diff format
+    const emitChatsListDiff = (io: any, chats: any[], isFullReplace: boolean = false) => {
+        if (!io) return;
+        emitSequence++;
+        if (isFullReplace) {
+            // Full replace - send all chats as updates
+            io.emit("chats-list", {
+                type: 'diff',
+                sequence: emitSequence,
+                changes: { updated: chats, removed: [] },
+                total: chats.length
+            });
+            console.log('[EMIT] Full replace diff, count:', chats.length, 'seq:', emitSequence);
+        } else {
+            // Diff with empty changes - just to update sequence
+            io.emit("chats-list", {
+                type: 'diff',
+                sequence: emitSequence,
+                changes: { updated: [], removed: [] },
+                total: chats.length
+            });
+            console.log('[EMIT] Empty diff, seq:', emitSequence);
         }
+    };
+
+    // Debounce helper for emitting chats list with diff (always use diff for speed!)
+    const emitChatsDebounced = async () => {
+        if (!ioInstance) return;
+        
         if (emitChatsTimeout) {
             clearTimeout(emitChatsTimeout);
         }
         emitChatsTimeout = setTimeout(async () => {
-            // Check if force full was requested before proceeding
-            const shouldForceFull = pendingForceFull;
-            pendingForceFull = false;
+            emitSequence++; // Always increment sequence
             let allChats = store.chats.all().filter((c: any) => c &&
                 c && isValidChatJid(c.id) && c.archived !== true
             );
@@ -909,37 +930,34 @@ async function startServer() {
                 id => !currentMap.has(id)
             );
             
-            // Detect changes: compare with last emitted state
-            const hasChanges = changedChats.length > 0 || removedChats.length > 0;
+// Always use diff! Add sequence to prevent race conditions
+            const currentSequence = emitSequence;
             
-            // For full list: emit cached avatars first, fetch missing in background
-            // For diff: fetch avatars only for changed chats (fast!)
-            // Force full emit when requested, or when no changes detected (resync)
-            if (shouldForceFull || !hasChanges) {
-                // Full emit - use cached avatars for speed, fetch missing in background
+            if (changedChats.length === 0 && removedChats.length === 0) {
+                // No changes - still emit diff with empty changes to confirm sequence
                 ioInstance.emit("chats-list", {
-                    type: 'full',
-                    chats: allWithCachedAvatars,
+                    type: 'diff',
+                    sequence: currentSequence,
+                    changes: { updated: [], removed: [] },
                     total: allWithCachedAvatars.length
                 });
-                // Update last emitted map after full emit
-                lastEmittedChatsMap = currentMap;
-                console.log('[EMIT-CHATS] Emitting FULL, count:', allWithCachedAvatars.length);
+                console.log('[EMIT-CHATS] Emitting DIFF (no changes), sequence:', currentSequence);
             } else {
                 // Diff emit - fetch avatars only for changed chats (much faster!)
                 const changedWithAvatars = await Promise.all(changedChats.map(getChatWithAvatarFromStore));
-                console.log('[EMIT-CHATS] Emitting DIFF, changed:', changedWithAvatars.map(c => ({ id: c.id, lastMessageTime: c.lastMessageTime })));
+                console.log('[EMIT-CHATS] Emitting DIFF, changed:', changedWithAvatars.map(c => ({ id: c.id, lastMessageTime: c.lastMessageTime })), 'sequence:', currentSequence);
                 ioInstance.emit("chats-list", {
                     type: 'diff',
+                    sequence: currentSequence,
                     changes: {
                         updated: changedWithAvatars,
                         removed: removedChats
                     },
                     total: allWithCachedAvatars.length
                 });
-                // Update last emitted map after diff emit
-                lastEmittedChatsMap = currentMap;
             }
+            // Always update last emitted map
+            lastEmittedChatsMap = currentMap;
         }, 300); // 300ms debounce para msgs em tempo real
     };
 
@@ -1543,7 +1561,7 @@ io.emit("connection-update", { status: "open" });
                     }));
                     
                     console.log("Fast emit:", chatsFastEmit.length);
-                    io.emit("chats-list", chatsFastEmit);
+                    emitChatsListDiff(io, chatsFastEmit, true);
                     
                     // Background avatar fetch - parallel in batches (sem re-emissão completa)
                     // Os avatares serão puxados pelo frontend sob demanda
@@ -2325,11 +2343,16 @@ io.emit("connection-update", { status: "open" });
             const chatsWithCachedAvatars = allChats.map(getChatWithAvatarCachedOnly);
             console.log(`[SOCKET] Emitting chats-list from history sync (cached avatars): ${chatsWithCachedAvatars.length} active chats`);
             ioInstance?.emit('chats-list', {
-                chats: chatsWithCachedAvatars,
-                isInitialLoad: true,
-                forceFullList: true
+                type: 'diff',
+                sequence: 1,
+                changes: {
+                    updated: chatsWithCachedAvatars,
+                    removed: []
+                },
+                total: chatsWithCachedAvatars.length
             });
             lastEmittedChatsMap = new Map(chatsWithCachedAvatars.map(chat => [chat.id, chat]));
+            emitSequence = 1;
 
             // Fetch missing avatars in background without blocking (no re-emit to avoid duplication)
             // Only fetch for first 50 most recent chats to avoid rate limiting
@@ -2476,7 +2499,7 @@ io.emit("connection-update", { status: "open" });
             });
             activeChats = sortChatsByRecent(activeChats);
             const activeWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
-            io.emit("chats-list", activeWithAvatars);
+            emitChatsListDiff(io, activeWithAvatars, true);
             
             res.json({ success: true, archived: archive });
         } catch (e) {
@@ -2526,7 +2549,7 @@ io.emit("connection-update", { status: "open" });
                 c && isValidChatJid(c.id) && c.archived !== true
             );
             const chatsWithAvatars = await Promise.all(activeChats.map(getChatWithAvatarFromStore));
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
 
             res.json({ success: true });
         } catch (e) {
@@ -2575,7 +2598,7 @@ io.emit("connection-update", { status: "open" });
             // Emit only active chats
             const chatsWithAvatars = await Promise.all(dedupedActive.map(getChatWithAvatarFromStore));
             
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
             
             res.json({ 
                 count: chatsWithAvatars.length, 
@@ -2650,7 +2673,7 @@ io.emit("connection-update", { status: "open" });
             const archivedCount = totalChats.filter((c: any) => c.archived === true).length;
             console.log(`[API] Sync complete: ${totalChats.length} total, ${archivedCount} archived, ${chatsWithAvatars.length} active`);
             
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
             
             res.json({ 
                 count: chatsWithAvatars.length,
@@ -2791,7 +2814,7 @@ io.emit("connection-update", { status: "open" });
             
             console.log("Active chats after fetch:", chatsWithAvatars.length);
             
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
             res.json({ count: chatsWithAvatars.length, chats: chatsWithAvatars });
         } catch (e) {
             res.status(500).json({ error: e.message });
@@ -2828,7 +2851,7 @@ io.emit("connection-update", { status: "open" });
             
             // Get avatars - use the function that checks contacts and groups
             const chatsWithAvatars = await Promise.all(deduped.map(getChatWithAvatarFromStore));
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
             res.json({ count: chatsWithAvatars.length });
         } catch (e) {
             res.status(500).json({ error: e.message });
@@ -2915,7 +2938,7 @@ io.emit("connection-update", { status: "open" });
             const chatsWithAvatars = await Promise.all(allChats.map(getChatWithAvatarFromStore));
             
             console.log(`[FORCE-SYNC] Emitting ${chatsWithAvatars.length} chats (${existingChats.length} individual)`);
-            io.emit("chats-list", chatsWithAvatars);
+            emitChatsListDiff(io, chatsWithAvatars, true);
             
             res.json({ 
                 synced: syncedCount, 
@@ -5297,7 +5320,7 @@ io.emit("connection-update", { status: "open" });
             if (existingChats.length > 0) {
                 // Use the optimized function that checks contacts, groups, and uses avatar cache
                 const resolvedChats = await Promise.all(existingChats.map(getChatWithAvatarFromStore));
-                socket.emit("chats-list", resolvedChats);
+                emitChatsListDiff(socket, resolvedChats, true);
             } else {
                 // Try triggering sync again
                 if (sock.user?.id) {
@@ -5308,7 +5331,7 @@ io.emit("connection-update", { status: "open" });
                         });
                     } catch (e) {}
                 }
-                socket.emit("chats-list", []);
+                emitChatsListDiff(socket, [], false);
             }
         });
 
@@ -5548,7 +5571,7 @@ io.emit("connection-update", { status: "open" });
             });
             
             dedupedChats.sort((a: any, b: any) => (b.conversationTimestamp || 0) - (a.conversationTimestamp || 0));
-            socket.emit("chats-list", dedupedChats);
+            emitChatsListDiff(socket, dedupedChats, true);
 
             console.log(`[GET-MESSAGES] Emitting ${allMsgs.length} messages for ${jid}`);
             socket.emit("messages-list", { jid, messages: allMsgs, totalCount: allMsgs.length });

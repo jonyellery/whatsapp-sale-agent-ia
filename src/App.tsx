@@ -970,6 +970,7 @@ export default function App() {
   const [status, setStatus] = useState<'connecting' | 'open' | 'close' | 'qr'>('connecting');
   const [qr, setQr] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [chatsSequence, setChatsSequence] = useState(0);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [chatFilter, setChatFilter] = useState<'all' | 'unread' | 'favorites' | 'groups'>('all');
   const [navRailSection, setNavRailSection] = useState<'chats' | 'status' | 'channels' | 'communities' | 'archived' | 'starred'>('chats');
@@ -1223,91 +1224,19 @@ export default function App() {
     });
 
       newSocket.on('chats-list', (data: any) => {
-      console.log('[FRONTEND] chats-list event received, type:', data?.type || 'array', 'count:', data?.chats?.length || (Array.isArray(data) ? data.length : 'N/A'));
-      if (data?.type === 'diff') {
-        console.log('[FRONTEND] Processing diff, updated:', data.changes?.updated?.length, 'removed:', data.changes?.removed?.length);
+      const incomingSeq = data?.sequence || 0;
+      console.log('[FRONTEND] chats-list event received, type:', data?.type || 'array', 'sequence:', incomingSeq, 'current:', chatsSequence);
+      
+      // Ignore old events (race condition protection)
+      if (incomingSeq <= chatsSequence && chatsSequence > 0) {
+        console.log('[FRONTEND] Ignoring old event, seq:', incomingSeq, 'current:', chatsSequence);
+        return;
       }
-      if (Array.isArray(data)) {
-        // Legacy or direct array emission - servidor já envia ordenado
-        const filteredChats = data
-          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index)
-          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
-
-        setChats(prevChats => {
-          const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
-          
-          const findMatch = (existingId: string): [string, any] | null => {
-            const normalizedExisting = normalizeJid(existingId);
-            const entries = Array.from(incomingMap.entries()) as [string, any][];
-            const incomingEntry = entries.find(([id]) => normalizeJid(id) === normalizedExisting);
-            if (incomingEntry) return incomingEntry;
-            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
-              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
-              const lidJid = `${lidPart}@lid`;
-              if (incomingMap.has(lidJid)) return [lidJid, incomingMap.get(lidJid)!];
-            }
-            return null;
-          };
-          
-          const mergedChats = prevChats.map(existingChat => {
-            const match = findMatch(existingChat.id);
-            if (!match) return existingChat;
-            const [incomingId, incoming] = match;
-            incomingMap.delete(incomingId);
-            
-            const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
-            return { ...existingChat, ...incoming, archived: incomingArchived };
-          });
-          const existingIds = new Set(prevChats.map(c => normalizeJid(c.id)));
-          const newChats = filteredChats.filter(c => !existingIds.has(normalizeJid(c.id)));
-          const allChats = [...mergedChats, ...newChats];
-          const uniqueChats = new Map();
-          allChats.forEach(chat => uniqueChats.set(normalizeJid(chat.id), chat));
-          return Array.from(uniqueChats.values()); // Servidor já envia ordenado por lastMessageTime
-        });
-      } else if (data.type === 'full') {
-        console.log('[FRONTEND] Full chats update, count:', data.chats.length);
-        if (!Array.isArray(data.chats)) {
-          console.error('Invalid full chats data:', data);
-          return;
-        }
-        const filteredChats = data.chats
-          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index)
-          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
-
-        setChats(prevChats => {
-          const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
-          
-          const findMatch = (existingId: string): [string, any] | null => {
-            const normalizedExisting = normalizeJid(existingId);
-            const entries = Array.from(incomingMap.entries()) as [string, any][];
-            const incomingEntry = entries.find(([id]) => normalizeJid(id) === normalizedExisting);
-            if (incomingEntry) return incomingEntry;
-            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
-              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
-              const lidJid = `${lidPart}@lid`;
-              if (incomingMap.has(lidJid)) return [lidJid, incomingMap.get(lidJid)!];
-            }
-            return null;
-          };
-          
-          const mergedChats = prevChats.map(existingChat => {
-            const match = findMatch(existingChat.id);
-            if (!match) return existingChat;
-            const [incomingId, incoming] = match;
-            incomingMap.delete(incomingId);
-            
-            const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
-            return { ...existingChat, ...incoming, archived: incomingArchived };
-          });
-          const existingIds = new Set(prevChats.map(c => normalizeJid(c.id)));
-          const newChats = filteredChats.filter(c => !existingIds.has(normalizeJid(c.id)));
-          const allChats = [...mergedChats, ...newChats];
-          const uniqueChats = new Map();
-          allChats.forEach(chat => uniqueChats.set(normalizeJid(chat.id), chat));
-          return Array.from(uniqueChats.values()); // Servidor já envia ordenado
-        });
-      } else if (data.type === 'diff') {
+      
+      // Update sequence first
+      setChatsSequence(incomingSeq);
+      
+      if (data?.type === 'diff') {
         const { updated, removed } = data.changes;
         console.log('[FRONTEND] Diff update:', updated.map(c => c.id), 'removed:', removed.map(c => c.id), 'sample:', updated[0]?.lastMessageTime);
         setChats(prevChats => {
@@ -1362,6 +1291,40 @@ export default function App() {
             const bTime = b.conversationTimestamp || b.lastMessageTime || 0;
             return bTime - aTime;
           });
+        });
+      } else if (Array.isArray(data)) {
+        console.log('[FRONTEND] Legacy array format, treating as full replace');
+        const filteredChats = data
+          .filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index)
+          .filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
+        setChats(prevChats => {
+          const incomingMap = new Map<string, any>(filteredChats.map(c => [c.id, c]));
+          const findMatch = (existingId: string): [string, any] | null => {
+            const normalizedExisting = normalizeJid(existingId);
+            const entries = Array.from(incomingMap.entries()) as [string, any][];
+            const incomingEntry = entries.find(([id]) => normalizeJid(id) === normalizedExisting);
+            if (incomingEntry) return incomingEntry;
+            if (normalizedExisting.endsWith('@s.whatsapp.net')) {
+              const lidPart = normalizedExisting.replace('@s.whatsapp.net', '');
+              const lidJid = `${lidPart}@lid`;
+              if (incomingMap.has(lidJid)) return [lidJid, incomingMap.get(lidJid)!];
+            }
+            return null;
+          };
+          const mergedChats = prevChats.map(existingChat => {
+            const match = findMatch(existingChat.id);
+            if (!match) return existingChat;
+            const [incomingId, incoming] = match;
+            incomingMap.delete(incomingId);
+            const incomingArchived = incoming.archived !== undefined ? incoming.archived : incoming.archive !== undefined ? incoming.archive : existingChat.archived;
+            return { ...existingChat, ...incoming, archived: incomingArchived };
+          });
+          const existingIds = new Set(prevChats.map(c => normalizeJid(c.id)));
+          const newChats = filteredChats.filter(c => !existingIds.has(normalizeJid(c.id)));
+          const allChats = [...mergedChats, ...newChats];
+          const uniqueChats = new Map();
+          allChats.forEach(chat => uniqueChats.set(normalizeJid(chat.id), chat));
+          return Array.from(uniqueChats.values());
         });
       } else {
         console.error('Unknown chats-list data type:', data);
