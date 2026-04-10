@@ -844,13 +844,21 @@ async function startServer() {
 
     const PORT = 3000;
 
+    let pendingForceFull = false; // Track if force full emit was requested
+
     // Debounce helper for emitting chats list with diff (defined here for access to helpers inside startServer)
     const emitChatsDebounced = async (forceFullList: boolean = false) => {
         if (!ioInstance) return;
+        if (forceFullList) {
+            pendingForceFull = true; // Mark as pending, will be processed on next emit
+        }
         if (emitChatsTimeout) {
             clearTimeout(emitChatsTimeout);
         }
         emitChatsTimeout = setTimeout(async () => {
+            // Check if force full was requested before proceeding
+            const shouldForceFull = pendingForceFull;
+            pendingForceFull = false;
             let allChats = store.chats.all().filter((c: any) => c &&
                 c && isValidChatJid(c.id) && c.archived !== true
             );
@@ -878,6 +886,8 @@ async function startServer() {
             const changedChats: any[] = [];
             const currentMap = new Map<string, any>();
             
+            console.log('[EMIT-CHATS] Last emitted count:', lastEmittedChatsMap.size, 'Current count:', allWithCachedAvatars.length);
+            
             for (const chat of allWithCachedAvatars) {
                 currentMap.set(chat.id, chat);
                 const lastChat = lastEmittedChatsMap.get(chat.id);
@@ -892,28 +902,33 @@ async function startServer() {
                 }
             }
             
+            console.log('[EMIT-CHATS] Changed chats:', changedChats.length, 'sample lastMessageTime:', changedChats[0]?.lastMessageTime, 'sample conversationTimestamp:', changedChats[0]?.conversationTimestamp);
+            
             // Detect removed chats
             const removedChats = Array.from(lastEmittedChatsMap.keys()).filter(
                 id => !currentMap.has(id)
             );
             
-            lastEmittedChatsMap = currentMap;
-            
-            // Emit full list for initial load (history sync), otherwise diff
+            // Detect changes: compare with last emitted state
             const hasChanges = changedChats.length > 0 || removedChats.length > 0;
             
             // For full list: emit cached avatars first, fetch missing in background
             // For diff: fetch avatars only for changed chats (fast!)
-            if (forceFullList || !hasChanges) {
+            // Force full emit when requested, or when no changes detected (resync)
+            if (shouldForceFull || !hasChanges) {
                 // Full emit - use cached avatars for speed, fetch missing in background
                 ioInstance.emit("chats-list", {
                     type: 'full',
                     chats: allWithCachedAvatars,
                     total: allWithCachedAvatars.length
                 });
+                // Update last emitted map after full emit
+                lastEmittedChatsMap = currentMap;
+                console.log('[EMIT-CHATS] Emitting FULL, count:', allWithCachedAvatars.length);
             } else {
                 // Diff emit - fetch avatars only for changed chats (much faster!)
                 const changedWithAvatars = await Promise.all(changedChats.map(getChatWithAvatarFromStore));
+                console.log('[EMIT-CHATS] Emitting DIFF, changed:', changedWithAvatars.map(c => ({ id: c.id, lastMessageTime: c.lastMessageTime })));
                 ioInstance.emit("chats-list", {
                     type: 'diff',
                     changes: {
@@ -922,6 +937,8 @@ async function startServer() {
                     },
                     total: allWithCachedAvatars.length
                 });
+                // Update last emitted map after diff emit
+                lastEmittedChatsMap = currentMap;
             }
         }, 300); // 300ms debounce para msgs em tempo real
     };
@@ -1042,8 +1059,9 @@ async function startServer() {
                 // Check if last message was sent by me
                 lastMessageFromMe = lastMsg.key?.fromMe === true;
                 
-                // Use the actual timestamp from the last message
-                lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
+                // Use the actual timestamp from the last message (handle Long object from Baileys)
+                const msgTs = lastMsg.messageTimestamp;
+                lastMessageTime = (msgTs?.low || msgTs) || lastMessageTime;
 
                 // For groups, try to get the sender's name from the message
                 if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
@@ -1189,8 +1207,9 @@ async function startServer() {
                 // Check if last message was sent by me
                 lastMessageFromMe = lastMsg.key?.fromMe === true;
                 
-                // Use the actual timestamp from the last message
-                lastMessageTime = lastMsg.messageTimestamp || lastMessageTime;
+                // Use the actual timestamp from the last message (handle Long object from Baileys)
+                const msgTs = lastMsg.messageTimestamp;
+                lastMessageTime = (msgTs?.low || msgTs) || lastMessageTime;
                 
                 // For groups, try to get the sender's name from the message
                 if (chat.id.endsWith('@g.us') && !lastMsg.key.fromMe) {
@@ -1350,10 +1369,13 @@ async function startServer() {
         const chat = store.chats.get(jid);
         if (!chat) return;
 
-        if (!chat.conversationTimestamp || timestamp > chat.conversationTimestamp) {
-            chat.conversationTimestamp = timestamp;
+        const ts = typeof timestamp === 'number' ? timestamp : parseInt(timestamp, 10);
+        if (isNaN(ts)) return;
+
+        if (!chat.conversationTimestamp || ts > chat.conversationTimestamp) {
+            chat.conversationTimestamp = ts;
             store.chats.set(jid, chat);
-            markChatDirty(jid); // Marcar chat como dirty para save incremental
+            markChatDirty(jid);
         }
     };
 
@@ -2219,11 +2241,11 @@ io.emit("connection-update", { status: "open" });
                                 id: jid,
                                 name: chatName,
                                 unreadCount: 0,
-                                conversationTimestamp: msg.messageTimestamp
+                                conversationTimestamp: msg.messageTimestamp?.low || msg.messageTimestamp
                             });
-                        } else if (msg.messageTimestamp && (!existingChat.conversationTimestamp || msg.messageTimestamp > existingChat.conversationTimestamp)) {
+                        } else if (msg.messageTimestamp && (!existingChat.conversationTimestamp || (msg.messageTimestamp?.low || msg.messageTimestamp) > existingChat.conversationTimestamp)) {
                             // Update timestamp if this message is newer
-                            existingChat.conversationTimestamp = msg.messageTimestamp;
+                            existingChat.conversationTimestamp = msg.messageTimestamp?.low || msg.messageTimestamp;
                         }
                     }
                 }
@@ -3375,9 +3397,10 @@ io.emit("connection-update", { status: "open" });
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });
         try {
             const sentMsg = await sock.sendMessage(jid, { text });
-            // Don't emit here - messages.upsert event handler already broadcasts
+            // Don't manually update chat - let Baileys events handle it naturally
             res.json(sentMsg);
         } catch (err) {
+            console.error('[SEND] Error:', err);
             res.status(500).json({ error: (err as Error).message });
         }
     });
@@ -3494,6 +3517,7 @@ io.emit("connection-update", { status: "open" });
     app.post("/api/mark-read", express.json(), async (req, res) => {
         const { jid } = req.body;
         if (!sock) return res.status(500).json({ error: "Socket not initialized" });
+        if (!jid) return res.status(400).json({ error: "Missing jid" });
         try {
             // Clean device suffix but keep @s.whatsapp.net/@g.us/@lid
             let cleanJid = jid;
@@ -3527,7 +3551,12 @@ io.emit("connection-update", { status: "open" });
                 markChatDirty(chat.id);
             }
             
-            await sock.sendReadReceipt(cleanJid);
+            // Use chatRead instead of sendReadReceipt (Baileys v6+)
+            if (typeof sock?.chatRead === 'function') {
+                await sock.chatRead(cleanJid);
+            } else if (typeof sock?.sendReadReceipt === 'function') {
+                await sock.sendReadReceipt(cleanJid);
+            }
             emitChatsDebounced();
             res.json({ success: true });
         } catch (err) {
@@ -3570,8 +3599,11 @@ io.emit("connection-update", { status: "open" });
             const sentMsg = await sock.sendMessage(jid, msgContent, opts);
             // Clean up uploaded file
             try { unlinkSync(file.path); } catch {}
-            if (sentMsg) {
-                io.emit("new-message", sentMsg);
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
             }
             res.json(sentMsg);
         } catch (err) {
@@ -3592,8 +3624,11 @@ io.emit("connection-update", { status: "open" });
                 if (quotedMsg) opts.quoted = quotedMsg;
             }
             const sentMsg = await sock.sendMessage(jid, { text }, opts);
-            if (sentMsg) {
-                io.emit("new-message", sentMsg);
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
             }
             res.json(sentMsg);
         } catch (err) {
@@ -4183,6 +4218,12 @@ io.emit("connection-update", { status: "open" });
                     address: address || ''
                 }
             });
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
+            }
             res.json(sentMsg);
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
@@ -4204,6 +4245,12 @@ io.emit("connection-update", { status: "open" });
                     contacts: [{ vcard }]
                 }
             });
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
+            }
             res.json(sentMsg);
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
@@ -4225,6 +4272,12 @@ io.emit("connection-update", { status: "open" });
                     selectableCount: selectableCount || 1
                 }
             });
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
+            }
             res.json(sentMsg);
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
@@ -4244,6 +4297,12 @@ io.emit("connection-update", { status: "open" });
                 mimetype: file.mimetype
             });
             try { unlinkSync(file.path); } catch {}
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
+            }
             res.json(sentMsg);
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });
@@ -4268,6 +4327,12 @@ io.emit("connection-update", { status: "open" });
             }
             const sentMsg = await sock.sendMessage(jid, msgContent);
             try { unlinkSync(file.path); } catch {}
+            const ts = sentMsg?.messageTimestamp?.low || sentMsg?.messageTimestamp;
+            if (ts) {
+                updateChatTimestamp(jid, ts);
+                syncLidAndPhoneTimestamp(jid, ts);
+                emitChatsDebounced(true);
+            }
             res.json(sentMsg);
         } catch (err) {
             res.status(500).json({ error: (err as Error).message });

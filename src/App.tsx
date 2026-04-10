@@ -1309,7 +1309,7 @@ export default function App() {
         });
       } else if (data.type === 'diff') {
         const { updated, removed } = data.changes;
-        console.log('[FRONTEND] Diff update:', updated.map(c => c.id), 'removed:', removed.map(c => c.id));
+        console.log('[FRONTEND] Diff update:', updated.map(c => c.id), 'removed:', removed.map(c => c.id), 'sample:', updated[0]?.lastMessageTime);
         setChats(prevChats => {
           const updatedMap = new Map<string, any>(updated.map(c => [c.id, c]));
           
@@ -1329,6 +1329,7 @@ export default function App() {
           };
           
           let newChats = prevChats.filter(c => !removed.some(r => {
+            if (!r?.id) return false;
             const normalizedR = normalizeJid(r.id);
             return normalizeJid(c.id) === normalizedR || 
               (c.id.endsWith('@s.whatsapp.net') && `${c.id.replace('@s.whatsapp.net', '')}@lid` === normalizedR);
@@ -1355,7 +1356,12 @@ export default function App() {
           newChats = [...newChats, ...Array.from(updatedMap.values())];
           const deduplicated = newChats.filter((chat, index, arr) => arr.findIndex(c => c.id === chat.id) === index);
           const filtered = deduplicated.filter(c => c.id.endsWith('@s.whatsapp.net') || c.id.endsWith('@g.us') || c.id.endsWith('@lid'));
-          return filtered.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
+          // Sort by conversationTimestamp (most recent first), then fallback to lastMessageTime
+          return filtered.sort((a, b) => {
+            const aTime = a.conversationTimestamp || a.lastMessageTime || 0;
+            const bTime = b.conversationTimestamp || b.lastMessageTime || 0;
+            return bTime - aTime;
+          });
         });
       } else {
         console.error('Unknown chats-list data type:', data);

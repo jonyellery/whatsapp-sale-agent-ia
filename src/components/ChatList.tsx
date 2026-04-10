@@ -32,6 +32,7 @@ const timeCache = new Map<number, string>();
 const TIME_CACHE_MAX_SIZE = 500;
 
 const formatTime = memo(function formatTime(timestamp: number): string {
+  if (!timestamp) return '';
   const cached = timeCache.get(timestamp);
   if (cached) return cached;
   
